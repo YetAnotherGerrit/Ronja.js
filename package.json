@@ -1,0 +1,24 @@
+{
+  "name": "ronja",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "deploy-commands.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/rest": "^0.2.0-canary.0",
+    "axios": "^0.25.0",
+    "cheerio": "^1.0.0-rc.10",
+    "discord.js": "^13.3.1",
+    "got": "^12.0.1",
+    "jsdom": "^19.0.0",
+    "node-cron": "^3.0.0",
+    "node-html-parser": "^5.2.0",
+    "sequelize": "^7.0.0-alpha.2",
+    "source": "^0.0.3",
+    "sqlite3": "^5.0.2"
+  }
+}
