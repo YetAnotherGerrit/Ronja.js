@@ -1,3 +1,4 @@
+const { Ronja } = require('./ronja_modules/Ronja.js');
 const { Client, Intents, MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -16,78 +17,18 @@ const cMinimumPlayers = 3;
 
 const datetimeoptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES]});
+const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES]});
 
 const cron = require('node-cron');
 const { Model } = require('sequelize');
 
-const seq = new Sequelize('database', 'user', 'password', {
-	host: 'localhost',
-	dialect: 'sqlite',
-	logging: false,
-	// SQLite only:
-	storage: '_SECRET/database.sqlite',
-});
-
-const db = {
-	Games: seq.define('Games', {
-		name: {
-			type: Sequelize.STRING,
-			unique: true,
-		},
-		channel: {
-			type: Sequelize.STRING,
-			defaultValue: null,
-			allowNull: true,
-		}, 
-	}),
-
-	GamesPlayed: seq.define('GamesPlayed', {
-		member: Sequelize.STRING,
-		lastplayed: Sequelize.DATE,
-	}),
-
-	Member: seq.define('Member', {
-		zockenmention: {
-			type: Sequelize.TINYINT,
-			defaultValue: 1,
-		}
-	}),
-};
-
-db.Games.hasMany(db.GamesPlayed);
-db.GamesPlayed.belongsTo(db.Games);
-
-function setGameAsChannelName(ch) {
-	if (ch.isVoice() && ch.userLimit === 0) {
-		let Spiele = {};
-		let MaxSpiel = null;
-		let CountSpiel = 0;
-
-		ch.members.forEach(m => {
-			if (m.presence) m.presence.activities.forEach(a => {
-				if (a.type === 'PLAYING') Spiele[a.name] = (Spiele[a.name] || 0) + 1;
-			});
-		});
-		Object.entries(Spiele).forEach(e => {
-			let [key, value] = e;
-			if (value > CountSpiel) {
-				CountSpiel = value;
-				MaxSpiel = key;
-			}
-		})
-		ch.setName(MaxSpiel || 'Ei Gude!');
-	}
-}
-
-
 client.once('ready', () => {
-	db.Games.sync();
-	db.GamesPlayed.sync();
-	db.Member.sync();
+	client.myDB.Games.sync();
+	client.myDB.GamesPlayed.sync();
+	client.myDB.Member.sync();
 
 	ronja_modules.forEach(m => {
-		if (m.init) m.init(client, db);
+		if (m.init) m.init(client);
 	});
 
 	ronja_modules.forEach(m => {
@@ -122,7 +63,7 @@ client.on('interactionCreate', async interaction => {
 
 			if (interaction.member != m) {
 				let s = '';
-				let g = await db.Games.findAll({
+				let g = await client.myDB.Games.findAll({
 					raw: true,
 					attributes: [
 						'name',
@@ -130,7 +71,7 @@ client.on('interactionCreate', async interaction => {
 					],
 					include: [
 						{
-							model: db.GamesPlayed,
+							model: client.myDB.GamesPlayed,
 							where: {
 								member: [interaction.member.id,m.id]
 							}
@@ -175,8 +116,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 	   await oldState.channel.delete();
    }
 
-   if (oldState.channel && oldState.channel != newState.channel && oldState.channel.userLimit === 0 && oldState.channel.members.size > 0) await setGameAsChannelName(oldState.channel);
-   if (newState.channel && oldState.channel != newState.channel && newState.channel.userLimit === 0 && newState.channel.members.size > 0) await setGameAsChannelName(newState.channel);
+   if (oldState.channel && oldState.channel != newState.channel && oldState.channel.userLimit === 0 && oldState.channel.members.size > 0) await client.mySetGameAsChannelName(oldState.channel);
+   if (newState.channel && oldState.channel != newState.channel && newState.channel.userLimit === 0 && newState.channel.members.size > 0) await client.mySetGameAsChannelName(newState.channel);
 });
 
 client.on('presenceUpdate', (oldPresence, newPresence) => {
@@ -191,11 +132,11 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 
 			if (justStarted) {
 				console.log(`${newPresence.member.displayName} spielt ${newActivity.name}.`);
-				let [game,gameCreated] = await db.Games.findOrCreate({
+				let [game,gameCreated] = await client.myDB.Games.findOrCreate({
 					where: {name: newActivity.name},
 				});
 				
-				let [gamePlayed,gamePlayedCreated] = await db.GamesPlayed.findOrCreate({
+				let [gamePlayed,gamePlayedCreated] = await client.myDB.GamesPlayed.findOrCreate({
 					where: {GameId: game.id, member: newPresence.member.id},
 					defaults: {lastplayed: newActivity.createdTimestamp},
 				});
@@ -208,7 +149,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 						let gameChannel = await client.channels.fetch(game.channel);
 						gameChannel.permissionOverwrites.create(newPresence.member.user,{'VIEW_CHANNEL': true});
 					} else {
-						let players  = await db.GamesPlayed.findAndCountAll({
+						let players  = await client.myDB.GamesPlayed.findAndCountAll({
 							where: {GameId: game.id},
 						});
 
@@ -235,7 +176,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 						};
 					};
 				};
-				if (newPresence.member.voice.channel) await setGameAsChannelName(newPresence.member.voice.channel);
+				if (newPresence.member.voice.channel) await client.mySetGameAsChannelName(newPresence.member.voice.channel);
 			}
 		}
 	});

@@ -7,8 +7,7 @@ const SECRET = require('../_SECRET/config.js');
 const { LostArkKanal } = require('../_SECRET/config.js');
 
 const myAmazonGamesServerStatus = {
-    myClient: null,
-    myDB: null,
+    client: null,
     
     configCronPattern: '*/5 * * * *',
     configLostArkServer: 'Mokoko',
@@ -17,7 +16,7 @@ const myAmazonGamesServerStatus = {
     dbLostArkStatus: 'Init',
     dbNewWorldStatus: 'Init',
 
-    init: function(client, db) {this.myClient = client; this.myDB = db},
+    init: function(client) {this.client = client},
 
     myGetServerStatus: async function(getGame, getServer) {
         let url = '';
@@ -81,7 +80,7 @@ const myAmazonGamesServerStatus = {
             {
                 schedule: this.configCronPattern,
                 action: () => {
-                    this.myClient.channels.fetch(SECRET.LostArkKanal)
+                    this.client.channels.fetch(SECRET.LostArkKanal)
                     .then(c => {
                         this.myGetServerStatus('Lost Ark',this.configLostArkServer)
                         .then(res => {
@@ -93,7 +92,7 @@ const myAmazonGamesServerStatus = {
                         .catch(console.error);
                     })
                     .catch(console.error);
-                    this.myClient.channels.fetch(SECRET.NewWorldKanal)
+                    this.client.channels.fetch(SECRET.NewWorldKanal)
                     .then(c => {
                         this.myGetServerStatus('New World',this.configNewWorldServer)
                         .then(res => {

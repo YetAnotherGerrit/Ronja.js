@@ -13,14 +13,13 @@ function multiChar(a,c) {
 }
 
 const myZocken = {
-    myClient: null,
-    myDB: null,
+    client: null,
 
     configCollectorTimeout: 10,
 
     dbZocken: {},
 
-    init: function(client, db) {this.myClient = client; this.myDB = db},
+    init: function(client) {this.client = client},
 
 	myActionRow: new MessageActionRow()
     .addComponents(
@@ -67,10 +66,10 @@ const myZocken = {
         .setFooter(`P.S.: Falls kein Button genutzt wird, zerstört sich diese Nachricht nach ${this.configCollectorTimeout} Minuten selbst.`);
     
         if (this.dbZocken[interaction.channel.id].length > 0) {
-            let channelCount = await this.myDB.Games.count({where: {channel: interaction.channel.id}});
+            let channelCount = await this.client.myDB.Games.count({where: {channel: interaction.channel.id}});
             if (channelCount === 0 ) {
                 let s = '';
-                let g = await this.myDB.Games.findAll({
+                let g = await this.client.myDB.Games.findAll({
                     raw: true,
                     attributes: [
                         'name',
@@ -78,7 +77,7 @@ const myZocken = {
                     ],
                     include: [
                         {
-                            model: this.myDB.GamesPlayed,
+                            model: this.client.myDB.GamesPlayed,
                             where: {
                                 member: this.dbZocken[interaction.channel.id]
                             }
@@ -87,7 +86,7 @@ const myZocken = {
                     ],
                     order: [
                         [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
-                        [this.myDB.GamesPlayed, 'lastplayed', 'DESC'],
+                        [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],
                     ],
                     group: 'Games.name',
                 });
@@ -160,11 +159,11 @@ const myZocken = {
 				let channelMemberPing = '';
 				
 				await Promise.all(interaction.channel.members.map(async (channelMember) => {
-					let result = await this.myDB.Member.findOne({where: {id: channelMember.id}});
+					let result = await this.client.myDB.Member.findOne({where: {id: channelMember.id}});
 					let statusChannelMember = result ? result.zockenmention : 1;
 
 					let commonGames = 0;
-					let g = await this.myDB.Games.findAll({
+					let g = await this.client.myDB.Games.findAll({
 						raw: true,
 						attributes: [
 							'name',
@@ -172,7 +171,7 @@ const myZocken = {
 						],
 						include: [
 							{
-								model: this.myDB.GamesPlayed,
+								model: this.client.myDB.GamesPlayed,
 								where: {
 									member: [interaction.member.id,channelMember.id],
 									lastplayed: {
@@ -267,7 +266,7 @@ const myZocken = {
         };
 
         if (interaction.customId === 'zockenSelect') {
-            let [mem,memCreated] = await this.myDB.Member.findOrCreate({
+            let [mem,memCreated] = await this.client.myDB.Member.findOrCreate({
                 where: {id: interaction.member.id},
                 defaults: {zockenmention: 1},
             });
@@ -325,7 +324,7 @@ const myZocken = {
 
             collector.on('collect', async i => {
                 if (i.customId === 'zockenSelected') {
-                    await this.myDB.Member.update(
+                    await this.client.myDB.Member.update(
                         { zockenmention: parseInt(i.values[0]) },
                         { where: {id: i.member.id} },
                     );

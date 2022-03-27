@@ -6,10 +6,9 @@ const Moment = require('moment');
 const SECRET = require('../_SECRET/config.js');
 
 const myTop10 = {
-    myClient: null,
-    myDB: null,
+    client: null,
 
-    init: function(client, db) {this.myClient = client; this.myDB = db},
+    init: function(client) {this.client = client},
 
     createTop10Embed: async function (pDays = 14) {
         let maxgames = 10;
@@ -21,7 +20,7 @@ const myTop10 = {
 
         let s = '';
     
-        let g = await this.myDB.Games.findAll({
+        let g = await this.client.myDB.Games.findAll({
             raw: true,
             attributes: [
                 'name',
@@ -29,7 +28,7 @@ const myTop10 = {
             ],
             include: [
                 {
-                    model: this.myDB.GamesPlayed,
+                    model: this.client.myDB.GamesPlayed,
                     where: {
                         lastplayed: {
                             [Op.gte]: Moment().subtract(pDays,'days')
@@ -39,7 +38,7 @@ const myTop10 = {
             ],
             order: [
                 [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
-                [this.myDB.GamesPlayed, 'lastplayed', 'DESC'],		
+                [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],		
             ],
             group: 'Games.name',
         });
@@ -57,7 +56,7 @@ const myTop10 = {
     },
 
     postTop10ToChannel: async function(pChannelID, pDays, pDescription) {
-        this.myClient.channels.fetch(pChannelID)
+        this.client.channels.fetch(pChannelID)
         .then(c => {
             this.createTop10Embed(pDays)
             .then(e => {
