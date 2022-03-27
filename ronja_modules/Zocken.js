@@ -63,7 +63,7 @@ const myZocken = {
         .setColor('BLUE')
         .setTitle('Zeit zum Zocken!')
         .setDescription(`${sPlayer} ${this.dbZocken[interaction.channel.id].length > 1 ? 'sind' : 'ist'} dabei, wer noch?`)
-        .setFooter(`P.S.: Falls kein Button genutzt wird, zerstört sich diese Nachricht nach ${this.configCollectorTimeout} Minuten selbst.`);
+        .setFooter({ text: `Die folgenden Buttons sind ${this.configCollectorTimeout} Minuten verfügbar:` });
     
         if (this.dbZocken[interaction.channel.id].length > 0) {
             let channelCount = await this.client.myDB.Games.count({where: {channel: interaction.channel.id}});
