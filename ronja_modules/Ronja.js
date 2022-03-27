@@ -48,6 +48,12 @@ class Ronja extends Client {
         this.myDB.GamesPlayed.belongsTo(this.myDB.Games);
     };
 
+    myReady() {
+        this.myDB.Games.sync();
+        this.myDB.GamesPlayed.sync();
+        this.myDB.Member.sync();
+    };
+
     mySetGameAsChannelName(ch) {
         if (ch.isVoice() && ch.userLimit === 0) {
             let Spiele = {};

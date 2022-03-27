@@ -23,9 +23,8 @@ const cron = require('node-cron');
 const { Model } = require('sequelize');
 
 client.once('ready', () => {
-	client.myDB.Games.sync();
-	client.myDB.GamesPlayed.sync();
-	client.myDB.Member.sync();
+
+	client.myReady();
 
 	ronja_modules.forEach(m => {
 		if (m.init) m.init(client);
