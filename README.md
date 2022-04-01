@@ -2,13 +2,12 @@
 
 ## Introduction
 
-My approach to a node.js discord.js bot. Also my first node.js-project; so more
+My approach to a discord.js bot. Also my first node.js-project; so more
 of a learning experience, than a serious public project.
 
 A bot for discord servers that provide a multi gaming community for a circle of
-friends. Initial intent was to provide support for a bunch of friends that
-want to play "something together" rather than having a guild discord for a
-specific game.
+friends. Initial intent was to provide support for the situation when you want
+to play with your friends to decide on what game to play.
 
 ### Disclaimer
 
