@@ -1,11 +1,12 @@
 const { Client, Intents, MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
-const Moment = require('moment');
+
+const mySECRET = require('../_SECRET/config.js');
 
 class Ronja extends Client {
     mySeq = {};
     myDB = {};
+    myConfig = {};
 
     constructor(options) {
         super(options);
@@ -46,6 +47,8 @@ class Ronja extends Client {
         
         this.myDB.Games.hasMany(this.myDB.GamesPlayed);
         this.myDB.GamesPlayed.belongsTo(this.myDB.Games);
+
+        this.myConfig = mySECRET;
     };
 
     myReady() {

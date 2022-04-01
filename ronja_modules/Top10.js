@@ -3,8 +3,6 @@ const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
 
-const SECRET = require('../_SECRET/config.js');
-
 const myTop10 = {
     client: null,
 
@@ -84,19 +82,19 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    this.postTop10ToChannel(SECRET.CronKanal, 7, 'Einen guten Start in die neue Woche! Das waren die beliebtesten Spiele der letzten Woche:');
+                    this.postTop10ToChannel(this.client.myConfig.CronKanal, 7, 'Einen guten Start in die neue Woche! Das waren die beliebtesten Spiele der letzten Woche:');
                 },
             },
             {
                 schedule: '0 7 1 * *',
                 action: () => {
-                    this.postTop10ToChannel(SECRET.CronKanal, 30, 'Schauen wir doch mal, was letzten Monat bei der Liga so angesagt war:');
+                    this.postTop10ToChannel(this.client.myConfig.CronKanal, 30, 'Schauen wir doch mal, was letzten Monat bei der Liga so angesagt war:');
                 },
             },
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    this.postTop10ToChannel(SECRET.CronKanal, 365, 'Frohes neues Jahr! Das waren die Highlights des letzten Jahres:');
+                    this.postTop10ToChannel(this.client.myConfig.CronKanal, 365, 'Frohes neues Jahr! Das waren die Highlights des letzten Jahres:');
                 },
             },
         ]

@@ -1,10 +1,6 @@
 const { Ronja } = require('./ronja_modules/Ronja.js');
-const { Client, Intents, MessageEmbed } = require('discord.js');
+const { Intents, MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
-const Moment = require('moment');
-
-const SECRET = require('./_SECRET/config.js');
 
 const ronja_modules = [];
 
@@ -153,7 +149,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 						});
 
 						if (players.count >= cMinimumPlayers) {
-							let autoChannel = await client.channels.fetch(SECRET.AktiveSpieleKategorie)
+							let autoChannel = await client.channels.fetch(client.myConfig.AktiveSpieleKategorie)
 							let newChannel = await autoChannel.createChannel(newActivity.name,{
 								type: 'GUILD_TEXT',
 								permissionOverwrites: [
@@ -182,4 +178,4 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
  
 });
 
-client.login(SECRET.token);
+client.login(client.myConfig.token);

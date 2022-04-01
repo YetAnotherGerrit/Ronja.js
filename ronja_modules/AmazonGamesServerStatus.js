@@ -3,9 +3,6 @@ const { MessageEmbed } = require('discord.js');
 const axios = require('axios');
 const html = require('node-html-parser');
 
-const SECRET = require('../_SECRET/config.js');
-const { LostArkKanal } = require('../_SECRET/config.js');
-
 const myAmazonGamesServerStatus = {
     client: null,
     
@@ -80,7 +77,7 @@ const myAmazonGamesServerStatus = {
             {
                 schedule: this.configCronPattern,
                 action: () => {
-                    this.client.channels.fetch(SECRET.LostArkKanal)
+                    this.client.channels.fetch(this.client.myConfig.LostArkKanal)
                     .then(c => {
                         this.myGetServerStatus('Lost Ark',this.configLostArkServer)
                         .then(res => {
@@ -92,7 +89,7 @@ const myAmazonGamesServerStatus = {
                         .catch(console.error);
                     })
                     .catch(console.error);
-                    this.client.channels.fetch(SECRET.NewWorldKanal)
+                    this.client.channels.fetch(this.client.myConfig.NewWorldKanal)
                     .then(c => {
                         this.myGetServerStatus('New World',this.configNewWorldServer)
                         .then(res => {
