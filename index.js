@@ -9,9 +9,10 @@ const cron = require('node-cron');
 const ronja_modules = [];
 
 ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
-ronja_modules.push(require('./ronja_modules/Zocken.js'));
-ronja_modules.push(require('./ronja_modules/Top10.js'));
+ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
 ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
+ronja_modules.push(require('./ronja_modules/Top10.js'));
+ronja_modules.push(require('./ronja_modules/Zocken.js'));
 
 // Timezone TODO: move to config
 const myTimezone = 'Europe/Berlin';
@@ -53,18 +54,10 @@ client.on('interactionCreate', async interaction => {
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-   if (newState.channel && newState.channel.userLimit === 1) {
-		let newChannel = await newState.channel.parent.createChannel(`Kanal von ${newState.member.displayName}`,{type: 'GUILD_VOICE', bitrate: 128000});
-		newChannel.lockPermissions();
-		await newState.setChannel(newChannel);
-   } 
 
-   if (oldState.channel && oldState.channel != newState.channel && oldState.channel.isVoice() && oldState.channel.userLimit === 0 && oldState.channel.members.size === 0) {
-	   await oldState.channel.delete();
-   }
-
-   if (oldState.channel && oldState.channel != newState.channel && oldState.channel.userLimit === 0 && oldState.channel.members.size > 0) await client.mySetGameAsChannelName(oldState.channel);
-   if (newState.channel && oldState.channel != newState.channel && newState.channel.userLimit === 0 && newState.channel.members.size > 0) await client.mySetGameAsChannelName(newState.channel);
+	ronja_modules.forEach(m => {
+		if (m.hookForVoiceUpdate) m.hookForVoiceUpdate(oldState, newState);
+	});
 });
 
 client.on('presenceUpdate', (oldPresence, newPresence) => {
