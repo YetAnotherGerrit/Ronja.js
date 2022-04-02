@@ -1,22 +1,31 @@
+// Discord-specific dependencies
 const { Ronja } = require('./ronja_modules/Ronja.js');
 const { Intents, MessageEmbed } = require('discord.js');
-const Sequelize = require('sequelize');
 
+// Database dependencies
+const Sequelize = require('sequelize');
+const { Model } = require('sequelize');
+
+// Cron-module
+const cron = require('node-cron');
+
+// Load Ronja's modular system
 const ronja_modules = [];
 
 ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
 ronja_modules.push(require('./ronja_modules/Zocken.js'));
 ronja_modules.push(require('./ronja_modules/Top10.js'));
+ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
 
+// Timezone TODO: move to config
+const myTimezone = 'Europe/Berlin';
 
+// TODO: move to config
 const cMinimumPlayers = 3;
 
-const datetimeoptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
 const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES]});
 
-const cron = require('node-cron');
-const { Model } = require('sequelize');
 
 client.once('ready', () => {
 
@@ -30,7 +39,7 @@ client.once('ready', () => {
 		if (m.hookForCron) {
 			m.hookForCron().forEach(mc => {
 				if (!cron.validate(mc.schedule)) console.error(`ERROR: ${mc.schedule} is not a valid cron pattern.`);
-				cron.schedule(mc.schedule, mc.action, {timezone: 'Europe/Berlin'});
+				cron.schedule(mc.schedule, mc.action, {timezone: myTimezone});
 			});
 		};
 	});
@@ -45,59 +54,6 @@ client.on('interactionCreate', async interaction => {
 	ronja_modules.forEach(m => {
 		if (m.hookForInteraction) m.hookForInteraction(interaction);
 	});
-
-	let e = new MessageEmbed();
-	switch(interaction.commandName) {
-
-		case('Serverprofil'):
-			let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);
-			e.setColor('BLUE')
-			.setTitle(`Profil von ${m.displayName}`)
-			.setThumbnail(m.displayAvatarURL())
-			.setDescription(`${m.displayName} ist seit dem ${m.joinedAt.toLocaleDateString('de-DE', datetimeoptions)} auf diesem Discordserver.`);
-
-			if (interaction.member != m) {
-				let s = '';
-				let g = await client.myDB.Games.findAll({
-					raw: true,
-					attributes: [
-						'name',
-						[Sequelize.fn('COUNT', '*'),'cName']
-					],
-					include: [
-						{
-							model: client.myDB.GamesPlayed,
-							where: {
-								member: [interaction.member.id,m.id]
-							}
-			
-						}
-					],
-					order: [
-						[Sequelize.fn('count', Sequelize.col('*')),'DESC'],
-						['name', 'ASC'],
-					
-					],
-					group: 'Games.name',
-				});
-	
-				g.forEach(gg => {
-					if (gg.cName === 2) {
-						s = s.concat(gg.name,'\n');
-					}
-				});
-
-				if (s != '') {
-				 	e.addField('Gemeinsame Spiele',s);
-				 };
-			};
-
-			await interaction.reply({
-				embeds: [ e	],
-				ephemeral: true,
-			});
-			break;
-	}
 });
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
