@@ -2,10 +2,6 @@
 const { Ronja } = require('./ronja_modules/Ronja.js');
 const { Intents, MessageEmbed } = require('discord.js');
 
-// Database dependencies
-const Sequelize = require('sequelize');
-const { Model } = require('sequelize');
-
 // Cron-module
 const cron = require('node-cron');
 
@@ -77,7 +73,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 	newPresence.activities.forEach(async newActivity => {
 		if (newActivity.type === 'PLAYING') {
 			let justStarted = true;
-			oldPresence.activities.forEach(oldActivity => {
+			oldPresence?.activities.forEach(oldActivity => {
 				if (oldActivity.name === newActivity.name) justStarted = false;
 			});
 
