@@ -10,6 +10,7 @@ const ronja_modules = [];
 
 ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
 ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
+ronja_modules.push(require('./ronja_modules/ReoccurringEvents.js'));
 ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
 ronja_modules.push(require('./ronja_modules/Top10.js'));
 ronja_modules.push(require('./ronja_modules/Zocken.js'));
@@ -21,7 +22,7 @@ const myTimezone = 'Europe/Berlin';
 const cMinimumPlayers = 3;
 
 
-const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES] });
+const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_SCHEDULED_EVENTS] });
 
 
 client.once('ready', () => {
@@ -59,6 +60,14 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 		if (m.hookForVoiceUpdate) m.hookForVoiceUpdate(oldState, newState);
 	});
 });
+
+client.on('guildScheduledEventUpdate', async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
+
+	ronja_modules.forEach(m => {
+		if (m.hookForEventUpdate) m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent);
+	});
+});
+
 
 client.on('presenceUpdate', (oldPresence, newPresence) => {
 	if (newPresence.member.user.bot) return;
