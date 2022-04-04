@@ -31,6 +31,7 @@ Currently only with German strings. Highly personalized for my server.
 - /top10 command to show the most popular games on the server.
 - Serverprofil command to show common games for a specific user.
 - Serverstatus from AmazonGames (Lost Ark, New World).
+- Reoccurring Events (weekly, bi-weekly, n-weekly so far).
 
 ### Known issues
 
