@@ -26,7 +26,6 @@ const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_V
 
 
 client.once('ready', () => {
-
 	client.myReady();
 
 	ronja_modules.forEach(m => {
