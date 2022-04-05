@@ -1,5 +1,4 @@
-
-const myTop10 = {
+const myDynamicVoiceChannels = {
     client: null,
 
     init: function(client) {this.client = client},
@@ -48,4 +47,4 @@ const myTop10 = {
 
 };
 
-module.exports = myTop10;
+module.exports = myDynamicVoiceChannels;
