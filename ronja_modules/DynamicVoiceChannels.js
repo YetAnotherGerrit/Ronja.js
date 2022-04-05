@@ -44,6 +44,9 @@ const myDynamicVoiceChannels = {
        if (newState.channel && oldState.channel != newState.channel && newState.channel.userLimit === 0 && newState.channel.members.size > 0) await this.setGameAsChannelName(newState.channel);
     },
 
+    hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, gameCreated)  {
+        if (await newPresence.member.voice.channel) this.setGameAsChannelName(await newPresence.member.voice.channel);
+    },
 
 };
 
