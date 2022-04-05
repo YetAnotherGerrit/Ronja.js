@@ -47,6 +47,13 @@ const myExample = {
         console.debug('A scheduled guild event has started!')
     },
 
+    hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
+        // https://discord.js.org/#/docs/discord.js/stable/class/ClientPresence
+        // https://discord.js.org/#/docs/discord.js/stable/class/Activity
+        // game = client.myDB.Games-entry
+        console.debug('Someone started playing a game!')
+    },
+
 
 };
 

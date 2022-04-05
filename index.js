@@ -46,7 +46,7 @@ client.once('ready', () => {
 
 client.on('interactionCreate', async interaction => {
 	if (!interaction.isCommand() && !interaction.isContextMenu() && !interaction.isButton()) return;
-	console.log(`${interaction.member.displayName} nutzt den Befehl ${interaction.commandName}.`)
+	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName}.`)
 
 	ronja_modules.forEach(m => {
 		if (m.hookForInteraction) m.hookForInteraction(interaction);
@@ -86,7 +86,7 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 			});
 
 			if (justStarted) {
-				console.log(`${newPresence.member.displayName} spielt ${newActivity.name}.`);
+				console.log(`${newPresence.member.displayName} starts playing ${newActivity.name}.`);
 				let [game,gameCreated] = await client.myDB.Games.findOrCreate({
 					where: {name: newActivity.name},
 				});
@@ -95,43 +95,14 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 					where: {GameId: game.id, member: newPresence.member.id},
 					defaults: {lastplayed: newActivity.createdTimestamp},
 				});
+
 				if (gamePlayedCreated == false) {
 					await gamePlayed.update({lastplayed: newActivity.createdTimestamp});
 				};
-				
-				if (gameCreated == false) {
-					if (game.channel) {
-						let gameChannel = await client.channels.fetch(game.channel);
-						gameChannel.permissionOverwrites.create(newPresence.member.user,{'VIEW_CHANNEL': true});
-					} else {
-						let players  = await client.myDB.GamesPlayed.findAndCountAll({
-							where: {GameId: game.id},
-						});
 
-						if (players.count >= cMinimumPlayers) {
-							let autoChannel = await client.channels.fetch(client.myConfig.AktiveSpieleKategorie)
-							let newChannel = await autoChannel.createChannel(newActivity.name,{
-								type: 'GUILD_TEXT',
-								permissionOverwrites: [
-									{
-										id: newPresence.guild.roles.everyone,
-										deny: ['VIEW_CHANNEL'],
-									},
-									{
-										id: newPresence.guild.me,
-										allow: ['VIEW_CHANNEL'],
-									},
-								],										
-							});
-							players.rows.forEach(async player => {
-								let player_member = await newPresence.guild.members.fetch(player.member);
-								newChannel.permissionOverwrites.create(player_member,{'VIEW_CHANNEL': true});
-							});
-							game.update({channel: newChannel.id});
-						};
-					};
-				};
-				if (newPresence.member.voice.channel) await client.mySetGameAsChannelName(newPresence.member.voice.channel);
+				ronja_modules.forEach(m => {
+					if (m.hookForStartedPlaying) m.hookForStartedPlaying(oldPresence, newPresence, newActivity, game);
+				});					
 			}
 		}
 	});
