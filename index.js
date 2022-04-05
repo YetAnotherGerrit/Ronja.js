@@ -66,6 +66,13 @@ client.on('guildScheduledEventUpdate', async (oldGuildScheduledEvent, newGuildSc
 	ronja_modules.forEach(m => {
 		if (m.hookForEventUpdate) m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent);
 	});
+
+	if (newGuildScheduledEvent.status == 'ACTIVE' && oldGuildScheduledEvent.status != 'ACTIVE') {
+		ronja_modules.forEach(m => {
+			if (m.hookForEventStart) m.hookForEventStart(oldGuildScheduledEvent, newGuildScheduledEvent);
+		});
+	};
+
 });
 
 
