@@ -9,6 +9,7 @@ const cron = require('node-cron');
 const ronja_modules = [];
 
 ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
+ronja_modules.push(require('./ronja_modules/DynamicTextChannels.js'));
 ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
 ronja_modules.push(require('./ronja_modules/ReoccurringEvents.js'));
 ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
@@ -17,10 +18,6 @@ ronja_modules.push(require('./ronja_modules/Zocken.js'));
 
 // Timezone TODO: move to config
 const myTimezone = 'Europe/Berlin';
-
-// TODO: move to config
-const cMinimumPlayers = 3;
-
 
 const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_SCHEDULED_EVENTS] });
 

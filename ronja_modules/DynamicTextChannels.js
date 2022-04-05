@@ -13,15 +13,15 @@ const myExample = {
 
     hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
         if (game.channel) {
-            let gameChannel = await client.channels.fetch(game.channel);
+            let gameChannel = await this.client.channels.fetch(game.channel);
             gameChannel.permissionOverwrites.create(newPresence.member.user,{'VIEW_CHANNEL': true});
         } else {
-            let players  = await client.myDB.GamesPlayed.findAndCountAll({
+            let players  = await this.client.myDB.GamesPlayed.findAndCountAll({
                 where: {GameId: game.id},
             });
 
             if (players.count >= cMinimumPlayers) {
-                let autoChannel = await client.channels.fetch(client.myConfig.AktiveSpieleKategorie)
+                let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie)
                 let newChannel = await autoChannel.createChannel(newActivity.name,{
                     type: 'GUILD_TEXT',
                     permissionOverwrites: [
