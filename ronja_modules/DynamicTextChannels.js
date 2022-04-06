@@ -52,7 +52,8 @@ const myExample = {
     },
 
     countPlayersForGame: async function(game, pDays) {
-        return await this.getPlayersForGame(game,pDays).count;
+        let returnValue = await this.getPlayersForGame(game,pDays)
+        return returnValue.count;
     },
 
     assignAllPlayersToChannel: async function(channel, game, pDays) {
@@ -77,7 +78,7 @@ const myExample = {
 
     checkIfArchive: async function(channel, game) {
         if (channel.parentId == this.client.myConfig.ArchivSpieleKategorie) {
-            if (this.countPlayersForGame(game,cDaysTarget) > 1) {
+            if (await this.countPlayersForGame(game,cDaysToArchive) > 1) {
                 let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
                 channel.setParent(autoChannel);
                 channel.permissionOverwrites.set(this.defaultOverrides(channel.guild));
@@ -147,7 +148,7 @@ const myExample = {
             channel.setParent(autoChannel);
             channel.permissionOverwrites.set(this.defaultOverrides(channel.guild));
             console.log(`Moved #${channel.name} to archive.`);
-        }
+        };
     },
 
     hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
