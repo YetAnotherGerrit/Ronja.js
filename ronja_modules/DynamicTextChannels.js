@@ -6,7 +6,20 @@ const Moment = require('moment');
 // TODO: move to config
 const cMinimumPlayersForCreation = 2;
 const cDaysRelevantForCreation = 30;
+const cDaysToArchive = 30;
 const cDaysTarget = 100;
+
+function uniq(a) {
+    var prims = {"boolean":{}, "number":{}, "string":{}}, objs = [];
+
+    return a.filter(function(item) {
+        var type = typeof item;
+        if(type in prims)
+            return prims[type].hasOwnProperty(item) ? false : (prims[type][item] = true);
+        else
+            return objs.indexOf(item) >= 0 ? false : objs.push(item);
+    });
+};
 
 const myExample = {
     client: null,
@@ -73,9 +86,10 @@ const myExample = {
         };
     },
 
-    checkActiveTextChannel: async function(channel) {
+    checkActiveTextChannelWithPlayerRemovel: async function(channel) {
         let activePlayerCount = 0;
 
+        // Remove players from channel that have not played for a while
         await Promise.all(channel.members.map(async (m) => {
             if (!m.user.bot) {
                 let games  = await this.client.myDB.GamesPlayed.findAndCountAll({
@@ -99,8 +113,8 @@ const myExample = {
                 } else {
                     channel.permissionOverwrites.delete(m);
                     console.log(`Removed ${m.displayName} from #${channel.name}.`);
-                }
-            }
+                };
+            };
         }));
 
         if (activePlayerCount < 2) {
@@ -108,6 +122,32 @@ const myExample = {
             channel.setParent(autoChannel);
             console.log(`Moved #${channel.name} to archive.`);
         };
+    },
+
+    checkActiveTextChannel: async function(channel) {
+        let membersPlayed  = await this.client.myDB.GamesPlayed.findAndCountAll({
+            where: {
+                lastplayed: { [Op.gte]: Moment().subtract(cDaysToArchive,'days') }
+            },
+            include: [
+                {
+                    model: this.client.myDB.Games,
+                    where: {
+                        channel: channel.id
+                    },
+                    required: true,
+                }
+            ],
+        });
+
+        // TODO: Filter for unique member-ids. Reason: when there is more games attached to a channel, the number could be higher than expected.
+
+        if (membersPlayed < 2) {
+            let autoChannel = await this.client.channels.fetch(this.client.myConfig.ArchivSpieleKategorie);
+            channel.setParent(autoChannel);
+            channel.permissionOverwrites.set(this.defaultOverrides(channel.guild));
+            console.log(`Moved #${channel.name} to archive.`);
+        }
     },
 
     hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
