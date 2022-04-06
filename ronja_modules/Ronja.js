@@ -56,28 +56,6 @@ class Ronja extends Client {
         this.myDB.GamesPlayed.sync();
         this.myDB.Member.sync();
     };
-
-    mySetGameAsChannelName(ch) {
-        if (ch.isVoice() && ch.userLimit === 0) {
-            let Spiele = {};
-            let MaxSpiel = null;
-            let CountSpiel = 0;
-    
-            ch.members.forEach(m => {
-                if (m.presence) m.presence.activities.forEach(a => {
-                    if (a.type === 'PLAYING') Spiele[a.name] = (Spiele[a.name] || 0) + 1;
-                });
-            });
-            Object.entries(Spiele).forEach(e => {
-                let [key, value] = e;
-                if (value > CountSpiel) {
-                    CountSpiel = value;
-                    MaxSpiel = key;
-                }
-            })
-            ch.setName(MaxSpiel || 'Ei Gude!');
-        }
-    };
     
 };
 

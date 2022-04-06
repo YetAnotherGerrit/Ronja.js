@@ -247,20 +247,8 @@ const myZocken = {
                         embeds: [ ],
                         components: [ ],
                     });
-/*
-                    if (c.size === 0) {
-						interaction.deleteReply();
-					} else {
-						let e = await this.createZockenEmbed(interaction);
-						e.setFooter('');
 
-						await interaction.editReply({
-							embeds: [ e	],
-							components: [ ],
-						});
-					}
-*/
-					delete this.dbZocken[interaction.channel.id];
+                    delete this.dbZocken[interaction.channel.id];
 				});
 			};
         };
