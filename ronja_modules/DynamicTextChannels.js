@@ -98,6 +98,7 @@ const myExample = {
                     activePlayerCount = activePlayerCount + 1;
                 } else {
                     channel.permissionOverwrites.delete(m);
+                    console.log(`Removed ${m.displayName} from #${channel.name}.`);
                 }
             }
         }));
@@ -105,6 +106,7 @@ const myExample = {
         if (activePlayerCount < 2) {
             let autoChannel = await this.client.channels.fetch(this.client.myConfig.ArchivSpieleKategorie);
             channel.setParent(autoChannel);
+            console.log(`Moved #${channel.name} to archive.`);
         };
     },
 
