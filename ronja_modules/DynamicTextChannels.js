@@ -170,7 +170,7 @@ const myExample = {
     hookForCron: function() {
         return [
             {
-                schedule: '*/1 * * * *', // https://crontab.guru/
+                schedule: '0 5 * * *', // https://crontab.guru/
                 action: async () => {
                     let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
                     await Promise.all(autoChannel.children.map(async (gameChannel) => {
