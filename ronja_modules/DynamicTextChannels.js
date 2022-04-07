@@ -4,7 +4,7 @@ const Op = Sequelize.Op;
 const Moment = require('moment');
 
 // TODO: move to config
-const cMinimumPlayersForCreation = 2;
+const cMinimumPlayersForCreation = 3;
 const cDaysRelevantForCreation = 30;
 const cDaysToArchive = 30;
 const cDaysTarget = 100;
@@ -56,6 +56,25 @@ const myExample = {
         return returnValue.count;
     },
 
+    hasGameBeenPlayedForChannel: async function(channel, pDays) {
+        let gamesPlayed  = await this.client.myDB.GamesPlayed.findAndCountAll({
+            where: {
+                lastplayed: { [Op.gte]: Moment().subtract(pDays,'days') }
+            },
+            include: [
+                {
+                    model: this.client.myDB.Games,
+                    where: {
+                        channel: channel.id
+                    },
+                    required: true,
+                }
+            ],
+        });
+
+        return (gamesPlayed.count > 0);
+    },
+
     assignAllPlayersToChannel: async function(channel, game, pDays) {
         let players = await this.getPlayersForGame(game, pDays);
 
@@ -69,24 +88,25 @@ const myExample = {
         let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie)
         let newChannel = await autoChannel.createChannel(newActivity.name,{
             type: 'GUILD_TEXT',
-            permissionOverwrites: this.defaultOverrides(newPresence.guild),
+            permissionOverwrites: await this.defaultOverrides(newPresence.guild),
         });
 
         this.assignAllPlayersToChannel(newChannel,game,cDaysTarget)
         game.update({channel: newChannel.id});
     },
 
-    checkIfArchive: async function(channel, game) {
+    checkIfArchiveAndMaybeMoveToActive: async function(channel, game) {
         if (channel.parentId == this.client.myConfig.ArchivSpieleKategorie) {
-            if (await this.countPlayersForGame(game,cDaysToArchive) > 1) {
+            if (await this.countPlayersForGame(game,cDaysTarget) > 1) {
                 let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
                 channel.setParent(autoChannel);
-                channel.permissionOverwrites.set(this.defaultOverrides(channel.guild));
+                channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
                 this.assignAllPlayersToChannel(channel,game,cDaysTarget);
             };
         };
     },
 
+    /*
     checkActiveTextChannelWithPlayerRemovel: async function(channel) {
         let activePlayerCount = 0;
 
@@ -124,29 +144,13 @@ const myExample = {
             console.log(`Moved #${channel.name} to archive.`);
         };
     },
+    */
 
     checkActiveTextChannel: async function(channel) {
-        let membersPlayed  = await this.client.myDB.GamesPlayed.findAndCountAll({
-            where: {
-                lastplayed: { [Op.gte]: Moment().subtract(cDaysToArchive,'days') }
-            },
-            include: [
-                {
-                    model: this.client.myDB.Games,
-                    where: {
-                        channel: channel.id
-                    },
-                    required: true,
-                }
-            ],
-        });
-
-        // TODO: Filter for unique member-ids. Reason: when there is more games attached to a channel, the number could be higher than expected.
-
-        if (membersPlayed < 2) {
+        if (!await this.hasGameBeenPlayedForChannel(channel, cDaysToArchive)) {
             let autoChannel = await this.client.channels.fetch(this.client.myConfig.ArchivSpieleKategorie);
             channel.setParent(autoChannel);
-            channel.permissionOverwrites.set(this.defaultOverrides(channel.guild));
+            channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
             console.log(`Moved #${channel.name} to archive.`);
         };
     },
@@ -155,7 +159,7 @@ const myExample = {
         if (game.channel) {
             let gameChannel = await this.client.channels.fetch(game.channel);
             gameChannel.permissionOverwrites.create(newPresence.member.user,{'VIEW_CHANNEL': true});
-            this.checkIfArchive(gameChannel, game);
+            this.checkIfArchiveAndMaybeMoveToActive(gameChannel, game);
         } else {
             if (this.countPlayersForGame(game, cDaysRelevantForCreation) >= cMinimumPlayersForCreation) {
                 this.createTextChannel(game);
@@ -166,7 +170,7 @@ const myExample = {
     hookForCron: function() {
         return [
             {
-                schedule: '0 5 * * *', // https://crontab.guru/
+                schedule: '*/1 * * * *', // https://crontab.guru/
                 action: async () => {
                     let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
                     await Promise.all(autoChannel.children.map(async (gameChannel) => {
