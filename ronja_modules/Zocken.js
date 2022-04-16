@@ -323,6 +323,15 @@ const myZocken = {
                     });
                 };
             });
+
+            collector.on('end', async c => {
+                if (c.size == 0) {
+                    await interaction.editReply({
+                        embeds: [ new MessageEmbed().setColor('BLUE').setTitle('Abgelaufen!').setDescription('Keine Änderungen an den Benachrichtigungseinstellungen vorgenommen.') ],
+                        components: [ ],
+                    });
+                };
+            });
         };
     },
 };
