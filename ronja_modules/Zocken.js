@@ -323,10 +323,6 @@ const myZocken = {
                     });
                 };
             });
-
-            collector.on('end', async c => {
-                interaction.deleteReply();
-            });
         };
     },
 };
