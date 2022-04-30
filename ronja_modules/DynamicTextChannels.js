@@ -9,7 +9,7 @@ const cDaysRelevantForCreation = 30;
 const cDaysToArchive = 30;
 const cDaysTarget = 100;
 
-const myExample = {
+const myDynamicTextChannels = {
     client: null,
 
     init: function(client) {this.client = client},
@@ -129,4 +129,4 @@ const myExample = {
 
 };
 
-module.exports = myExample;
+module.exports = myDynamicTextChannels;
