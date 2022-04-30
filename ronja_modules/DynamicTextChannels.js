@@ -99,7 +99,7 @@ const myDynamicTextChannels = {
                 if (await this.countPlayersForGame(game,cDaysTarget) > 1) {
                     let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
                     gameChannel.setParent(autoChannel);
-                    gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
+                    await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
                     this.assignAllPlayersToChannel(gameChannel,game,cDaysTarget);
                 };
             } else {
