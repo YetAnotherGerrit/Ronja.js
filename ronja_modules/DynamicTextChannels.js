@@ -72,14 +72,14 @@ const myDynamicTextChannels = {
         });
     },
 
-    createTextChannel: async function(game) {
-        let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie)
+    createTextChannel: async function(game, newActivity, newPresence) {
+        let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
         let newChannel = await autoChannel.createChannel(newActivity.name,{
             type: 'GUILD_TEXT',
             permissionOverwrites: await this.defaultOverrides(newPresence.guild),
         });
 
-        this.assignAllPlayersToChannel(newChannel,game,cDaysTarget)
+        this.assignAllPlayersToChannel(newChannel,game,cDaysTarget);
         game.update({channel: newChannel.id});
     },
 
@@ -107,7 +107,7 @@ const myDynamicTextChannels = {
             };
         } else {
             if (this.countPlayersForGame(game, cDaysRelevantForCreation) >= cMinimumPlayersForCreation) {
-                this.createTextChannel(game);
+                this.createTextChannel(game, newActivity, newPresence);
             };
         };
     },
