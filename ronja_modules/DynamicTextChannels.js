@@ -106,7 +106,7 @@ const myDynamicTextChannels = {
                 gameChannel.permissionOverwrites.create(newPresence.member.user,{'VIEW_CHANNEL': true});
             };
         } else {
-            if (this.countPlayersForGame(game, cDaysRelevantForCreation) >= cMinimumPlayersForCreation) {
+            if (await this.countPlayersForGame(game, cDaysRelevantForCreation) >= cMinimumPlayersForCreation) {
                 this.createTextChannel(game, newActivity, newPresence);
             };
         };
