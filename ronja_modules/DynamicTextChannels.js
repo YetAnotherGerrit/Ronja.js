@@ -68,7 +68,7 @@ const myDynamicTextChannels = {
 
         players.rows.forEach(async player => {
             let player_member = await channel.guild.members.fetch(player.member);
-            newChannel.permissionOverwrites.create(player_member,{'VIEW_CHANNEL': true});
+            channel.permissionOverwrites.create(player_member,{'VIEW_CHANNEL': true});
         });
     },
 
