@@ -64,6 +64,7 @@ const myDynamicTextChannels = {
     },
 
     assignAllPlayersToChannel: async function(channel, game, pDays) {
+    // TODO: Remove game from function, as a channel can be for more than one game. Related to issue #9.
         let players = await this.getPlayersForGame(game, pDays);
 
         players.rows.forEach(async player => {
@@ -73,6 +74,7 @@ const myDynamicTextChannels = {
     },
 
     createTextChannel: async function(game, newActivity, newPresence) {
+    // TODO: Are all parameters necessary?
         let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
         let newChannel = await autoChannel.createChannel(newActivity.name,{
             type: 'GUILD_TEXT',
@@ -81,6 +83,8 @@ const myDynamicTextChannels = {
 
         this.assignAllPlayersToChannel(newChannel,game,cDaysTarget);
         game.update({channel: newChannel.id});
+
+        console.log(`Created new text channel #${newChannel.name}.`);
     },
 
     checkActiveTextChannel: async function(channel) {
@@ -88,6 +92,7 @@ const myDynamicTextChannels = {
             let autoChannel = await this.client.channels.fetch(this.client.myConfig.ArchivSpieleKategorie);
             channel.setParent(autoChannel);
             channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
+        
             console.log(`Moved #${channel.name} to archive.`);
         };
     },
