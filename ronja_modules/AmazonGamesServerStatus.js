@@ -6,10 +6,6 @@ const html = require('node-html-parser');
 const myAmazonGamesServerStatus = {
     client: null,
     
-    configCronPattern: '*/5 * * * *',
-    configLostArkServer: 'Mokoko',
-    configNewWorldServer: 'Tartarus',
-
     dbLostArkStatus: 'Init',
     dbNewWorldStatus: 'Init',
 
@@ -75,14 +71,14 @@ const myAmazonGamesServerStatus = {
     hookForCron: function() {
         return [
             {
-                schedule: this.configCronPattern,
+                schedule: this.client.myConfig.AgsCronPattern,
                 action: () => {
                     this.client.channels.fetch(this.client.myConfig.LostArkKanal)
                     .then(c => {
-                        this.myGetServerStatus('Lost Ark',this.configLostArkServer)
+                        this.myGetServerStatus('Lost Ark',this.client.myConfig.LostArkServer)
                         .then(res => {
                             if (this.dbLostArkStatus != res[1]) {
-                                if (this.dbLostArkStatus != 'Init') c.send({embeds: [new MessageEmbed().setTitle(`Serverstatus ${this.configLostArkServer}`).setColor(res[0]).setDescription(`Der Serverstatus von ${this.configLostArkServer} hat sich geändert: ${res[1]}.`)]});
+                                if (this.dbLostArkStatus != 'Init') c.send({embeds: [new MessageEmbed().setTitle(`Serverstatus ${this.client.myConfig.LostArkServer}`).setColor(res[0]).setDescription(`Der Serverstatus von ${this.client.myConfig.LostArkServer} hat sich geändert: ${res[1]}.`)]});
                                 this.dbLostArkStatus = res[1];
                             };
                         })
@@ -91,10 +87,10 @@ const myAmazonGamesServerStatus = {
                     .catch(console.error);
                     this.client.channels.fetch(this.client.myConfig.NewWorldKanal)
                     .then(c => {
-                        this.myGetServerStatus('New World',this.configNewWorldServer)
+                        this.myGetServerStatus('New World',this.client.myConfig.NewWorldServer)
                         .then(res => {
                             if (this.dbNewWorldStatus != res[1]) {
-                                if (this.dbNewWorldStatus != 'Init') c.send({embeds: [new MessageEmbed().setTitle(`Serverstatus ${this.configNewWorldServer}`).setColor(res[0]).setDescription(`Der Serverstatus von ${this.configNewWorldServer} hat sich geändert: ${res[1]}.`)]});
+                                if (this.dbNewWorldStatus != 'Init') c.send({embeds: [new MessageEmbed().setTitle(`Serverstatus ${this.client.myConfig.NewWorldServer}`).setColor(res[0]).setDescription(`Der Serverstatus von ${this.client.myConfig.NewWorldServer} hat sich geändert: ${res[1]}.`)]});
                                 this.dbNewWorldStatus = res[1];
                             };
                         })

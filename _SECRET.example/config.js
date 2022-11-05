@@ -14,6 +14,11 @@ const mySecret = {
     // Update-Status von AGS-Spielen:
     LostArkKanal: 'xxxxxxxxxxxxxxxxxx', // TODO: Aus Datenbank holen
     NewWorldKanal: 'xxxxxxxxxxxxxxxxxx', // TODO: Aus Datenbank holen
+
+    AgsCronPattern: '*/5 * * * *',
+    LostArkServer: 'xxx',
+    NewWorldServer: 'xxx',
+
 }
 
 module.exports = mySecret;
