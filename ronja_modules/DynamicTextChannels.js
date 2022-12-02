@@ -74,7 +74,7 @@ const myDynamicTextChannels = {
     },
 
     createTextChannel: async function(game, newActivity, newPresence) {
-    // TODO: Are all parameters necessary?
+        // TODO: Are all parameters necessary?
         let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
         let newChannel = await autoChannel.createChannel(newActivity.name,{
             type: 'GUILD_TEXT',
@@ -98,6 +98,7 @@ const myDynamicTextChannels = {
     },
 
     hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
+        // TODO: Check if member has access right for parent-category AktiveSpieleKategorie
         if (game.channel) {
             let gameChannel = await this.client.channels.fetch(game.channel);
             if (gameChannel.parentId == this.client.myConfig.ArchivSpieleKategorie) {
