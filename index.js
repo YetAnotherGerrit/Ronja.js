@@ -8,9 +8,10 @@ const cron = require('node-cron');
 // Load Ronja's modular system
 const ronja_modules = [];
 
-ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
+// ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
 ronja_modules.push(require('./ronja_modules/DynamicTextChannels.js'));
 ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
+ronja_modules.push(require('./ronja_modules/NWDB.js'));
 ronja_modules.push(require('./ronja_modules/ReoccurringEvents.js'));
 ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
 ronja_modules.push(require('./ronja_modules/Top10.js'));
