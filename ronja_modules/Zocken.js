@@ -1,4 +1,4 @@
-const { MessageEmbed, MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
@@ -21,20 +21,20 @@ const myZocken = {
 
     init: function(client) {this.client = client},
 
-	myActionRow: new MessageActionRow()
+	myActionRow: new ActionRowBuilder()
     .addComponents(
-        new MessageButton()
+        new ButtonBuilder()
             .setCustomId('zockenYes')
             .setLabel('Ich bin dabei!')
-            .setStyle('SUCCESS'),
-        new MessageButton()
+            .setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
             .setCustomId('zockenNo')
             .setLabel('Ne, doch nicht...')
-            .setStyle('DANGER'),
-        new MessageButton()
+            .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
             .setCustomId('zockenSelect')
             .setLabel('Warum steht da mein Name?')
-            .setStyle('SECONDARY'),
+            .setStyle(ButtonStyle.Secondary),
     ),
 
     createZockenEmbed: async function(interaction) {
@@ -59,7 +59,7 @@ const myZocken = {
         };
     
     
-        let e = new MessageEmbed()
+        let e = new EmbedBuilder()
         .setColor('BLUE')
         .setTitle('Zeit zum Zocken!')
         .setDescription(`${sPlayer} ${this.dbZocken[interaction.channel.id].length > 1 ? 'sind' : 'ist'} dabei, wer noch?`)
@@ -101,7 +101,7 @@ const myZocken = {
                 // s = Object.keys(g).map(key => g[key].name).join(', ');
         
                 if (s != '') {
-                    e.addField('Die folgende Spiele würde ich vorschlagen:',s);
+                    e.addFields([{ name: 'Die folgende Spiele würde ich vorschlagen:', value: s }]);
                 };
             };
         };
@@ -145,7 +145,7 @@ const myZocken = {
 			if (this.dbZocken[interaction.channel.id]) {
 
 				await interaction.reply({
-					embeds: [ new MessageEmbed() 
+					embeds: [ new EmbedBuilder() 
                         .setColor('RED')
                         .setTitle('Fehler!')
                         .setDescription('Es gibt bereits eine aktive Zocken!-Anfrage in diesem Kanal. Bitte warte bis die vorherige Anfrage abgelaufen ist, bevor du eine neue erstellst.')
@@ -277,13 +277,13 @@ const myZocken = {
             }
 
             await interaction.reply({
-                embeds: [  new MessageEmbed()
+                embeds: [  new EmbedBuilder()
                     .setColor('BLUE')
                     .setTitle('Warum steht da mein Name?')
                     .setDescription(`Es gibt mindestens ein Spiel, das ihr Beide in den letzten 100 Tagen gespielt habt. Falls du solche Benachrichtigungen nicht erhalten möchtest, kannst du das es hier ändern.\n\nDeine aktuelle Einstellung lautet:\n> ${statusZockenSelectText}`)
                 ],
-                components: [ new MessageActionRow()
-                    .addComponents( new MessageSelectMenu()
+                components: [ new ActionRowBuilder()
+                    .addComponents( new StringSelectMenuBuilder()
                         .setCustomId('zockenSelected')
                         .setPlaceholder('Benachrichtigungen...')
                         .addOptions([
@@ -318,7 +318,7 @@ const myZocken = {
                     );
             
                     await i.update({
-                        embeds: [ new MessageEmbed().setColor('GREEN').setTitle('Erfolgreich!').setDescription('Deine Benachrichtigungseinstellungen wurden gespeichert.') ],
+                        embeds: [ new EmbedBuilder().setColor('GREEN').setTitle('Erfolgreich!').setDescription('Deine Benachrichtigungseinstellungen wurden gespeichert.') ],
                         components: [ ],
                     });
                 };
@@ -327,7 +327,7 @@ const myZocken = {
             collector.on('end', async c => {
                 if (c.size == 0) {
                     await interaction.editReply({
-                        embeds: [ new MessageEmbed().setColor('BLUE').setTitle('Abgelaufen!').setDescription('Keine Änderungen an den Benachrichtigungseinstellungen vorgenommen.') ],
+                        embeds: [ new EmbedBuilder().setColor('BLUE').setTitle('Abgelaufen!').setDescription('Keine Änderungen an den Benachrichtigungseinstellungen vorgenommen.') ],
                         components: [ ],
                     });
                 };

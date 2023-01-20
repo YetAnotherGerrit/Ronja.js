@@ -1,6 +1,6 @@
 // Discord-specific dependencies
 const { Ronja } = require('./ronja_modules/Ronja.js');
-const { Intents, MessageEmbed } = require('discord.js');
+const { GatewayIntentBits, Events } = require('discord.js');
 
 // Cron-module
 const cron = require('node-cron');
@@ -20,7 +20,7 @@ ronja_modules.push(require('./ronja_modules/Zocken.js'));
 // Timezone TODO: move to config
 const myTimezone = 'Europe/Berlin';
 
-const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_SCHEDULED_EVENTS] });
+const client = new Ronja({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildScheduledEvents] });
 
 
 client.once('ready', () => {
@@ -42,7 +42,7 @@ client.once('ready', () => {
 	console.log('Ready!');
 });
 
-client.on('interactionCreate', async interaction => {
+client.on(Events.InteractionCreate, async interaction => {
 	if (!interaction.isCommand() && !interaction.isContextMenu() && !interaction.isButton()) return;
 	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName}.`)
 
@@ -51,14 +51,14 @@ client.on('interactionCreate', async interaction => {
 	});
 });
 
-client.on('voiceStateUpdate', async (oldState, newState) => {
+client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 
 	ronja_modules.forEach(m => {
 		if (m.hookForVoiceUpdate) m.hookForVoiceUpdate(oldState, newState);
 	});
 });
 
-client.on('guildScheduledEventUpdate', async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
+client.on(Events.GuildScheduledEventUpdate, async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
 
 	ronja_modules.forEach(m => {
 		if (m.hookForEventUpdate) m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent);
@@ -73,7 +73,7 @@ client.on('guildScheduledEventUpdate', async (oldGuildScheduledEvent, newGuildSc
 });
 
 
-client.on('presenceUpdate', (oldPresence, newPresence) => {
+client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
 	if (newPresence.member.user.bot) return;
 
 	newPresence.activities.forEach(async newActivity => {

@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 // Database dependencies
 const Sequelize = require('sequelize');
@@ -17,7 +17,7 @@ const myServerprofil = {
         if (interaction.commandName == 'Serverprofil') {
             let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);
 
-            let e = new MessageEmbed()
+            let e = new EmbedBuilder()
             .setColor('BLUE')
             .setTitle(`Profil von ${m.displayName}`)
             .setThumbnail(m.displayAvatarURL())
@@ -55,7 +55,7 @@ const myServerprofil = {
                 });
     
                 if (s != '') {
-                     e.addField('Gemeinsame Spiele',s);
+                     e.addFields([{name: 'Gemeinsame Spiele', value: s}]);
                  };
             };
     

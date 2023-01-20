@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
@@ -11,7 +11,7 @@ const myTop10 = {
     createTop10Embed: async function (pDays = 14) {
         let maxgames = 10;
 
-        let e = new MessageEmbed()
+        let e = new EmbedBuilder()
         .setColor('BLUE')
         .setTitle(`Die beliebtesten Spiele der Liga!`)
         .setDescription(`Die meistgespielten Spiele der letzten ${pDays} Tage:`);
@@ -48,7 +48,7 @@ const myTop10 = {
             }
         });
 
-        e.addField('Top10 nach Spieleranzahl:',s);
+        e.addFields([{ name: 'Top10 nach Spieleranzahl:', value: s }]);
     
         return e;
     },

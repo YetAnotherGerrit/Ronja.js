@@ -1,3 +1,5 @@
+const { ChannelType } = require("discord.js");
+
 const myDynamicVoiceChannels = {
     client: null,
 
@@ -5,7 +7,7 @@ const myDynamicVoiceChannels = {
 
     setGameAsChannelName: async function(ch) {
         // Only set for Voice-Channels without UserLimit
-        if (ch.isVoice() && ch.userLimit === 0) {
+        if (ch.type === ChannelType.GuildVoice && ch.userLimit === 0) {
             let Spiele = {};
             let MaxSpiel = null;
             let CountSpiel = 0;
@@ -31,12 +33,12 @@ const myDynamicVoiceChannels = {
 
     hookForVoiceUpdate: async function(oldState, newState) {
         if (newState.channel && newState.channel.userLimit === 1) {
-            let newChannel = await newState.channel.parent.createChannel(`Kanal von ${newState.member.displayName}`,{type: 'GUILD_VOICE', bitrate: 128000});
+            let newChannel = await newState.channel.parent.children.create({name: `Kanal von ${newState.member.displayName}`, type: ChannelType.GuildVoice, bitrate: 128000});
             newChannel.lockPermissions();
             await newState.setChannel(newChannel);
        } 
     
-       if (oldState.channel && oldState.channel != newState.channel && oldState.channel.isVoice() && oldState.channel.userLimit === 0 && oldState.channel.members.size === 0) {
+       if (oldState.channel && oldState.channel != newState.channel && oldState.channel.type === ChannelType.GuildVoice && oldState.channel.userLimit === 0 && oldState.channel.members.size === 0) {
            await oldState.channel.delete();
        }
     

@@ -1,4 +1,3 @@
-const { MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');

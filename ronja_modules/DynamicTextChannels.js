@@ -1,7 +1,7 @@
-const { MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
+const { ChannelType } = require('discord.js');
 
 // TODO: move to config
 const cMinimumPlayersForCreation = 3;
@@ -76,8 +76,9 @@ const myDynamicTextChannels = {
     createTextChannel: async function(game, newActivity, newPresence) {
         // TODO: Are all parameters necessary?
         let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
-        let newChannel = await autoChannel.createChannel(newActivity.name,{
-            type: 'GUILD_TEXT',
+        let newChannel = await autoChannel.children.create({
+            name: newActivity.name,
+            type: ChannelType.GuildText,
             permissionOverwrites: await this.defaultOverrides(newPresence.guild),
         });
 

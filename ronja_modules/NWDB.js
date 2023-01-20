@@ -1,7 +1,4 @@
-const { MessageEmbed } = require('discord.js');
-
 const axios = require('axios');
-const html = require('node-html-parser');
 
 const myNWDB = {
     client: null,

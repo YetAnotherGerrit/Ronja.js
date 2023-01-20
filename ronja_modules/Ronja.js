@@ -1,4 +1,4 @@
-const { Client, Intents, MessageEmbed } = require('discord.js');
+const { Client } = require('discord.js');
 const Sequelize = require('sequelize');
 
 const mySECRET = require('../_SECRET/config.js');
