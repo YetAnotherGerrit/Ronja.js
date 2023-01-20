@@ -318,7 +318,7 @@ const myZocken = {
                     );
             
                     await i.update({
-                        embeds: [ new EmbedBuilder().setColor('GREEN').setTitle('Erfolgreich!').setDescription('Deine Benachrichtigungseinstellungen wurden gespeichert.') ],
+                        embeds: [ new EmbedBuilder().setColor(Colors.Green).setTitle('Erfolgreich!').setDescription('Deine Benachrichtigungseinstellungen wurden gespeichert.') ],
                         components: [ ],
                     });
                 };
@@ -327,7 +327,7 @@ const myZocken = {
             collector.on('end', async c => {
                 if (c.size == 0) {
                     await interaction.editReply({
-                        embeds: [ new EmbedBuilder().setColor('BLUE').setTitle('Abgelaufen!').setDescription('Keine Änderungen an den Benachrichtigungseinstellungen vorgenommen.') ],
+                        embeds: [ new EmbedBuilder().setColor(Colors.Blue).setTitle('Abgelaufen!').setDescription('Keine Änderungen an den Benachrichtigungseinstellungen vorgenommen.') ],
                         components: [ ],
                     });
                 };
