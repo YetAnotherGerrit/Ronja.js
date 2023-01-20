@@ -43,7 +43,7 @@ client.once('ready', () => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isCommand() && !interaction.isContextMenu() && !interaction.isButton()) return;
+	if (!interaction.isCommand() && !interaction.isContextMenuCommand() && !interaction.isButton()) return;
 	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName}.`)
 
 	ronja_modules.forEach(m => {
