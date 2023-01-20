@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
@@ -60,7 +60,7 @@ const myZocken = {
     
     
         let e = new EmbedBuilder()
-        .setColor('BLUE')
+        .setColor(Colors.Blue)
         .setTitle('Zeit zum Zocken!')
         .setDescription(`${sPlayer} ${this.dbZocken[interaction.channel.id].length > 1 ? 'sind' : 'ist'} dabei, wer noch?`)
         .setFooter({ text: `Die folgenden Buttons sind ${this.configCollectorTimeout} Minuten verfügbar:` });
@@ -146,7 +146,7 @@ const myZocken = {
 
 				await interaction.reply({
 					embeds: [ new EmbedBuilder() 
-                        .setColor('RED')
+                        .setColor(Colors.Red)
                         .setTitle('Fehler!')
                         .setDescription('Es gibt bereits eine aktive Zocken!-Anfrage in diesem Kanal. Bitte warte bis die vorherige Anfrage abgelaufen ist, bevor du eine neue erstellst.')
                     ],
@@ -278,7 +278,7 @@ const myZocken = {
 
             await interaction.reply({
                 embeds: [  new EmbedBuilder()
-                    .setColor('BLUE')
+                    .setColor(Colors.Blue)
                     .setTitle('Warum steht da mein Name?')
                     .setDescription(`Es gibt mindestens ein Spiel, das ihr Beide in den letzten 100 Tagen gespielt habt. Falls du solche Benachrichtigungen nicht erhalten möchtest, kannst du das es hier ändern.\n\nDeine aktuelle Einstellung lautet:\n> ${statusZockenSelectText}`)
                 ],

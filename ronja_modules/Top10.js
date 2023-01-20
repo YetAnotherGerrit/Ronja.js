@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, Colors } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
@@ -12,7 +12,7 @@ const myTop10 = {
         let maxgames = 10;
 
         let e = new EmbedBuilder()
-        .setColor('BLUE')
+        .setColor(Colors.Blue)
         .setTitle(`Die beliebtesten Spiele der Liga!`)
         .setDescription(`Die meistgespielten Spiele der letzten ${pDays} Tage:`);
 

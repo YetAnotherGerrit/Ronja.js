@@ -18,11 +18,11 @@ const myDynamicTextChannels = {
         return [
             {
                 id: await guild.roles.everyone,
-                deny: ['VIEW_CHANNEL'],
+                deny: [Permissions.VIEW_CHANNEL],
             },
             {
                 id: await guild.me,
-                allow: ['VIEW_CHANNEL'],
+                allow: [Permissions.VIEW_CHANNEL],
             },
         ];
     },
@@ -69,7 +69,7 @@ const myDynamicTextChannels = {
 
         players.rows.forEach(async player => {
             let player_member = await channel.guild.members.fetch(player.member);
-            channel.permissionOverwrites.create(player_member,{'VIEW_CHANNEL': true});
+            channel.permissionOverwrites.create(player_member,{'ViewChannel': true});
         });
     },
 
@@ -110,7 +110,7 @@ const myDynamicTextChannels = {
                     this.assignAllPlayersToChannel(gameChannel,game,cDaysTarget);
                 };
             } else {
-                gameChannel.permissionOverwrites.create(newPresence.member.user,{'VIEW_CHANNEL': true});
+                gameChannel.permissionOverwrites.create(newPresence.member.user,{'ViewChannel': true});
             };
         } else {
             if (await this.countPlayersForGame(game, cDaysRelevantForCreation) >= cMinimumPlayersForCreation) {

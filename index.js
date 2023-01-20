@@ -1,6 +1,6 @@
 // Discord-specific dependencies
 const { Ronja } = require('./ronja_modules/Ronja.js');
-const { GatewayIntentBits, Events } = require('discord.js');
+const { GatewayIntentBits, Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
 
 // Cron-module
 const cron = require('node-cron');
@@ -64,7 +64,7 @@ client.on(Events.GuildScheduledEventUpdate, async (oldGuildScheduledEvent, newGu
 		if (m.hookForEventUpdate) m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent);
 	});
 
-	if (newGuildScheduledEvent.status == 'ACTIVE' && oldGuildScheduledEvent.status != 'ACTIVE') {
+	if (newGuildScheduledEvent.status == GuildScheduledEventStatus.Active && oldGuildScheduledEvent.status != GuildScheduledEventStatus.Active) {
 		ronja_modules.forEach(m => {
 			if (m.hookForEventStart) m.hookForEventStart(oldGuildScheduledEvent, newGuildScheduledEvent);
 		});
@@ -77,7 +77,7 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
 	if (newPresence.member.user.bot) return;
 
 	newPresence.activities.forEach(async newActivity => {
-		if (newActivity.type === 'PLAYING') {
+		if (newActivity.type === ActivityType.Playing) {
 			let justStarted = true;
 			oldPresence?.activities.forEach(oldActivity => {
 				if (oldActivity.name === newActivity.name) justStarted = false;

@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, Colors } = require('discord.js');
 
 // Database dependencies
 const Sequelize = require('sequelize');
@@ -18,7 +18,7 @@ const myServerprofil = {
             let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);
 
             let e = new EmbedBuilder()
-            .setColor('BLUE')
+            .setColor(Colors.Blue)
             .setTitle(`Profil von ${m.displayName}`)
             .setThumbnail(m.displayAvatarURL())
             .setDescription(`${m.displayName} ist seit dem ${m.joinedAt.toLocaleDateString(toLocaleDateStringCountry, toLocaleDateStringFormat)} auf diesem Discordserver.`);

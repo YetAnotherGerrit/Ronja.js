@@ -1,4 +1,4 @@
-const { ChannelType } = require("discord.js");
+const { ChannelType, ActivityType } = require("discord.js");
 
 const myDynamicVoiceChannels = {
     client: null,
@@ -14,7 +14,7 @@ const myDynamicVoiceChannels = {
     
             await Promise.all(ch.members.map(async (m) => {
                 if (m.presence) m.presence.activities.forEach(a => {
-                    if (a.type === 'PLAYING') Spiele[a.name] = (Spiele[a.name] || 0) + 1;
+                    if (a.type === ActivityType.Playing) Spiele[a.name] = (Spiele[a.name] || 0) + 1;
                 });
             }));
 
