@@ -107,4 +107,7 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
  
 });
 
+client.on("debug", console.log);
+client.on("warn", console.log);
+
 client.login(client.myConfig.token);
