@@ -111,6 +111,10 @@ client.on(Events.ShardError, error => {
 	console.log('A websocket connection encountered an error:', error);
 });
 
+client.on('unhandledRejection', error => {
+	console.log('Unhandled promise rejection:', error);
+});
+
 // client.on('debug', console.debug);
 // client.on('warn', console.warn);
 // client.on('error', console.error);
