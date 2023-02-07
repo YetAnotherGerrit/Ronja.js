@@ -107,20 +107,8 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
  
 });
 
-client.on(Events.ShardError, error => {
-	console.log('A websocket connection encountered an error:', error);
-});
-
-client.on('unhandledRejection', error => {
-	console.log('Unhandled promise rejection:', error);
-});
-
 // client.on('debug', console.debug);
-// client.on('warn', console.warn);
-// client.on('error', console.error);
-
-client.on("debug", console.log);
-client.on("warn", console.log);
-client.on("error", console.log);
+client.on('warn', console.warn);
+client.on('error', console.error);
 
 client.login(client.myConfig.token);
