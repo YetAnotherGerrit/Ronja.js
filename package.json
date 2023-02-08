@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "axios": "^1.2.3",
-    "discord.js": "^14.7.1",
+    "discord.js": "^14.7.2-dev.1675858883-405f940.0",
     "moment": "^2.29.4",
     "node-cron": "^3.0.2",
     "sequelize": "^6.28.0",
