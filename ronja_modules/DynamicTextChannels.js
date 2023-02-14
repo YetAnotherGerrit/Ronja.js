@@ -73,6 +73,14 @@ const myDynamicTextChannels = {
         });
     },
 
+    sortTextChannelCategoryByName: async function(categoryChannel) {
+        let channels = categoryChannel.children.cache.filter(c => c.type === ChannelType.GuildText);
+        channels.sort((a, b) => a.name.localeCompare(b.name));
+        for (let i = 0; i < channels.size; i++) {
+            await channels.at(i).setPosition(i);
+        }        
+    },
+
     createTextChannel: async function(game, newActivity, newPresence) {
         // TODO: Are all parameters necessary?
         let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
@@ -86,6 +94,7 @@ const myDynamicTextChannels = {
         game.update({channel: newChannel.id});
 
         console.log(`Created new text channel #${newChannel.name}.`);
+        this.sortTextChannelCategoryByName(autoChannel);
     },
 
     checkActiveTextChannel: async function(channel) {
@@ -95,6 +104,7 @@ const myDynamicTextChannels = {
             channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
         
             console.log(`Moved #${channel.name} to archive.`);
+            this.sortTextChannelCategoryByName(autoChannel);
         };
     },
 
