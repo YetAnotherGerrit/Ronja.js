@@ -24,7 +24,7 @@ Currently only with German strings. Highly personalized for my server.
 - Dynamicly created text channels
   - Channels for specific games are created when a specific amount of
     users on the server are owning the same game.
-  - TODO: Automatic archiving of channels that are no longer in use
+  - Automatic archiving of channels that are no longer in use
     or from games that are not played anymore.
 - /zocken command to find people to game with by assisting on what common
   games they have.
@@ -39,6 +39,29 @@ Terrible error handling.
 
 ## Installation
 
-Not available yet.
+1. Start by installing Node.js:
+   https://nodejs.org/
+
+2. Setup a bot account:
+   https://discordjs.guide/preparations/setting-up-a-bot-application.html
+
+3. Invite the bot to your server:
+   https://discordjs.guide/preparations/adding-your-bot-to-servers.html
+   Currently Ronja.js has no multi-server-support.
+
+4. Get the latest repo of Ronja.js:
+   https://docs.github.com/de/repositories/creating-and-managing-repositories/cloning-a-repository
+
+5. Install the required packages. Run the following command in the base directory of Ronja.js:
+   `npm install`
+
+6. Rename the "_SECRET.example" directory to "_SECRET".
+
+7. Edit the "_SECRET/config.json"-file.
+   - clientId, guildId and token are from step 2 and step 3.
+   - https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-
+
+8. Run the command:
+   `node index.js`
  
 <!-- https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax -->
