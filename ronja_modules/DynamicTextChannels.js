@@ -84,7 +84,6 @@ const myDynamicTextChannels = {
     createTextChannel: async function(game, newActivity, newPresence) {
         // TODO: Are all parameters necessary?
         let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
-        console.log(await this.defaultOverrides(newPresence.guild));
         let newChannel = await autoChannel.children.create({
             name: newActivity.name,
             type: ChannelType.GuildText,

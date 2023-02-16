@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, REST, Routes } = require('discord.js');
 
-const { clientId, guildId, token } = require('./_SECRET/config.json');
+const { clientId, guildId, token } = require('./_SECRET/config.js');
 
 const commands = [
 	new SlashCommandBuilder().setName('top10').setDescription('Zeigt die Top10-Spiele der Liga nach Anzahl von Mitspielern.')

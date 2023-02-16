@@ -45,6 +45,8 @@ Terrible error handling.
 2. Setup a bot account:
    https://discordjs.guide/preparations/setting-up-a-bot-application.html
 
+3. Enable "Presence Intent" (in Dev-Portal)
+
 3. Invite the bot to your server:
    https://discordjs.guide/preparations/adding-your-bot-to-servers.html
    Currently Ronja.js has no multi-server-support.
