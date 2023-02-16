@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
-const { ChannelType } = require('discord.js');
+const { ChannelType, PermissionFlagsBits } = require('discord.js');
 
 // TODO: move to config
 const cMinimumPlayersForCreation = 3;
@@ -18,11 +18,11 @@ const myDynamicTextChannels = {
         return [
             {
                 id: await guild.roles.everyone,
-                deny: [Permissions.VIEW_CHANNEL],
+                deny: [PermissionFlagsBits.ViewChannel],
             },
             {
                 id: await guild.me,
-                allow: [Permissions.VIEW_CHANNEL],
+                allow: [PermissionFlagsBits.ViewChannel],
             },
         ];
     },
