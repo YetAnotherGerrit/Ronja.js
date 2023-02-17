@@ -19,6 +19,7 @@ const mySecret = {
     LostArkServer: 'xxx',
     NewWorldServer: 'xxx',
 
+    VoiceBitrate: '96000', // Bitrate for voice channels created by ronja. Max without Nitro is 96000.
 }
 
 module.exports = mySecret;
