@@ -3,16 +3,23 @@ const Op = Sequelize.Op;
 const Moment = require('moment');
 const { ChannelType, PermissionFlagsBits } = require('discord.js');
 
-// TODO: move to config
-const cMinimumPlayersForCreation = 3;
-const cDaysRelevantForCreation = 30;
-const cDaysToArchive = 30;
-const cDaysTarget = 100;
 
 const myDynamicTextChannels = {
+    minimumPlayersForCreation: null,
+    daysRelevantForCreation: null,
+    daysToArchive: null,
+    daysTarget: null,
+
     client: null,
 
-    init: function(client) {this.client = client},
+    init: function(client) {
+        this.client = client;
+
+        this.minimumPlayersForCreation =  this.client.myConfig.TextChannelsMinimumPlayersForCreation || 3;
+        this.daysRelevantForCreation = this.client.myConfig.TextChannelsDaysRelevantForCreation || 30;
+        this.daysToArchive = this.client.myConfig.TextChannelsDaysToArchive || 30;
+        this.daysTarget = this.client.myConfig.TextChannelsDaysTarget || 100;
+    },
 
     defaultOverrides: async function(guild) {
         return [
@@ -84,14 +91,13 @@ const myDynamicTextChannels = {
     createTextChannel: async function(game, newActivity, newPresence) {
         // TODO: Are all parameters necessary?
         let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
-        console.log(await this.defaultOverrides(newPresence.guild));
         let newChannel = await autoChannel.children.create({
             name: newActivity.name,
             type: ChannelType.GuildText,
             permissionOverwrites: await this.defaultOverrides(newPresence.guild),
         });
 
-        this.assignAllPlayersToChannel(newChannel,game,cDaysTarget);
+        this.assignAllPlayersToChannel(newChannel, game, this.daysTarget);
         game.update({channel: newChannel.id});
 
         console.log(`Created new text channel #${newChannel.name}.`);
@@ -99,14 +105,14 @@ const myDynamicTextChannels = {
     },
 
     checkActiveTextChannel: async function(channel) {
-        if (!await this.hasGameBeenPlayedForChannel(channel, cDaysToArchive)) {
+        if (!await this.hasGameBeenPlayedForChannel(channel, this.daysToArchive)) {
             let autoChannel = await this.client.channels.fetch(this.client.myConfig.ArchivSpieleKategorie);
             channel.setParent(autoChannel);
             channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
         
             console.log(`Moved #${channel.name} to archive.`);
             this.sortTextChannelCategoryByName(autoChannel);
-        };
+        }
     },
 
     hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
@@ -114,20 +120,21 @@ const myDynamicTextChannels = {
         if (game.channel) {
             let gameChannel = await this.client.channels.fetch(game.channel);
             if (gameChannel.parentId == this.client.myConfig.ArchivSpieleKategorie) {
-                if (await this.countPlayersForGame(game,cDaysTarget) > 1) {
+                if (await this.countPlayersForGame(game, this.daysTarget) > 1) {
                     let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
                     gameChannel.setParent(autoChannel);
                     await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
-                    this.assignAllPlayersToChannel(gameChannel,game,cDaysTarget);
-                };
+                    this.assignAllPlayersToChannel(gameChannel, game, this.daysTarget);
+                }
             } else {
                 gameChannel.permissionOverwrites.create(newPresence.member.user,{'ViewChannel': true});
-            };
+            }
         } else {
-            if (await this.countPlayersForGame(game, cDaysRelevantForCreation) >= cMinimumPlayersForCreation) {
+            if (await this.countPlayersForGame(game, this.daysRelevantForCreation)
+                    >= this.minimumPlayersForCreation) {
                 this.createTextChannel(game, newActivity, newPresence);
-            };
-        };
+            }
+        }
     },
 
     hookForCron: function() {

@@ -57,7 +57,7 @@ Terrible error handling.
 
 6. Rename the "_SECRET.example" directory to "_SECRET".
 
-7. Edit the "_SECRET/config.json"-file.
+7. Edit the "_SECRET/config.js"-file.
    - clientId, guildId and token are from step 2 and step 3.
    - https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-
 
