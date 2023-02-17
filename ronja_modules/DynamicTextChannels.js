@@ -5,14 +5,21 @@ const { ChannelType, PermissionFlagsBits } = require('discord.js');
 
 
 const myDynamicTextChannels = {
-    minimumPlayersForCreation: this.client.myConfig.TextChannelsMinimumPlayersForCreation || 3,
-    daysRelevantForCreation: this.client.myConfig.TextChannelsDaysRelevantForCreation || 30,
-    daysToArchive: this.client.myConfig.TextChannelsDaysToArchive || 30,
-    daysTarget: this.client.myConfig.TextChannelsDaysTarget || 100,
+    minimumPlayersForCreation: null,
+    daysRelevantForCreation: null,
+    daysToArchive: null,
+    daysTarget: null,
 
     client: null,
 
-    init: function(client) {this.client = client},
+    init: function(client) {
+        this.client = client;
+
+        this.minimumPlayersForCreation =  this.client.myConfig.TextChannelsMinimumPlayersForCreation || 3;
+        this.daysRelevantForCreation = this.client.myConfig.TextChannelsDaysRelevantForCreation || 30;
+        this.daysToArchive = this.client.myConfig.TextChannelsDaysToArchive || 30;
+        this.daysTarget = this.client.myConfig.TextChannelsDaysTarget || 100;
+    },
 
     defaultOverrides: async function(guild) {
         return [
