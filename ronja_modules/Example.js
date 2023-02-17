@@ -3,9 +3,9 @@ const Op = Sequelize.Op;
 const Moment = require('moment');
 
 const myExample = {
-    client: null,
-
-    init: function(client) {this.client = client},
+    defaultConfig: {
+        someSetting: 'someValue',
+    },
 
     hookForCron: function() {
         return [

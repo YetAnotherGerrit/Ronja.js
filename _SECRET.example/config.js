@@ -3,29 +3,16 @@ const mySecret = {
 	guildId: "xxxxxxxxxxxxxxxxxx",
 	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
-    // Kategorie, in der Spiele-Kanäle erstellt werden:
-    AktiveSpieleKategorie: 'xxxxxxxxxxxxxxxxxx',
-    // Kategorie, in die Spiele-Kanäle verschoben werden, wenn die Spiele nicht mehr gespielt werden:
-    ArchivSpieleKategorie: 'xxxxxxxxxxxxxxxxxx',
+    // DynamicTextChannels
+    dtcGamesCategory: '',           // ID of channel category, where the game specific text channels should be created in
+    dtcArchivedGamesCategory: '',   // ID of channel category, where archived text channels should be moved to
 
-    // Kanal in dem Top der Woche/Monats/Jahr gepostet werden:
-    CronKanal: 'xxxxxxxxxxxxxxxxxx',
+    // NWDB - New World Database
+    newWorldChannel: '',            // ID of New World channel
+    newWorldServer: '',             // Name of New World server
 
-    // Update-Status von AGS-Spielen:
-    LostArkKanal: 'xxxxxxxxxxxxxxxxxx', // TODO: Aus Datenbank holen
-    NewWorldKanal: 'xxxxxxxxxxxxxxxxxx', // TODO: Aus Datenbank holen
-
-    AgsCronPattern: '*/5 * * * *',
-    LostArkServer: 'xxx',
-    NewWorldServer: 'xxx',
-
-    VoiceBitrate: '96000', // Bitrate for voice channels created by ronja. Max without Nitro is 96000.
-
-    TextChannelsMinimumPlayersForCreation: 3,
-    TextChannelsDaysRelevantForCreation: 30,
-    TextChannelsDaysToArchive: 30,
-    TextChannelsDaysTarget: 100
-
+    // Top10
+    top10CronKanal: '',             // ID of channel where to regularly post Top10 rankings
 }
 
 module.exports = mySecret;

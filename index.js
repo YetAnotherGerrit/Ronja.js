@@ -1,5 +1,6 @@
 // Discord-specific dependencies
-const { Ronja } = require('./ronja_modules/Ronja.js');
+const { Ronja } = require('./core/Ronja.js');
+const deepmerge = require('deepmerge')
 const { GatewayIntentBits, Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
 
 // Cron-module
@@ -8,7 +9,6 @@ const cron = require('node-cron');
 // Load Ronja's modular system
 const ronja_modules = [];
 
-// ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
 ronja_modules.push(require('./ronja_modules/DynamicTextChannels.js'));
 ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
 ronja_modules.push(require('./ronja_modules/NWDB.js'));
@@ -27,7 +27,12 @@ client.once('ready', () => {
 	client.myReady();
 
 	ronja_modules.forEach(m => {
-		if (m.init) m.init(client);
+		if (m.defaultConfig) {
+			m.cfg = deepmerge(m.defaultConfig, client.myConfig);
+		} else {
+			m.cfg = client.myConfig;
+		}
+		m.client = client;
 	});
 
 	ronja_modules.forEach(m => {

@@ -4,9 +4,9 @@ const Op = Sequelize.Op;
 const Moment = require('moment');
 
 const myTop10 = {
-    client: null,
-
-    init: function(client) {this.client = client},
+    defaultConfig: {
+        top10CronKanal: null,       // please set in _SECRET/config.js
+    },
 
     createTop10Embed: async function (pDays = 14) {
         let maxgames = 10;
@@ -53,17 +53,21 @@ const myTop10 = {
         return e;
     },
 
-    postTop10ToChannel: async function(pChannelID, pDays, pDescription) {
-        this.client.channels.fetch(pChannelID)
-        .then(c => {
-            this.createTop10Embed(pDays)
-            .then(e => {
-                e.setDescription(pDescription)
-                c.send({embeds: [e]});
+    postTop10ToChannel: async function(pDays, pDescription) {
+        if (this.cfg.top10CronKanal) {
+            this.client.channels.fetch(this.cfg.top10CronKanal)
+            .then(c => {
+                this.createTop10Embed(pDays)
+                .then(e => {
+                    e.setDescription(pDescription)
+                    c.send({embeds: [e]});
+                })
+                .catch(console.error);
             })
             .catch(console.error);
-        })
-        .catch(console.error);
+        } else {
+            console.warn('WARNING: no top10CronKanal set in config file!')
+        }
     },
 
     hookForInteraction: async function(interaction)  {
@@ -82,19 +86,19 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    this.postTop10ToChannel(this.client.myConfig.CronKanal, 7, 'Einen guten Start in die neue Woche! Das waren die beliebtesten Spiele der letzten Woche:');
+                    this.postTop10ToChannel(7, 'Einen guten Start in die neue Woche! Das waren die beliebtesten Spiele der letzten Woche:');
                 },
             },
             {
                 schedule: '0 7 1 * *',
                 action: () => {
-                    this.postTop10ToChannel(this.client.myConfig.CronKanal, 30, 'Schauen wir doch mal, was letzten Monat bei der Liga so angesagt war:');
+                    this.postTop10ToChannel(30, 'Schauen wir doch mal, was letzten Monat bei der Liga so angesagt war:');
                 },
             },
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    this.postTop10ToChannel(this.client.myConfig.CronKanal, 365, 'Frohes neues Jahr! Das waren die Highlights des letzten Jahres:');
+                    this.postTop10ToChannel(365, 'Frohes neues Jahr! Das waren die Highlights des letzten Jahres:');
                 },
             },
         ]

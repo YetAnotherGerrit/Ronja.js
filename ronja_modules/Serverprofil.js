@@ -9,10 +9,6 @@ const toLocaleDateStringCountry = 'de-DE';
 const toLocaleDateStringFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
 const myServerprofil = {
-    client: null,
-
-    init: function(client) {this.client = client},
-
     hookForInteraction: async function(interaction)  {
         if (interaction.commandName == 'Serverprofil') {
             let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);

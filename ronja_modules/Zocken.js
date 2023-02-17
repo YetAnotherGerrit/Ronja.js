@@ -13,13 +13,11 @@ function multiChar(a,c) {
 }
 
 const myZocken = {
-    client: null,
-
-    configCollectorTimeout: 10,
+    defaultConfig: {
+        collectorTimeout: 10, // Maximum of Discord-API is 15 minutes.
+    },
 
     dbZocken: {},
-
-    init: function(client) {this.client = client},
 
 	myActionRow: new ActionRowBuilder()
     .addComponents(
@@ -63,7 +61,7 @@ const myZocken = {
         .setColor(Colors.Blue)
         .setTitle('Zeit zum Zocken!')
         .setDescription(`${sPlayer} ${this.dbZocken[interaction.channel.id].length > 1 ? 'sind' : 'ist'} dabei, wer noch?`)
-        .setFooter({ text: `Die folgenden Buttons sind ${this.configCollectorTimeout} Minuten verfügbar:` });
+        .setFooter({ text: `Die folgenden Buttons sind ${this.cfg.collectorTimeout} Minuten verfügbar:` });
     
         if (this.dbZocken[interaction.channel.id].length > 0) {
             let channelCount = await this.client.myDB.Games.count({where: {channel: interaction.channel.id}});
@@ -212,7 +210,7 @@ const myZocken = {
 					components: [ this.myActionRow ],
 				});
 
-				let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.configCollectorTimeout});
+				let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.cfg.collectorTimeout});
 
 				collector.on('collect', async i => {
 					if (i.customId === 'zockenYes') {
@@ -308,7 +306,7 @@ const myZocken = {
                 ephemeral: true,
             });
 
-            let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.configCollectorTimeout});
+            let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.cfg.collectorTimeout});
 
             collector.on('collect', async i => {
                 if (i.customId === 'zockenSelected') {

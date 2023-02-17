@@ -1,9 +1,12 @@
 const axios = require('axios');
 
 const myNWDB = {
-    client: null,
-    
-    init: function(client) {this.client = client},
+    defaultConfig: {
+        newWorldChannel: null,
+        newWorldServer: null,
+
+        newWorldCronPattern: '*/5 * * * *',
+    },
 
     myGetServerStatus: async function(getServer) {
         let url = 'https://nwdb.info/server-status';
@@ -40,19 +43,23 @@ const myNWDB = {
     hookForCron: function() {
         return [
             {
-                schedule: this.client.myConfig.AgsCronPattern,
+                schedule: this.cfg.newWorldCronPattern,
                 action: () => {
-                    this.client.channels.fetch(this.client.myConfig.NewWorldKanal)
-                    .then(c => {
-                        this.myGetServerStatus(this.client.myConfig.NewWorldServer)
-                        .then(res => {
-                            if (res != '') {
-                                c.setTopic(res);
-                            }
+                    if (this.cfg.newWorldChannel && this.cfg.newWorldServer) {
+                        this.client.channels.fetch(this.cfg.newWorldChannel)
+                        .then(c => {
+                            this.myGetServerStatus(this.cfg.newWorldServer)
+                            .then(res => {
+                                if (res != '') {
+                                    c.setTopic(res);
+                                }
+                            })
+                            .catch(console.error);
                         })
                         .catch(console.error);
-                    })
-                    .catch(console.error);
+                    } else {
+                        console.warn('WARNING: newWorldServer and newWorldServer need to be set in config file!')
+                    }
                 },
             }
         ];

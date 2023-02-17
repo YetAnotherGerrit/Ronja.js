@@ -1,9 +1,9 @@
 const { ChannelType, ActivityType } = require("discord.js");
 
 const myDynamicVoiceChannels = {
-    client: null,
-
-    init: function(client) {this.client = client},
+    defaultConfig: {
+        voiceChannelBitrate: 96000,
+    },
 
     setGameAsChannelName: async function(ch) {
         // Only set for Voice-Channels without UserLimit
@@ -36,7 +36,7 @@ const myDynamicVoiceChannels = {
                 await newState.channel.parent.children.create({
                     name: `Kanal von ${newState.member.displayName}`,
                     type: ChannelType.GuildVoice,
-                    bitrate: this.client.myConfig.VoiceBitrate
+                    bitrate: this.cfg.voiceChannelBitrate,
                 });
             newChannel.lockPermissions();
             await newState.setChannel(newChannel);
