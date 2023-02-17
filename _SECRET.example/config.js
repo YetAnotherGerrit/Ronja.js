@@ -1,6 +1,8 @@
 const mySecret = {
-	clientId: "xxxxxxxxxxxxxxxxxx",
-	guildId: "xxxxxxxxxxxxxxxxxx",
+	clientId: "xxxxxxxxxxxxxxxxxx",  // https://discord.com/developers/applications
+	guildId: "xxxxxxxxxxxxxxxxxx",   // Create application in dev portal to get ((clientId)), it's called "Application ID" there
+                                     // Create bot within this application to get ((token))
+                                     // Get ((guildId)) by right clicking on your server and choosing "Copy ID" (need to have dev mode enabled)
 	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
     // DynamicTextChannels
