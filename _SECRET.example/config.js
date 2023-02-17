@@ -19,6 +19,13 @@ const mySecret = {
     LostArkServer: 'xxx',
     NewWorldServer: 'xxx',
 
+    VoiceBitrate: '96000', // Bitrate for voice channels created by ronja. Max without Nitro is 96000.
+
+    TextChannelsMinimumPlayersForCreation: 3,
+    TextChannelsDaysRelevantForCreation: 30,
+    TextChannelsDaysToArchive: 30,
+    TextChannelsDaysTarget: 100
+
 }
 
 module.exports = mySecret;

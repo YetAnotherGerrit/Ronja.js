@@ -32,7 +32,12 @@ const myDynamicVoiceChannels = {
 
     hookForVoiceUpdate: async function(oldState, newState) {
         if (newState.channel && newState.channel.userLimit === 1) {
-            let newChannel = await newState.channel.parent.children.create({name: `Kanal von ${newState.member.displayName}`, type: ChannelType.GuildVoice, bitrate: 128000});
+            let newChannel =
+                await newState.channel.parent.children.create({
+                    name: `Kanal von ${newState.member.displayName}`,
+                    type: ChannelType.GuildVoice,
+                    bitrate: this.client.myConfig.VoiceBitrate
+                });
             newChannel.lockPermissions();
             await newState.setChannel(newChannel);
        } 
