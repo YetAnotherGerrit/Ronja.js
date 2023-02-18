@@ -6,6 +6,9 @@ const Moment = require('moment');
 const myTop10 = {
     defaultConfig: {
         top10CronKanal: null,       // please set in _SECRET/config.js
+        top10Weekly: true,
+        top10Monthly: true,
+        top10Yearly: true,
     },
 
     createTop10Embed: async function (pDays = 14) {
@@ -86,19 +89,19 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    this.postTop10ToChannel(7, 'Einen guten Start in die neue Woche! Das waren die beliebtesten Spiele der letzten Woche:');
+                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, 'Einen guten Start in die neue Woche! Das waren die beliebtesten Spiele der letzten Woche:');
                 },
             },
             {
                 schedule: '0 7 1 * *',
                 action: () => {
-                    this.postTop10ToChannel(30, 'Schauen wir doch mal, was letzten Monat bei der Liga so angesagt war:');
+                    if (this.cfg.top10Monthly) this.postTop10ToChannel(30, 'Schauen wir doch mal, was letzten Monat bei der Liga so angesagt war:');
                 },
             },
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    this.postTop10ToChannel(365, 'Frohes neues Jahr! Das waren die Highlights des letzten Jahres:');
+                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, 'Frohes neues Jahr! Das waren die Highlights des letzten Jahres:');
                 },
             },
         ]
