@@ -15,7 +15,7 @@ case $1 in
     postupdate)
         npm install
         node ./deploy-commands.js
-        echo "If there was no error message you are ready to run $0 start"
+        echo "If there was no error message you are ready to run: $0 start"
         echo ""
         ;;
 
