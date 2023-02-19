@@ -8,6 +8,7 @@ const mySecret = {
     // DynamicTextChannels
     dtcGamesCategory: '',           // ID of channel category, where the game specific text channels should be created in
     dtcArchivedGamesCategory: '',   // ID of channel category, where archived text channels should be moved to
+    dtcNotificationChannel: '',     // ID of channel, where to post notification about channel creation (optional)
 
     // NWDB - New World Database
     newWorldChannel: '',            // ID of New World channel

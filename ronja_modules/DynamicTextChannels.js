@@ -1,13 +1,14 @@
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
-const { ChannelType, PermissionFlagsBits } = require('discord.js');
+const { ChannelType, PermissionFlagsBits, EmbedBuilder, Colors } = require('discord.js');
 
 
 const myDynamicTextChannels = {
     defaultConfig: {
         dtcGamesCategory: null,             // please set in _SECRET/config.js
         dtcArchivedGamesCategory: null,     // please set in _SECRET/config.js
+        dtcNotificationChannel: null,
 
         minimumPlayersForCreation: 3,
         daysRelevantForCreation: 30,
@@ -96,6 +97,21 @@ const myDynamicTextChannels = {
     
             console.log(`Created new text channel #${newChannel.name}.`);
             this.sortTextChannelCategoryByName(autoChannel);
+
+            // Optional feature: notify some general channel about text channel creation
+            if (this.cfg.dtcNotificationChannel) {
+                this.client.channels.fetch(this.cfg.dtcNotificationChannel)
+                .then(notificationChannel => {
+                    let e = new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setTitle(`Ein neuer Textkanal wurde erstellt`)
+                    .setDescription(`Ein neues Spiel findet gerade seine Fanbase bei der Liga. Deshalb gibt es dafür jetzt den Textkanal <#${newChannel.id}> um sich darüber auszutauschen.\n\nDu wirst dem Kanal hinzugefügt, sobald ich dich beim zocken ertappe.`);
+            
+                    notificationChannel.send({embeds: [e]})
+                    .catch(console.error);
+                })
+                .catch(console.warn);
+            }
         } else {
             console.warn('WARNING: no dtcGamesCategory set in config file!');
         }
