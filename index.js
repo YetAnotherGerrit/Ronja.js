@@ -33,9 +33,11 @@ client.once('ready', () => {
 			m.cfg = client.myConfig;
 		}
 		m.client = client;
-	});
 
-	ronja_modules.forEach(m => {
+		m.l = function() {
+			return this.client.myTranslator(...arguments);
+		};
+
 		if (m.hookForCron) {
 			m.hookForCron().forEach(mc => {
 				if (!cron.validate(mc.schedule)) console.error(`ERROR: ${mc.schedule} is not a valid cron pattern.`);

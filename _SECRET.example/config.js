@@ -5,6 +5,8 @@ const mySecret = {
                                      // Get ((guildId)) by right clicking on your server and choosing "Copy ID" (need to have dev mode enabled)
 	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
+    language: 'en',
+
     // DynamicTextChannels
     dtcGamesCategory: '',           // ID of channel category, where the game specific text channels should be created in
     dtcArchivedGamesCategory: '',   // ID of channel category, where archived text channels should be moved to

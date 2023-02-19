@@ -25,17 +25,17 @@ const myNWDB = {
         let resultString;
         
         if (serverStatus == 'ACTIVE') {
-            resultString = getServer + ": " + serverPlayers + " aktive Spieler";
+            resultString = getServer + ": " + serverPlayers + this.l(" active players");
         }
         else {
             resultString = getServer + ": " + serverStatus + " (" + serverPlayers + "/" + serverLimit + ")";
         }
 
         if (serverQueue > 0) {
-            resultString = resultString + `, ${serverQueue} in der Warteschlange`;
+            resultString = resultString + this.l(', %s in the queue', serverQueue);
         }
 
-        resultString = resultString + " | Fraktion: Syndikat";
+        resultString = resultString;
     
         return resultString;
     },

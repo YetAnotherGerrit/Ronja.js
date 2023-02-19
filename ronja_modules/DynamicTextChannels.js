@@ -104,8 +104,8 @@ const myDynamicTextChannels = {
                 .then(notificationChannel => {
                     let e = new EmbedBuilder()
                     .setColor(Colors.Blue)
-                    .setTitle(`Ein neuer Textkanal wurde erstellt`)
-                    .setDescription(`Ein neues Spiel findet gerade seine Fanbase bei der Liga. Deshalb gibt es dafür jetzt den Textkanal <#${newChannel.id}> um sich darüber auszutauschen.\n\nDu wirst dem Kanal hinzugefügt, sobald ich dich beim zocken ertappe.`);
+                    .setTitle(this.l('New text channel created'))
+                    .setDescription(this.l('Some of you guys played a new game recently. To provide you with a channel to talk about <#%s> has been created.\n\nYou will be added to that channel, once I see you playing it, too.', newChannel.id));
             
                     notificationChannel.send({embeds: [e]})
                     .catch(console.error);

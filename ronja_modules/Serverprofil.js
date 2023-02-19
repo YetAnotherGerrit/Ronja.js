@@ -15,9 +15,9 @@ const myServerprofil = {
 
             let e = new EmbedBuilder()
             .setColor(Colors.Blue)
-            .setTitle(`Profil von ${m.displayName}`)
+            .setTitle(this.l('Profile of %s', m.displayName))
             .setThumbnail(m.displayAvatarURL())
-            .setDescription(`${m.displayName} ist seit dem ${m.joinedAt.toLocaleDateString(toLocaleDateStringCountry, toLocaleDateStringFormat)} auf diesem Discordserver.`);
+            .setDescription(this.l(`%s is on this discord server since %s.`, m.displayName, m.joinedAt.toLocaleDateString(toLocaleDateStringCountry, toLocaleDateStringFormat)));
     
             if (interaction.member != m) {
                 let s = '';
@@ -51,7 +51,7 @@ const myServerprofil = {
                 });
     
                 if (s != '') {
-                     e.addFields([{name: 'Gemeinsame Spiele', value: s}]);
+                     e.addFields([{name: this.l('Common games'), value: s}]);
                  };
             };
     

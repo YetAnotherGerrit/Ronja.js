@@ -19,40 +19,24 @@ const myZocken = {
 
     dbZocken: {},
 
-	myActionRow: new ActionRowBuilder()
-    .addComponents(
-        new ButtonBuilder()
-            .setCustomId('zockenYes')
-            .setLabel('Ich bin dabei!')
-            .setStyle(ButtonStyle.Success),
-        new ButtonBuilder()
-            .setCustomId('zockenNo')
-            .setLabel('Ne, doch nicht...')
-            .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-            .setCustomId('zockenSelect')
-            .setLabel('Warum steht da mein Name?')
-            .setStyle(ButtonStyle.Secondary),
-    ),
-
     createZockenEmbed: async function(interaction) {
         let maxgames = 10;
         let sPlayer = '';
         let aPlayerNames = [];
     
         if (this.dbZocken[interaction.channel.id].length === 0) {
-            sPlayer = 'Niemand';
+            sPlayer = this.l('Nobody');
         } else {
             await this.dbZocken[interaction.channel.id].forEach(playerId => {
                 interaction.guild.members.fetch(playerId).then(m => {
                     aPlayerNames.push(m.displayName);
                 });
             });
-            sPlayer = aPlayerNames.join(', ') || 'Niemand';
+            sPlayer = aPlayerNames.join(', ') || this.l('Nobody');
             
             // Ersetze letztes Komma durch "und":
             if (sPlayer.lastIndexOf(',') > -1) {
-                sPlayer = sPlayer.substring(0,sPlayer.lastIndexOf(',')) + ' und' + sPlayer.substring(sPlayer.lastIndexOf(',')+1,sPlayer.length);
+                sPlayer = sPlayer.substring(0,sPlayer.lastIndexOf(',')) + this.l(' and') + sPlayer.substring(sPlayer.lastIndexOf(',')+1,sPlayer.length);
             }
         };
     
@@ -60,8 +44,8 @@ const myZocken = {
         let e = new EmbedBuilder()
         .setColor(Colors.Blue)
         .setTitle('Zeit zum Zocken!')
-        .setDescription(`${sPlayer} ${this.dbZocken[interaction.channel.id].length > 1 ? 'sind' : 'ist'} dabei, wer noch?`)
-        .setFooter({ text: `Die folgenden Buttons sind ${this.cfg.collectorTimeout} Minuten verfügbar:` });
+        .setDescription(this.l('%s %s in, who is willing to join?', sPlayer, this.dbZocken[interaction.channel.id].length > 1 ? this.l('are') : this.l('is')))
+        .setFooter({ text: this.l('The following buttons will be availble for %d minutes:', this.cfg.collectorTimeout) });
     
         if (this.dbZocken[interaction.channel.id].length > 0) {
             let channelCount = await this.client.myDB.Games.count({where: {channel: interaction.channel.id}});
@@ -99,7 +83,7 @@ const myZocken = {
                 // s = Object.keys(g).map(key => g[key].name).join(', ');
         
                 if (s != '') {
-                    e.addFields([{ name: 'Die folgende Spiele würde ich vorschlagen:', value: s }]);
+                    e.addFields([{ name: this.l("I'll suggest the following games:"), value: s }]);
                 };
             };
         };
@@ -114,14 +98,14 @@ const myZocken = {
         let returnValue = '';
     
         if (this.dbZocken[interaction.channel.id].length === 0) {
-            sPlayer = 'Niemand';
+            sPlayer = this.l('Nobody');
         } else {
             await this.dbZocken[interaction.channel.id].forEach(playerId => {
                 interaction.guild.members.fetch(playerId).then(m => {
                     aPlayerNames.push(m.displayName);
                 });
             });
-            sPlayer = aPlayerNames.join(', ') || 'Niemand';
+            sPlayer = aPlayerNames.join(', ') || this.l('Nobody');
             
             // Ersetze letztes Komma durch "und":
             if (sPlayer.lastIndexOf(',') > -1) {
@@ -130,23 +114,39 @@ const myZocken = {
         };
 
         if (this.dbZocken[interaction.channel.id].length > 1) {
-            returnValue = `${sPlayer} haben sich gefunden.`;
+            returnValue = this.l('%s have found together.', sPlayer);
         } else {
-            returnValue = `Leider hat sich niemand gefunden.`;
+            returnValue = this.l('Unfortunately, nobody has been found.');
         };
 
         return returnValue;
     },
 
     hookForInteraction: async function(interaction)  {
+        let myActionRow = new ActionRowBuilder()
+        .addComponents(
+            new ButtonBuilder()
+                .setCustomId('zockenYes')
+                .setLabel(this.l('Count me in!'))
+                .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+                .setCustomId('zockenNo')
+                .setLabel(this.l('No, sorry...'))
+                .setStyle(ButtonStyle.Danger),
+            new ButtonBuilder()
+                .setCustomId('zockenSelect')
+                .setLabel(this.l('Why is my name in here?'))
+                .setStyle(ButtonStyle.Secondary),
+        );
+    
         if (interaction.commandName == 'zocken') {
 			if (this.dbZocken[interaction.channel.id]) {
 
 				await interaction.reply({
 					embeds: [ new EmbedBuilder() 
                         .setColor(Colors.Red)
-                        .setTitle('Fehler!')
-                        .setDescription('Es gibt bereits eine aktive Zocken!-Anfrage in diesem Kanal. Bitte warte bis die vorherige Anfrage abgelaufen ist, bevor du eine neue erstellst.')
+                        .setTitle(this.l('Error!'))
+                        .setDescription(this.l('There is already a running Zocken!-request in this channel. Please wait until it has expired.'))
                     ],
 					ephemeral: true,
 				});
@@ -205,9 +205,9 @@ const myZocken = {
 				}));
 
 				await interaction.reply({
-					content: `Hey${channelMemberPing} und alle anderen!`,
+					content: this.l(`Hey%s and everyone else!`, channelMemberPing),
 					embeds: [ e	],
-					components: [ this.myActionRow ],
+					components: [ myActionRow ],
 				});
 
 				let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.cfg.collectorTimeout});
@@ -220,7 +220,7 @@ const myZocken = {
 
 						await i.update({
 							embeds: [ e	],
-							components: [ this.myActionRow ],
+							components: [ myActionRow ],
 						});
 					};
 
@@ -234,7 +234,7 @@ const myZocken = {
 
 						await i.update({
 							embeds: [ e	],
-							components: [ this.myActionRow ],
+							components: [ myActionRow ],
 						});
 					};
 				});
@@ -262,42 +262,42 @@ const myZocken = {
 
             switch(statusZockenSelect) {
                 case 2:
-                    statusZockenSelectText = 'Ping mich auch Offline.'
+                    statusZockenSelectText = this.l('Ping me also offline.')
                     break;
 
                 case 1:
-                    statusZockenSelectText = 'Ping mich nur Online.'
+                    statusZockenSelectText = this.l('Ping me only, when I am online.')
                     break;
 
                 case 0:
-                    statusZockenSelectText = 'Ping mich bitte nicht.'
+                    statusZockenSelectText = this.l('Please, never ping me.')
                     break;
             }
 
             await interaction.reply({
                 embeds: [  new EmbedBuilder()
                     .setColor(Colors.Blue)
-                    .setTitle('Warum steht da mein Name?')
-                    .setDescription(`Es gibt mindestens ein Spiel, das ihr Beide in den letzten 100 Tagen gespielt habt. Falls du solche Benachrichtigungen nicht erhalten möchtest, kannst du das es hier ändern.\n\nDeine aktuelle Einstellung lautet:\n> ${statusZockenSelectText}`)
+                    .setTitle(this.l('Why is my name in here?'))
+                    .setDescription(this.l("There is at least one game that you've played both within the last 100 days. If you don't want to receive those notifications, you can change that here.\n\nYour current setting:\n> %s", statusZockenSelectText))
                 ],
                 components: [ new ActionRowBuilder()
                     .addComponents( new StringSelectMenuBuilder()
                         .setCustomId('zockenSelected')
-                        .setPlaceholder('Benachrichtigungen...')
+                        .setPlaceholder(this.l('Notifications...'))
                         .addOptions([
                             {
-                                label: 'Ping mich auch Offline.',
-                                description: 'Benachrichtigungen zum Zocken auch wenn ich nicht Online bin.',
+                                label: this.l('Ping me also offline.'),
+                                description: this.l('Also notify myself that someone wants to game, even when I am offline.'),
                                 value: '2',
                             },
                             {
-                                label: 'Ping mich nur Online. (Standard)',
-                                description: 'Benachrichtigungen zum Zocken falls ich Online bin.',
+                                label: this.l('Ping me only, when I am online. (Default)'),
+                                description: this.l('Notify myself only when I am also online in Discord.'),
                                 value: '1',
                             },
                             {
-                                label: 'Ping mich bitte nicht.',
-                                description: 'Ich habe kein Interesse an diesen Zocken-Anfragen.',
+                                label: this.l('Please, never ping me.'),
+                                description: this.l('I am not interested in this kind of gaming requests.'),
                                 value: '0'
                             }
                         ]),
@@ -316,7 +316,7 @@ const myZocken = {
                     );
             
                     await i.update({
-                        embeds: [ new EmbedBuilder().setColor(Colors.Green).setTitle('Erfolgreich!').setDescription('Deine Benachrichtigungseinstellungen wurden gespeichert.') ],
+                        embeds: [ new EmbedBuilder().setColor(Colors.Green).setTitle(this.l('Succesful!')).setDescription(this.l('Your settings have been saved.')) ],
                         components: [ ],
                     });
                 };
@@ -325,7 +325,7 @@ const myZocken = {
             collector.on('end', async c => {
                 if (c.size == 0) {
                     await interaction.editReply({
-                        embeds: [ new EmbedBuilder().setColor(Colors.Blue).setTitle('Abgelaufen!').setDescription('Keine Änderungen an den Benachrichtigungseinstellungen vorgenommen.') ],
+                        embeds: [ new EmbedBuilder().setColor(Colors.Blue).setTitle(this.l('Expired!')).setDescription(this.l('No changes have been saved.')) ],
                         components: [ ],
                     });
                 };

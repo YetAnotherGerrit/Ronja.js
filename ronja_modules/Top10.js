@@ -16,8 +16,8 @@ const myTop10 = {
 
         let e = new EmbedBuilder()
         .setColor(Colors.Blue)
-        .setTitle(`Die beliebtesten Spiele der Liga!`)
-        .setDescription(`Die meistgespielten Spiele der letzten ${pDays} Tage:`);
+        .setTitle(this.l('Most popular games!'))
+        .setDescription(this.l('Most played games of the last %d days:', pDays));
 
         let s = '';
     
@@ -51,7 +51,7 @@ const myTop10 = {
             }
         });
 
-        e.addFields([{ name: 'Top10 nach Spieleranzahl:', value: s }]);
+        e.addFields([{ name: this.l('Top 10 by player count:'), value: s }]);
     
         return e;
     },
@@ -89,19 +89,19 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, 'Einen guten Start in die neue Woche! Das waren die beliebtesten Spiele der letzten Woche:');
+                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, this.l('The most played games oft last week:'));
                 },
             },
             {
                 schedule: '0 7 1 * *',
                 action: () => {
-                    if (this.cfg.top10Monthly) this.postTop10ToChannel(30, 'Schauen wir doch mal, was letzten Monat bei der Liga so angesagt war:');
+                    if (this.cfg.top10Monthly) this.postTop10ToChannel(30, this.l('The most played games of last month:'));
                 },
             },
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, 'Frohes neues Jahr! Das waren die Highlights des letzten Jahres:');
+                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, this.l('Happy new year! This have been the highlights of last year:'));
                 },
             },
         ]
