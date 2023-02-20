@@ -1,7 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
-const { clientId, guildId, token } = require('./_SECRET/config.json');
+const { SlashCommandBuilder, REST, Routes } = require('discord.js');
+
+const { clientId, guildId, token } = require('./_SECRET/config.js');
 
 const commands = [
 	new SlashCommandBuilder().setName('top10').setDescription('Zeigt die Top10-Spiele der Liga nach Anzahl von Mitspielern.')
@@ -30,7 +29,7 @@ commands.forEach(cmd => {
 
 console.log(commands);
 
-const rest = new REST({ version: '9' }).setToken(token);
+const rest = new REST({ version: '10' }).setToken(token);
 
 rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands })
 	.then(() => console.log('Successfully registered application commands.'))

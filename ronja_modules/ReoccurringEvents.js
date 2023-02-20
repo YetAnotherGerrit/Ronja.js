@@ -1,13 +1,8 @@
-const { MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
 
 const myReoccurringEvents = {
-    client: null,
-
-    init: function(client) {this.client = client},
-
     hookForEventStart: async function(oldGuildScheduledEvent, newGuildScheduledEvent)  {
         let myReg = /\[w(\d+)\]/;
         let myRegResult = myReg.exec(newGuildScheduledEvent.description);

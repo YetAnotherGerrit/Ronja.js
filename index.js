@@ -1,6 +1,7 @@
 // Discord-specific dependencies
-const { Ronja } = require('./ronja_modules/Ronja.js');
-const { Intents, MessageEmbed } = require('discord.js');
+const { Ronja } = require('./core/Ronja.js');
+const deepmerge = require('deepmerge')
+const { GatewayIntentBits, Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
 
 // Cron-module
 const cron = require('node-cron');
@@ -8,7 +9,6 @@ const cron = require('node-cron');
 // Load Ronja's modular system
 const ronja_modules = [];
 
-// ronja_modules.push(require('./ronja_modules/AmazonGamesServerStatus.js'));
 ronja_modules.push(require('./ronja_modules/DynamicTextChannels.js'));
 ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
 ronja_modules.push(require('./ronja_modules/NWDB.js'));
@@ -20,17 +20,24 @@ ronja_modules.push(require('./ronja_modules/Zocken.js'));
 // Timezone TODO: move to config
 const myTimezone = 'Europe/Berlin';
 
-const client = new Ronja({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_SCHEDULED_EVENTS] });
+const client = new Ronja({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildScheduledEvents] });
 
 
 client.once('ready', () => {
 	client.myReady();
 
 	ronja_modules.forEach(m => {
-		if (m.init) m.init(client);
-	});
+		if (m.defaultConfig) {
+			m.cfg = deepmerge(m.defaultConfig, client.myConfig);
+		} else {
+			m.cfg = client.myConfig;
+		}
+		m.client = client;
 
-	ronja_modules.forEach(m => {
+		m.l = function() {
+			return this.client.myTranslator(...arguments);
+		};
+
 		if (m.hookForCron) {
 			m.hookForCron().forEach(mc => {
 				if (!cron.validate(mc.schedule)) console.error(`ERROR: ${mc.schedule} is not a valid cron pattern.`);
@@ -42,8 +49,8 @@ client.once('ready', () => {
 	console.log('Ready!');
 });
 
-client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand() && !interaction.isContextMenu() && !interaction.isButton()) return;
+client.on(Events.InteractionCreate, async interaction => {
+	if (!interaction.isCommand() && !interaction.isContextMenuCommand() && !interaction.isButton()) return;
 	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName}.`)
 
 	ronja_modules.forEach(m => {
@@ -51,20 +58,20 @@ client.on('interactionCreate', async interaction => {
 	});
 });
 
-client.on('voiceStateUpdate', async (oldState, newState) => {
+client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 
 	ronja_modules.forEach(m => {
 		if (m.hookForVoiceUpdate) m.hookForVoiceUpdate(oldState, newState);
 	});
 });
 
-client.on('guildScheduledEventUpdate', async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
+client.on(Events.GuildScheduledEventUpdate, async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
 
 	ronja_modules.forEach(m => {
 		if (m.hookForEventUpdate) m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent);
 	});
 
-	if (newGuildScheduledEvent.status == 'ACTIVE' && oldGuildScheduledEvent.status != 'ACTIVE') {
+	if (newGuildScheduledEvent.status == GuildScheduledEventStatus.Active && oldGuildScheduledEvent.status != GuildScheduledEventStatus.Active) {
 		ronja_modules.forEach(m => {
 			if (m.hookForEventStart) m.hookForEventStart(oldGuildScheduledEvent, newGuildScheduledEvent);
 		});
@@ -73,11 +80,11 @@ client.on('guildScheduledEventUpdate', async (oldGuildScheduledEvent, newGuildSc
 });
 
 
-client.on('presenceUpdate', (oldPresence, newPresence) => {
+client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
 	if (newPresence.member.user.bot) return;
 
 	newPresence.activities.forEach(async newActivity => {
-		if (newActivity.type === 'PLAYING') {
+		if (newActivity.type === ActivityType.Playing) {
 			let justStarted = true;
 			oldPresence?.activities.forEach(oldActivity => {
 				if (oldActivity.name === newActivity.name) justStarted = false;
@@ -106,5 +113,9 @@ client.on('presenceUpdate', (oldPresence, newPresence) => {
 	});
  
 });
+
+// client.on('debug', console.debug);
+client.on('warn', console.warn);
+client.on('error', console.error);
 
 client.login(client.myConfig.token);

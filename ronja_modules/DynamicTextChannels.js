@@ -1,28 +1,30 @@
-const { MessageEmbed } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
+const { ChannelType, PermissionFlagsBits, EmbedBuilder, Colors } = require('discord.js');
 
-// TODO: move to config
-const cMinimumPlayersForCreation = 3;
-const cDaysRelevantForCreation = 30;
-const cDaysToArchive = 30;
-const cDaysTarget = 100;
 
 const myDynamicTextChannels = {
-    client: null,
+    defaultConfig: {
+        dtcGamesCategory: null,             // please set in _SECRET/config.js
+        dtcArchivedGamesCategory: null,     // please set in _SECRET/config.js
+        dtcNotificationChannel: null,
 
-    init: function(client) {this.client = client},
+        minimumPlayersForCreation: 3,
+        daysRelevantForCreation: 30,
+        daysToArchive: 30,
+        daysTarget: 100,
+    },
 
     defaultOverrides: async function(guild) {
         return [
             {
                 id: await guild.roles.everyone,
-                deny: ['VIEW_CHANNEL'],
+                deny: [PermissionFlagsBits.ViewChannel],
             },
             {
-                id: await guild.me,
-                allow: ['VIEW_CHANNEL'],
+                id: await guild.members.me,
+                allow: [PermissionFlagsBits.ViewChannel],
             },
         ];
     },
@@ -69,53 +71,91 @@ const myDynamicTextChannels = {
 
         players.rows.forEach(async player => {
             let player_member = await channel.guild.members.fetch(player.member);
-            channel.permissionOverwrites.create(player_member,{'VIEW_CHANNEL': true});
+            channel.permissionOverwrites.create(player_member,{'ViewChannel': true});
         });
+    },
+
+    sortTextChannelCategoryByName: async function(categoryChannel) {
+        let channels = categoryChannel.children.cache.filter(c => c.type === ChannelType.GuildText);
+        channels.sort((a, b) => a.name.localeCompare(b.name));
+        for (let i = 0; i < channels.size; i++) {
+            await channels.at(i).setPosition(i);
+        }        
     },
 
     createTextChannel: async function(game, newActivity, newPresence) {
-        // TODO: Are all parameters necessary?
-        let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
-        let newChannel = await autoChannel.createChannel(newActivity.name,{
-            type: 'GUILD_TEXT',
-            permissionOverwrites: await this.defaultOverrides(newPresence.guild),
-        });
+        if (this.cfg.dtcGamesCategory) {
+            let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
+            let newChannel = await autoChannel.children.create({
+                name: newActivity.name,
+                type: ChannelType.GuildText,
+                permissionOverwrites: await this.defaultOverrides(newPresence.guild),
+            });
+    
+            this.assignAllPlayersToChannel(newChannel, game, this.cfg.daysTarget);
+            game.update({channel: newChannel.id});
+    
+            console.log(`Created new text channel #${newChannel.name}.`);
+            this.sortTextChannelCategoryByName(autoChannel);
 
-        this.assignAllPlayersToChannel(newChannel,game,cDaysTarget);
-        game.update({channel: newChannel.id});
-
-        console.log(`Created new text channel #${newChannel.name}.`);
+            // Optional feature: notify some general channel about text channel creation
+            if (this.cfg.dtcNotificationChannel) {
+                this.client.channels.fetch(this.cfg.dtcNotificationChannel)
+                .then(notificationChannel => {
+                    let e = new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setTitle(this.l('New text channel created'))
+                    .setDescription(this.l('Some of you guys played a new game recently. To provide you with a channel to talk about <#%s> has been created.\n\nYou will be added to that channel, once I see you playing it, too.', newChannel.id));
+            
+                    notificationChannel.send({embeds: [e]})
+                    .catch(console.error);
+                })
+                .catch(console.warn);
+            }
+        } else {
+            console.warn('WARNING: no dtcGamesCategory set in config file!');
+        }
     },
 
     checkActiveTextChannel: async function(channel) {
-        if (!await this.hasGameBeenPlayedForChannel(channel, cDaysToArchive)) {
-            let autoChannel = await this.client.channels.fetch(this.client.myConfig.ArchivSpieleKategorie);
-            channel.setParent(autoChannel);
-            channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
-        
-            console.log(`Moved #${channel.name} to archive.`);
-        };
+        if (this.cfg.dtcArchivedGamesCategory) {
+            if (!await this.hasGameBeenPlayedForChannel(channel, this.cfg.daysToArchive)) {
+                let autoChannel = await this.client.channels.fetch(this.cfg.dtcArchivedGamesCategory);
+                channel.setParent(autoChannel);
+                channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
+            
+                console.log(`Moved #${channel.name} to archive.`);
+                this.sortTextChannelCategoryByName(autoChannel);
+            }
+        } else {
+            console.warn('WARNING: no dtcArchivedGamesCategory set in config file!');
+        }
     },
 
     hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
-        // TODO: Check if member has access right for parent-category AktiveSpieleKategorie
-        if (game.channel) {
-            let gameChannel = await this.client.channels.fetch(game.channel);
-            if (gameChannel.parentId == this.client.myConfig.ArchivSpieleKategorie) {
-                if (await this.countPlayersForGame(game,cDaysTarget) > 1) {
-                    let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
-                    gameChannel.setParent(autoChannel);
-                    await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
-                    this.assignAllPlayersToChannel(gameChannel,game,cDaysTarget);
-                };
+        if (this.cfg.dtcArchivedGamesCategory) {
+            // TODO: Check if member has access right for parent-category dtcGamesCategory
+            if (game.channel) {
+                let gameChannel = await this.client.channels.fetch(game.channel);
+                if (gameChannel.parentId == this.cfg.dtcArchivedGamesCategory) {
+                    if (await this.countPlayersForGame(game, this.cfg.daysTarget) > 1) {
+                        let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
+                        gameChannel.setParent(autoChannel);
+                        await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
+                        this.assignAllPlayersToChannel(gameChannel, game, this.cfg.daysTarget);
+                    }
+                } else {
+                    gameChannel.permissionOverwrites.create(newPresence.member.user,{'ViewChannel': true});
+                }
             } else {
-                gameChannel.permissionOverwrites.create(newPresence.member.user,{'VIEW_CHANNEL': true});
-            };
+                if (await this.countPlayersForGame(game, this.cfg.daysRelevantForCreation)
+                        >= this.cfg.minimumPlayersForCreation) {
+                    this.createTextChannel(game, newActivity, newPresence);
+                }
+            }
         } else {
-            if (await this.countPlayersForGame(game, cDaysRelevantForCreation) >= cMinimumPlayersForCreation) {
-                this.createTextChannel(game, newActivity, newPresence);
-            };
-        };
+            console.warn('WARNING: no dtcArchivedGamesCategory set in config file!');
+        }
     },
 
     hookForCron: function() {
@@ -123,10 +163,14 @@ const myDynamicTextChannels = {
             {
                 schedule: '0 5 * * *', // https://crontab.guru/
                 action: async () => {
-                    let autoChannel = await this.client.channels.fetch(this.client.myConfig.AktiveSpieleKategorie);
-                    await Promise.all(autoChannel.children.map(async (gameChannel) => {
-                        this.checkActiveTextChannel(gameChannel);
-                    }));
+                    if (this.cfg.dtcGamesCategory) {
+                        let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
+                        await Promise.all(autoChannel.children.map(async (gameChannel) => {
+                            this.checkActiveTextChannel(gameChannel);
+                        }));
+                    } else {
+                        console.warn('WARNING: no dtcGamesCategory set in config file!');
+                    }
                 },
             }
         ];

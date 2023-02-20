@@ -1,12 +1,12 @@
-const { MessageEmbed } = require('discord.js');
-
 const axios = require('axios');
-const html = require('node-html-parser');
 
 const myNWDB = {
-    client: null,
-    
-    init: function(client) {this.client = client},
+    defaultConfig: {
+        newWorldChannel: null,
+        newWorldServer: null,
+
+        newWorldCronPattern: '*/5 * * * *',
+    },
 
     myGetServerStatus: async function(getServer) {
         let url = 'https://nwdb.info/server-status';
@@ -25,17 +25,17 @@ const myNWDB = {
         let resultString;
         
         if (serverStatus == 'ACTIVE') {
-            resultString = getServer + ": " + serverPlayers + " aktive Spieler";
+            resultString = getServer + ": " + serverPlayers + this.l(" active players");
         }
         else {
             resultString = getServer + ": " + serverStatus + " (" + serverPlayers + "/" + serverLimit + ")";
         }
 
         if (serverQueue > 0) {
-            resultString = resultString + `, ${serverQueue} in der Warteschlange`;
+            resultString = resultString + this.l(', %s in the queue', serverQueue);
         }
 
-        resultString = resultString + " | Fraktion: Syndikat";
+        resultString = resultString;
     
         return resultString;
     },
@@ -43,19 +43,23 @@ const myNWDB = {
     hookForCron: function() {
         return [
             {
-                schedule: this.client.myConfig.AgsCronPattern,
+                schedule: this.cfg.newWorldCronPattern,
                 action: () => {
-                    this.client.channels.fetch(this.client.myConfig.NewWorldKanal)
-                    .then(c => {
-                        this.myGetServerStatus(this.client.myConfig.NewWorldServer)
-                        .then(res => {
-                            if (res != '') {
-                                c.setTopic(res);
-                            }
+                    if (this.cfg.newWorldChannel && this.cfg.newWorldServer) {
+                        this.client.channels.fetch(this.cfg.newWorldChannel)
+                        .then(c => {
+                            this.myGetServerStatus(this.cfg.newWorldServer)
+                            .then(res => {
+                                if (res != '') {
+                                    c.setTopic(res);
+                                }
+                            })
+                            .catch(console.error);
                         })
                         .catch(console.error);
-                    })
-                    .catch(console.error);
+                    } else {
+                        console.warn('WARNING: newWorldServer and newWorldServer need to be set in config file!')
+                    }
                 },
             }
         ];

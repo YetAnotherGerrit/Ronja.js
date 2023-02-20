@@ -1,0 +1,55 @@
+{
+  "Most popular games!": [
+    "Die beliebtesten Spiele!",
+    "Meistgespielte Spiele!"
+  ],
+  "Most played games of the last %d days:": [
+    "Meistgespielte Spiele der letzten %d Tage:"
+  ],
+  "Count me in!": [
+    "Ich bin dabei!",
+    "Ich bin am Start!",
+    "Sowas von!",
+    "Jepp."
+  ],
+  "No, sorry...": [
+    "Nein, doch nicht.",
+    "Ne, bin raus...",
+    "Mhhh, nein."
+  ],
+  "Why is my name in here?": [
+    "Warum steht hier mein Name?",
+    "Was soll das?",
+    "Warum ich?"
+  ],
+  "Top 10 by player count:": [
+    "Top 10 nach Spielerzahl"
+  ],
+  "is": [
+    "ist"
+  ],
+  "%s %s in, who is willing to join?": [
+    "%s %s dabei, wer noch?",
+    "%s %s ist am Start, wer noch?"
+  ],
+  "The following buttons will be availble for %d minutes:": [
+    "Die folgenden Knöpfe sind für %d Minuten verfügbar:"
+  ],
+  "I'll suggest the following games:": [
+    "Ich schlage die folgenden Spiele vor:",
+    "Wie wäre es mit den folgenden Spielen?"
+  ],
+  "Hey%s and everyone else!": [
+    "Hey%s und alle anderen!",
+    "Hey%s und der Rest hier!"
+  ],
+  " active players": [
+    " aktive Spieler"
+  ],
+  ", %s in the queue": [
+    ", %s in der Warteschlange"
+  ],
+  "Unfortunately, nobody has been found.": [
+    "Leider hat sich niemand gefunden."
+  ]
+}

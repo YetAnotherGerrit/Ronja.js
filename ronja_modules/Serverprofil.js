@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder, Colors } = require('discord.js');
 
 // Database dependencies
 const Sequelize = require('sequelize');
@@ -9,19 +9,15 @@ const toLocaleDateStringCountry = 'de-DE';
 const toLocaleDateStringFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
 const myServerprofil = {
-    client: null,
-
-    init: function(client) {this.client = client},
-
     hookForInteraction: async function(interaction)  {
         if (interaction.commandName == 'Serverprofil') {
             let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);
 
-            let e = new MessageEmbed()
-            .setColor('BLUE')
-            .setTitle(`Profil von ${m.displayName}`)
+            let e = new EmbedBuilder()
+            .setColor(Colors.Blue)
+            .setTitle(this.l('Profile of %s', m.displayName))
             .setThumbnail(m.displayAvatarURL())
-            .setDescription(`${m.displayName} ist seit dem ${m.joinedAt.toLocaleDateString(toLocaleDateStringCountry, toLocaleDateStringFormat)} auf diesem Discordserver.`);
+            .setDescription(this.l(`%s is on this discord server since %s.`, m.displayName, m.joinedAt.toLocaleDateString(toLocaleDateStringCountry, toLocaleDateStringFormat)));
     
             if (interaction.member != m) {
                 let s = '';
@@ -55,7 +51,7 @@ const myServerprofil = {
                 });
     
                 if (s != '') {
-                     e.addField('Gemeinsame Spiele',s);
+                     e.addFields([{name: this.l('Common games'), value: s}]);
                  };
             };
     
