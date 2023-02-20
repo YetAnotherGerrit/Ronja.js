@@ -43,7 +43,7 @@ const myZocken = {
     
         let e = new EmbedBuilder()
         .setColor(Colors.Blue)
-        .setTitle('Zeit zum Zocken!')
+        .setTitle(this.l('Time to zock!'))
         .setDescription(this.l('%s %s in, who is willing to join?', sPlayer, this.dbZocken[interaction.channel.id].length > 1 ? this.l('are') : this.l('is')))
         .setFooter({ text: this.l('The following buttons will be availble for %d minutes:', this.cfg.collectorTimeout) });
     
