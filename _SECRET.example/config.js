@@ -18,6 +18,9 @@ const mySecret = {
 
     // Top10
     top10CronKanal: '',             // ID of channel where to regularly post Top10 rankings
+    top10Weekly: false,
+    top10Monthly: false,
+    top10Yearly: false,
 }
 
 module.exports = mySecret;
