@@ -54,7 +54,7 @@ class Ronja extends Client {
 
         this.myConfig = mySECRET;
 
-        if (fs.existsSync(`./core/language_${this.myConfig.language}.json`)) fs.readFile(`./core/language_${this.myConfig.language}.json`, "utf8", (err, jsonString) => {
+        if (fs.existsSync(`./_SECRET/language_${this.myConfig.language}.json`)) fs.readFile(`./_SECRET/language_${this.myConfig.language}.json`, "utf8", (err, jsonString) => {
             if (err) {
               console.log("Error reading file from disk:", err);
               return;
@@ -73,7 +73,7 @@ class Ronja extends Client {
             arguments[0] = this.myLanguage[arguments[0]][Math.floor(Math.random() * this.myLanguage[arguments[0]].length)];
         } else {
             this.myLanguage[arguments[0]] = [arguments[0]];
-            fs.writeFile(`./core/language_${this.myConfig.language}.json`, JSON.stringify(this.myLanguage, null, 2), err => {
+            fs.writeFile(`./_SECRET/language_${this.myConfig.language}.json`, JSON.stringify(this.myLanguage, null, 2), err => {
                 if (err) console.log("Error writing file:", err);
             });            
         }
