@@ -28,7 +28,7 @@ const myNWDB = {
             resultString = getServer + ": " + serverPlayers + this.l(" active players");
         }
         else {
-            resultString = getServer + ": " + serverStatus + " (" + serverPlayers + "/" + serverLimit + ")";
+            resultString = getServer + ": " + this.l(serverStatus) + " (" + serverPlayers + "/" + serverLimit + ")";
         }
 
         if (serverQueue > 0) {
