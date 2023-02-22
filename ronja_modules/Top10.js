@@ -57,20 +57,16 @@ const myTop10 = {
     },
 
     postTop10ToChannel: async function(pDays, pDescription) {
-        if (this.cfg.top10CronKanal) {
-            this.client.channels.fetch(this.cfg.top10CronKanal)
-            .then(c => {
-                this.createTop10Embed(pDays)
-                .then(e => {
-                    e.setDescription(pDescription)
-                    c.send({embeds: [e]});
-                })
-                .catch(console.error);
+        this.client.channels.fetch(this.cfg.top10CronKanal)
+        .then(c => {
+            this.createTop10Embed(pDays)
+            .then(e => {
+                e.setDescription(pDescription)
+                c.send({embeds: [e]});
             })
             .catch(console.error);
-        } else {
-            console.warn('WARNING: no top10CronKanal set in config file!')
-        }
+        })
+        .catch(console.error);
     },
 
     hookForInteraction: async function(interaction)  {
@@ -81,10 +77,14 @@ const myTop10 = {
 				embeds: [ e	],
 				ephemeral: true,
 			});
-        };
+        }
     },
 
     hookForCron: function() {
+        if (!this.cfg.top10CronKanal) {
+            console.info('INFO: no top10CronKanal set in config file, disabling Top10-postings!')
+            return [];
+        }
         return [
             {
                 schedule: '0 8 * * 1',
