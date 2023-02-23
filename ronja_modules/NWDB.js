@@ -28,7 +28,7 @@ const myNWDB = {
             resultString = getServer + ": " + serverPlayers + this.l(" active players");
         }
         else {
-            resultString = getServer + ": " + serverStatus + " (" + serverPlayers + "/" + serverLimit + ")";
+            resultString = getServer + ": " + this.l(serverStatus) + " (" + serverPlayers + "/" + serverLimit + ")";
         }
 
         if (serverQueue > 0) {
@@ -41,25 +41,25 @@ const myNWDB = {
     },
 
     hookForCron: function() {
+        if (!this.cfg.newWorldChannel || !this.cfg.newWorldServer) {
+            console.info('INFO: newWorldChannel or newWorldServer not set in config file, disabling New-World queries!');
+            return [];
+        }
         return [
             {
                 schedule: this.cfg.newWorldCronPattern,
                 action: () => {
-                    if (this.cfg.newWorldChannel && this.cfg.newWorldServer) {
-                        this.client.channels.fetch(this.cfg.newWorldChannel)
-                        .then(c => {
-                            this.myGetServerStatus(this.cfg.newWorldServer)
-                            .then(res => {
-                                if (res != '') {
-                                    c.setTopic(res);
-                                }
-                            })
-                            .catch(console.error);
+                    this.client.channels.fetch(this.cfg.newWorldChannel)
+                    .then(c => {
+                        this.myGetServerStatus(this.cfg.newWorldServer)
+                        .then(res => {
+                            if (res != '') {
+                                c.setTopic(res);
+                            }
                         })
                         .catch(console.error);
-                    } else {
-                        console.warn('WARNING: newWorldServer and newWorldServer need to be set in config file!')
-                    }
+                    })
+                    .catch(console.error);
                 },
             }
         ];
