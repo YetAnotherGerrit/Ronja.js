@@ -1,4 +1,4 @@
-const { Client } = require('discord.js');
+const { Client, EmbedBuilder, Colors } = require('discord.js');
 const Sequelize = require('sequelize');
 
 const mySECRET = require('../_SECRET/config.js');
@@ -78,6 +78,18 @@ class Ronja extends Client {
             });            
         }
         return util.format(...arguments);
+    };
+
+    myLoadingEmbed(myEphemeral = true) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                .setColor(Colors.Grey)
+                .setTitle(this.myTranslator('Loading...'))
+                .setDescription(this.myTranslator('Please be patient.'))
+            ],
+            ephemeral: myEphemeral,
+        }
     };
 
     myReady() {
