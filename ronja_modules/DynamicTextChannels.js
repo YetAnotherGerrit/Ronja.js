@@ -143,6 +143,9 @@ const myDynamicTextChannels = {
                         gameChannel.setParent(autoChannel);
                         await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
                         this.assignAllPlayersToChannel(gameChannel, game, this.cfg.daysTarget);
+
+                        console.log(`Moved #${gameChannel.name} from archive to active.`);
+                        this.sortTextChannelCategoryByName(autoChannel);
                     }
                 } else {
                     gameChannel.permissionOverwrites.create(newPresence.member.user,{'ViewChannel': true});
