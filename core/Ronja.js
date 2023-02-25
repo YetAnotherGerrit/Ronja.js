@@ -80,6 +80,7 @@ class Ronja extends Client {
         return util.format(...arguments);
     };
 
+    // Run with "false" if no ephemeral.
     myLoadingEmbed(myEphemeral = true) {
         return {
             embeds: [
