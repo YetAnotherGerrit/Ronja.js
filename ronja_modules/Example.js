@@ -24,7 +24,22 @@ const myExample = {
     },
 
     // Don't forget to also add your slash-commands to the deploy-command.js file and run it once after every change.
-    hookForInteraction: async function(interaction)  {
+    hookForCommandInteraction: async function(interaction)  {
+        // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
+		if (interaction.commandName == 'ping') {
+            interaction.reply('Pong!');
+        };
+    },
+
+    // Don't forget to also add your context menu-commands to the deploy-command.js file and run it once after every change.
+    hookForContextMenuInteraction: async function(interaction)  {
+        // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
+		if (interaction.commandName == 'ping') {
+            interaction.reply('Pong!');
+        };
+    },
+
+    hookForButtonInteraction: async function(interaction)  {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
 		if (interaction.commandName == 'ping') {
             interaction.reply('Pong!');

@@ -122,8 +122,8 @@ const myZocken = {
         return returnValue;
     },
 
-    hookForInteraction: async function(interaction)  {
-        let myActionRow = new ActionRowBuilder()
+    createActionRow: function() {
+        return new ActionRowBuilder()
         .addComponents(
             new ButtonBuilder()
                 .setCustomId('zockenYes')
@@ -138,7 +138,9 @@ const myZocken = {
                 .setLabel(this.l('Why is my name in here?'))
                 .setStyle(ButtonStyle.Secondary),
         );
-    
+    },
+
+    hookForCommandInteraction: async function(interaction)  {
         if (interaction.commandName == 'zocken') {
 			if (this.dbZocken[interaction.channel.id]) {
 
@@ -207,7 +209,7 @@ const myZocken = {
 				await interaction.reply({
 					content: this.l(`Hey%s and everyone else!`, channelMemberPing),
 					embeds: [ e	],
-					components: [ myActionRow ],
+					components: [ this.createActionRow() ],
 				});
 
 				let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.cfg.collectorTimeout});
@@ -220,7 +222,7 @@ const myZocken = {
 
 						await i.update({
 							embeds: [ e	],
-							components: [ myActionRow ],
+							components: [ this.createActionRow() ],
 						});
 					};
 
@@ -234,7 +236,7 @@ const myZocken = {
 
 						await i.update({
 							embeds: [ e	],
-							components: [ myActionRow ],
+							components: [ this.createActionRow() ],
 						});
 					};
 				});
@@ -250,7 +252,9 @@ const myZocken = {
 				});
 			};
         };
+    },
 
+    hookForButtonInteraction: async function(interaction) {
         if (interaction.customId === 'zockenSelect') {
             let [mem,memCreated] = await this.client.myDB.Member.findOrCreate({
                 where: {id: interaction.member.id},

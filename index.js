@@ -50,12 +50,25 @@ client.once('ready', () => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isCommand() && !interaction.isContextMenuCommand() && !interaction.isButton()) return;
 	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName}.`)
 
-	ronja_modules.forEach(m => {
-		if (m.hookForInteraction) m.hookForInteraction(interaction);
-	});
+	if (interaction.isCommand()) {
+		ronja_modules.forEach(m => {
+			if (m.hookForCommandInteraction) m.hookForCommandInteraction(interaction);
+		});
+	}
+
+	if (interaction.isContextMenuCommand()) {
+		ronja_modules.forEach(m => {
+			if (m.hookForContextMenuInteraction) m.hookForContextMenuInteraction(interaction);
+		});
+	}
+
+	if (interaction.isButton()) {
+		ronja_modules.forEach(m => {
+			if (m.hookForButtonInteraction) m.hookForButtonInteraction(interaction);
+		});
+	}
 });
 
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {

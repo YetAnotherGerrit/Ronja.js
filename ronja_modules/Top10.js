@@ -69,7 +69,7 @@ const myTop10 = {
         .catch(console.error);
     },
 
-    hookForInteraction: async function(interaction)  {
+    hookForCommandInteraction: async function(interaction)  {
 		if (interaction.commandName == 'top10') {
             await interaction.reply(this.client.myLoadingEmbed());
 
