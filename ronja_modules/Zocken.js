@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const Moment = require('moment');
@@ -140,7 +140,85 @@ const myZocken = {
         );
     },
 
-    hookForCommandInteraction: async function(interaction)  {
+    createChannelMemberPing: async function(interaction) {
+        let channelMemberPing = '';
+				
+        await Promise.all(interaction.channel.members.map(async (channelMember) => {
+            let result = await this.client.myDB.Member.findOne({where: {id: channelMember.id}});
+            let statusChannelMember = result ? result.zockenmention : 1;
+
+            let commonGames = 0;
+            let g = await this.client.myDB.Games.findAll({
+                raw: true,
+                attributes: [
+                    'name',
+                    [Sequelize.fn('COUNT', '*'),'cName']
+                ],
+                include: [
+                    {
+                        model: this.client.myDB.GamesPlayed,
+                        where: {
+                            member: [interaction.member.id,channelMember.id],
+                            lastplayed: {
+                                [Op.gte]: Moment().subtract(100,'days')
+                            }
+                        }
+        
+                    }
+                ],
+                order: [
+                    [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
+                    ['name', 'ASC'],
+                
+                ],
+                group: 'Games.name',
+            });
+
+            g.forEach(gg => {
+                if (gg.cName === 2) {
+                    commonGames = commonGames + 1;
+                }
+            });
+
+            if (!channelMember.user.bot &&
+                commonGames > 0 &&
+                    (
+                        (channelMember.presence && ((channelMember.presence.status == 'online' && statusChannelMember > 0) || (channelMember.presence.status == 'idle' && statusChannelMember > 0) || (channelMember.presence.status == 'offline' && statusChannelMember > 1))) ||
+                        (!channelMember.presence && statusChannelMember > 1)
+                    )
+                ) {
+                channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
+            }
+        }));
+
+        return channelMemberPing;
+    },
+
+    hookForCommandInteraction: async function(interaction) {
+        if (interaction.commandName == 'zocken') {
+            interaction.guild.scheduledEvents.create({
+                name: this.l('%s would like to game!', interaction.member.displayName),
+                scheduledStartTime: Moment().add(5,'minutes'),
+                scheduledEndTime: Moment().add(65,'minutes'), // Optional, but not for EXTERNAL
+                privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+                entityType: GuildScheduledEventEntityType.External,
+                description: 'Test', // Optional
+                entityMetadata: {location: `#${interaction.channel.name} via /zocken`}, // Optional, but not for EXTERNAL,
+            })
+            .then(event => {
+                this.createChannelMemberPing(interaction)
+                .then(channelMemberPing => {
+                    interaction.reply({
+                        content: this.l('Hey%s and everyone else! %s', channelMemberPing, event.url),
+                    });
+                });
+
+            });
+        }
+
+    },
+
+    hookForCommandInteractionOld: async function(interaction)  {
         if (interaction.commandName == 'zocken') {
 			if (this.dbZocken[interaction.channel.id]) {
 
@@ -254,7 +332,7 @@ const myZocken = {
         };
     },
 
-    hookForButtonInteraction: async function(interaction) {
+    hookForButtonInteractionOld: async function(interaction) {
         if (interaction.customId === 'zockenSelect') {
             let [mem,memCreated] = await this.client.myDB.Member.findOrCreate({
                 where: {id: interaction.member.id},
