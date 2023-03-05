@@ -19,172 +19,58 @@ const myZocken = {
 
     dbZocken: {},
 
-    createZockenEmbed: async function(interaction) {
-        let maxgames = 10;
-        let sPlayer = '';
-        let aPlayerNames = [];
-    
-        if (this.dbZocken[interaction.channel.id].length === 0) {
-            sPlayer = this.l('Nobody');
-        } else {
-            await this.dbZocken[interaction.channel.id].forEach(playerId => {
-                interaction.guild.members.fetch(playerId).then(m => {
-                    aPlayerNames.push(m.displayName);
-                });
-            });
-            sPlayer = aPlayerNames.join(', ') || this.l('Nobody');
-            
-            // Ersetze letztes Komma durch "und":
-            if (sPlayer.lastIndexOf(',') > -1) {
-                sPlayer = sPlayer.substring(0,sPlayer.lastIndexOf(',')) + this.l(' and') + sPlayer.substring(sPlayer.lastIndexOf(',')+1,sPlayer.length);
-            }
-        };
-    
-    
-        let e = new EmbedBuilder()
-        .setColor(Colors.Blue)
-        .setTitle(this.l('Time to zock!'))
-        .setDescription(this.l('%s %s in, who is willing to join?', sPlayer, this.dbZocken[interaction.channel.id].length > 1 ? this.l('are') : this.l('is')))
-        .setFooter({ text: this.l('The following buttons will be availble for %d minutes:', this.cfg.collectorTimeout) });
-    
-        if (this.dbZocken[interaction.channel.id].length > 0) {
-            let channelCount = await this.client.myDB.Games.count({where: {channel: interaction.channel.id}});
-            if (channelCount === 0 ) {
-                let s = '';
-                let g = await this.client.myDB.Games.findAll({
-                    raw: true,
-                    attributes: [
-                        'name',
-                        [Sequelize.fn('COUNT', '*'),'cName']
-                    ],
-                    include: [
-                        {
-                            model: this.client.myDB.GamesPlayed,
-                            where: {
-                                member: this.dbZocken[interaction.channel.id]
-                            }
-        
-                        }
-                    ],
-                    order: [
-                        [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
-                        [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],
-                    ],
-                    group: 'Games.name',
-                });
-        
-                g.forEach(gg => {
-                    if (maxgames > 0) {
-                        s = s.concat(multiChar(gg.cName,':bust_in_silhouette:'), ' ', gg.name, '\n');
-                        maxgames = maxgames - 1;
-                    }
-                });
-        
-                // s = Object.keys(g).map(key => g[key].name).join(', ');
-        
-                if (s != '') {
-                    e.addFields([{ name: this.l("I'll suggest the following games:"), value: s }]);
-                };
-            };
-        };
-    
-        return e;
-    },
-
     createZockenText: async function(guildEvent) {
         let maxgames = 10;
         let eventMembers = [];
 
-        let eventSubcribers = await guildEvent.fetchSubscribers({withMember: true})
-        await Promise.all(eventSubcribers.map(async (eventSubcriber) => {
-            eventMembers.push(eventSubcriber.member.id);
-        }));
-
-        if (eventMembers.length > 0) {
-            let s = '';
-            let g = await this.client.myDB.Games.findAll({
-                raw: true,
-                attributes: [
-                    'name',
-                    [Sequelize.fn('COUNT', '*'),'cName']
-                ],
-                include: [
-                    {
-                        model: this.client.myDB.GamesPlayed,
-                        where: {
-                            member: eventMembers
-                        }
-    
-                    }
-                ],
-                order: [
-                    [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
-                    [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],
-                ],
-                group: 'Games.name',
-            });
-    
-            g.forEach(gg => {
-                if (maxgames > 0) {
-                    s = s.concat(multiChar(gg.cName,':bust_in_silhouette:'), ' ', gg.name, '\n');
-                    maxgames = maxgames - 1;
+        guildEvent.fetchSubscribers({withMember: true})
+        .then(eventSubcribers => {
+            Promise.all(eventSubcribers.map(async (eventSubcriber) => {
+                eventMembers.push(eventSubcriber.member.id);
+            }))
+            .then(() => {
+                console.debug(eventMembers.length);
+                if (eventMembers.length > 0) {
+                    let s = '';
+                    this.client.myDB.Games.findAll({
+                        raw: true,
+                        attributes: [
+                            'name',
+                            [Sequelize.fn('COUNT', '*'),'cName']
+                        ],
+                        include: [
+                            {
+                                model: this.client.myDB.GamesPlayed,
+                                where: {
+                                    member: eventMembers
+                                }
+            
+                            }
+                        ],
+                        order: [
+                            [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
+                            [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],
+                        ],
+                        group: 'Games.name',
+                    })
+                    .then(g => {
+                        g.forEach(gg => {
+                            if (maxgames > 0) {
+                                s = s.concat(multiChar(gg.cName,':bust_in_silhouette:'), ' ', gg.name, '\n');
+                                maxgames = maxgames - 1;
+                            }
+                        });
+            
+                        return s;
+                    })
+            
+            
+                } else {
+                    return "Nobody"
                 }
             });
+        })
 
-            return s;
-    
-        } else {
-            return "Nobody"
-        }
-    },
-
-    createZockenFinalString: async function(interaction) {
-        let sPlayer = '';
-        let aPlayerNames = [];
-
-        let returnValue = '';
-    
-        if (this.dbZocken[interaction.channel.id].length === 0) {
-            sPlayer = this.l('Nobody');
-        } else {
-            await this.dbZocken[interaction.channel.id].forEach(playerId => {
-                interaction.guild.members.fetch(playerId).then(m => {
-                    aPlayerNames.push(m.displayName);
-                });
-            });
-            sPlayer = aPlayerNames.join(', ') || this.l('Nobody');
-            
-            // Ersetze letztes Komma durch "und":
-            if (sPlayer.lastIndexOf(',') > -1) {
-                sPlayer = sPlayer.substring(0,sPlayer.lastIndexOf(',')) + ' und' + sPlayer.substring(sPlayer.lastIndexOf(',')+1,sPlayer.length);
-            }
-        };
-
-        if (this.dbZocken[interaction.channel.id].length > 1) {
-            returnValue = this.l('%s have found together.', sPlayer);
-        } else {
-            returnValue = this.l('Unfortunately, nobody has been found.');
-        };
-
-        return returnValue;
-    },
-
-    createActionRow: function() {
-        return new ActionRowBuilder()
-        .addComponents(
-            new ButtonBuilder()
-                .setCustomId('zockenYes')
-                .setLabel(this.l('Count me in!'))
-                .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-                .setCustomId('zockenNo')
-                .setLabel(this.l('No, sorry...'))
-                .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-                .setCustomId('zockenSelect')
-                .setLabel(this.l('Why is my name in here?'))
-                .setStyle(ButtonStyle.Secondary),
-        );
     },
 
     createChannelMemberPing: async function(interaction) {
@@ -243,6 +129,8 @@ const myZocken = {
 
     hookForCommandInteraction: async function(interaction) {
         if (interaction.commandName == 'zocken') {
+            await interaction.reply({content: 'Loading...'});
+
             interaction.guild.scheduledEvents.create({
                 name: this.l('%s would like to game!', interaction.member.displayName),
                 scheduledStartTime: Moment().add(50,'minutes'),
@@ -255,7 +143,7 @@ const myZocken = {
             .then(event => {
                 this.createChannelMemberPing(interaction)
                 .then(channelMemberPing => {
-                    interaction.reply({
+                    interaction.editReply({
                         content: this.l('Hey%s and everyone else! (%s)', channelMemberPing, event.url),
                     })
                     .then(() => {
@@ -268,7 +156,6 @@ const myZocken = {
 
             });
         }
-
     },
 
     hookForEventUserUpdate: async function(guildScheduledEvent, user) {
