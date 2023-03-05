@@ -91,6 +91,53 @@ const myZocken = {
         return e;
     },
 
+    createZockenText: async function(guildEvent) {
+        let maxgames = 10;
+        let eventMembers = [];
+
+        guildEvent.fetchSubscribers({withMember: true})
+        .this(eventSubcribers => {
+            eventMembers.push(eventSubcribers.member);
+        });
+    
+        if (guildEvent.userCount > 0) {
+            let s = '';
+            let g = await this.client.myDB.Games.findAll({
+                raw: true,
+                attributes: [
+                    'name',
+                    [Sequelize.fn('COUNT', '*'),'cName']
+                ],
+                include: [
+                    {
+                        model: this.client.myDB.GamesPlayed,
+                        where: {
+                            member: eventMembers
+                        }
+    
+                    }
+                ],
+                order: [
+                    [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
+                    [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],
+                ],
+                group: 'Games.name',
+            });
+    
+            g.forEach(gg => {
+                if (maxgames > 0) {
+                    s = s.concat(multiChar(gg.cName,':bust_in_silhouette:'), ' ', gg.name, '\n');
+                    maxgames = maxgames - 1;
+                }
+            });
+
+            return s;
+    
+        } else {
+            return "Nobody"
+        }
+    },
+
     createZockenFinalString: async function(interaction) {
         let sPlayer = '';
         let aPlayerNames = [];
@@ -198,8 +245,8 @@ const myZocken = {
         if (interaction.commandName == 'zocken') {
             interaction.guild.scheduledEvents.create({
                 name: this.l('%s would like to game!', interaction.member.displayName),
-                scheduledStartTime: Moment().add(5,'minutes'),
-                scheduledEndTime: Moment().add(65,'minutes'), // Optional, but not for EXTERNAL
+                scheduledStartTime: Moment().add(50,'minutes'),
+                scheduledEndTime: Moment().add(650,'minutes'), // Optional, but not for EXTERNAL
                 privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                 entityType: GuildScheduledEventEntityType.External,
                 description: 'Test', // Optional
@@ -209,10 +256,28 @@ const myZocken = {
                 this.createChannelMemberPing(interaction)
                 .then(channelMemberPing => {
                     interaction.reply({
-                        content: this.l('Hey%s and everyone else! %s', channelMemberPing, event.url),
+                        content: this.l('Hey%s and everyone else! (%s)', channelMemberPing, event.url),
+                    })
+                    .then(() => {
+                        interaction.followUp({
+                            content: this.l("Hey %s, don't forget to press \"Interested\" yourself on the event I just created for you.", interaction.member.displayName),
+                            ephemeral: true,
+                        });
                     });
                 });
 
+            });
+        }
+
+    },
+
+    hookForEventUserUpdate: async function(newGuildScheduledEvent, oUser) {
+        console.debug(newGuildScheduledEvent);
+        await newGuildScheduledEvent.setDescription('HAHA');
+        if (newGuildScheduledEvent.entityMetadata.location.includes('/zocken')) {
+            this.createZockenText(newGuildScheduledEvent)
+            .then(guildDescription => {
+                newGuildScheduledEvent.setDescription(guildDescription);
             });
         }
 

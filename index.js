@@ -78,6 +78,20 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 	});
 });
 
+client.on(Events.GuildScheduledEventUserAdd, async (oGuildScheduledEvent, oUser) => {
+
+	ronja_modules.forEach(m => {
+		if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
+	});
+});
+
+client.on(Events.GuildScheduledEventUserRemove, async (oGuildScheduledEvent, oUser) => {
+
+	ronja_modules.forEach(m => {
+		if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
+	});
+});
+
 client.on(Events.GuildScheduledEventUpdate, async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
 
 	ronja_modules.forEach(m => {
