@@ -95,14 +95,12 @@ const myZocken = {
         let maxgames = 10;
         let eventMembers = [];
 
-        console.debug(guildEvent);
-        await guildEvent.setDescription('This is working.');
-        guildEvent.fetchSubscribers({withMember: true})
-        .this(eventSubcribers => {
-            eventMembers.push(eventSubcribers.member);
-        });
-    
-        if (guildEvent.userCount > 0) {
+        let eventSubcribers = await guildEvent.fetchSubscribers({withMember: true})
+        await Promise.all(eventSubcribers.map(async (eventSubcriber) => {
+            eventMembers.push(eventSubcriber.member.id);
+        }));
+
+        if (eventMembers.length > 0) {
             let s = '';
             let g = await this.client.myDB.Games.findAll({
                 raw: true,
