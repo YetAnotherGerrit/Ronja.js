@@ -95,6 +95,8 @@ const myZocken = {
         let maxgames = 10;
         let eventMembers = [];
 
+        console.debug(guildEvent);
+        await guildEvent.setDescription('This is working.');
         guildEvent.fetchSubscribers({withMember: true})
         .this(eventSubcribers => {
             eventMembers.push(eventSubcribers.member);
@@ -271,16 +273,13 @@ const myZocken = {
 
     },
 
-    hookForEventUserUpdate: async function(newGuildScheduledEvent, oUser) {
-        console.debug(newGuildScheduledEvent);
-        await newGuildScheduledEvent.setDescription('HAHA');
-        if (newGuildScheduledEvent.entityMetadata.location.includes('/zocken')) {
-            this.createZockenText(newGuildScheduledEvent)
+    hookForEventUserUpdate: async function(guildScheduledEvent, user) {
+        if (guildScheduledEvent.entityMetadata.location.includes('/zocken')) {
+            this.createZockenText(guildScheduledEvent)
             .then(guildDescription => {
-                newGuildScheduledEvent.setDescription(guildDescription);
+                guildScheduledEvent.setDescription(guildDescription);
             });
         }
-
     },
 
     hookForCommandInteractionOld: async function(interaction)  {
