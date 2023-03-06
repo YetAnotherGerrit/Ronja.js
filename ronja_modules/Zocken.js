@@ -160,11 +160,11 @@ const myZocken = {
             }
 
             if (!interaction.options.getString('day') && !interaction.options.getString('time')) {
-                startTime = startTime.plus({hours: 1});
+                startTime = startTime.plus({minutes: 10});
             }
 
-            if (startTime.diff(DateTime.now(), 'minutes') < 10) {
-                interaction.reply({content: this.l('The choosen time and day needs to be at least 10 minutes in the future.'), ephemeral: true});
+            if (startTime.diff(DateTime.now(), 'minutes') < 5) {
+                interaction.reply({content: this.l('The choosen time and day needs to be at least 5 minutes in the future.'), ephemeral: true});
                 return;
             }
 
