@@ -23,7 +23,7 @@ temporary.
   - Channels for specific games are created when a specific amount of
     users on the server are owning the same game.
   - Automatic archiving of channels about games that are not played anymore.
-- /zocken command to find people to game with by assisting on what common
+- /lfg command to find people to game with by assisting on what common
   games they have.
 - /top10 command to show the most popular games on the server.
   - Also weekly, monthly and yearly top 10.
