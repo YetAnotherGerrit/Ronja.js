@@ -39,7 +39,11 @@ const myDynamicVoiceChannels = {
                     bitrate: this.cfg.voiceChannelBitrate,
                 });
             newChannel.lockPermissions();
-            await newState.setChannel(newChannel);
+            try {
+                await newState.setChannel(newChannel);
+            } catch { // if user cannot be moved to new channel, delete the newly created channel
+                newChannel.delete();
+            }
        } 
     
        if (oldState.channel && oldState.channel != newState.channel && oldState.channel.type === ChannelType.GuildVoice && oldState.channel.userLimit === 0 && oldState.channel.members.size === 0) {
