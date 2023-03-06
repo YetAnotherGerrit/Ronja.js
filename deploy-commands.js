@@ -3,10 +3,42 @@ const { SlashCommandBuilder, REST, Routes } = require('discord.js');
 const { clientId, guildId, token } = require('./_SECRET/config.js');
 
 const commands = [
-	new SlashCommandBuilder().setName('top10').setDescription('Zeigt die Top10-Spiele der Liga nach Anzahl von Mitspielern.')
-		.addIntegerOption(option => option.setName('tage').setDescription('Top10 für welchen Zeitraum?').setRequired(false)),
-	new SlashCommandBuilder().setName('serverprofil').setDescription('USER'),
-	new SlashCommandBuilder().setName('zocken').setDescription('Du willst was zocken und suchst Mitspieler?'),
+	new SlashCommandBuilder()
+		.setName('top10')
+		.setDescription('Zeigt die Top10-Spiele der Liga nach Anzahl von Mitspielern.')
+		.addIntegerOption(option => option
+			.setName('tage')
+			.setDescription('Top10 für welchen Zeitraum?')
+			.setRequired(false)
+		)
+	,
+	new SlashCommandBuilder()
+		.setName('serverprofil')
+		.setDescription('USER')
+	,
+	new SlashCommandBuilder()
+		.setName('lfg').setNameLocalizations({de: 'zocken'})
+		.setDescription('You want to game and need fellow gamers?').setDescriptionLocalizations({de: 'Du willst was zocken und suchst Mitspieler?'})
+		.addStringOption(option => option
+			.setName('day').setNameLocalizations({de: 'tag'})
+			.setDescription('Select the day you want to play.').setDescriptionLocalizations({de: 'Wähle den Tag an dem du zocken möchtest.'})
+			.setRequired(false)
+			.addChoices(
+				{ name: 'Today', value: 'today', name_localizations: {de: 'Heute'} },
+				{ name: 'Tomorrow', value: 'tomorrow', name_localizations: {de: 'Morgen'} }
+			)
+		)
+		.addStringOption(option => option
+			.setName('time').setNameLocalizations({de: 'uhrzeit'})
+			.setDescription('Select the time you want to play (HH:MM). Use 24h time format.').setDescriptionLocalizations({de: 'Setze die Uhrzeit zu der du spielen möchtest (SS:MM).'})
+			.setRequired(false)			
+		)
+		.addStringOption(option => option
+			.setName('title').setNameLocalizations({de: 'titel'})
+			.setDescription('Give your gaming session a name.').setDescriptionLocalizations({de: 'Gib deinem /zocken-Aufruf einen Namen.'})
+			.setRequired(false)			
+		)
+	,
 ]
 .map(command => command.toJSON());
 
