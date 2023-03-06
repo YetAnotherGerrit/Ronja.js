@@ -10,7 +10,7 @@ const toLocaleDateStringFormat = { year: 'numeric', month: '2-digit', day: '2-di
 
 const myServerprofil = {
     hookForContextMenuInteraction: async function(interaction)  {
-        if (interaction.commandName == 'Serverprofil') {
+        if (interaction.commandName == 'Serverprofile') {
             let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);
 
             let e = new EmbedBuilder()

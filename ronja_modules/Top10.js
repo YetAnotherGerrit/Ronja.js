@@ -73,7 +73,7 @@ const myTop10 = {
 		if (interaction.commandName == 'top10') {
             await interaction.reply(this.client.myLoadingEmbed());
 
-			this.createTop10Embed(interaction.options.getInteger('tage') || 14)
+			this.createTop10Embed(interaction.options.getInteger('days') || 14)
             .then(e => {
                 interaction.editReply({
                     embeds: [ e	],

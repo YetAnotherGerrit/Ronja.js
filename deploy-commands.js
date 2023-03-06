@@ -5,15 +5,15 @@ const { clientId, guildId, token } = require('./_SECRET/config.js');
 const commands = [
 	new SlashCommandBuilder()
 		.setName('top10')
-		.setDescription('Zeigt die Top10-Spiele der Liga nach Anzahl von Mitspielern.')
+		.setDescription('List the top 10 games by player count.').setDescriptionLocalizations({de: 'Zeigt die Top 10-Spiele nach Anzahl von Mitspielern.'})
 		.addIntegerOption(option => option
-			.setName('tage')
-			.setDescription('Top10 für welchen Zeitraum?')
+			.setName('days').setNameLocalizations({de: 'tage'})
+			.setDescription('Top 10 for what period?').setDescriptionLocalizations({de: 'Top 10 für welchen Zeitraum?'})
 			.setRequired(false)
 		)
 	,
 	new SlashCommandBuilder()
-		.setName('serverprofil')
+		.setName('serverprofile').setNameLocalizations({de: 'serverprofil'})
 		.setDescription('USER')
 	,
 	new SlashCommandBuilder()
@@ -47,14 +47,16 @@ function capitalizeFirstLetter(string) {
 };
 
 commands.forEach(cmd => {
-	if (cmd['description'] == 'USER') {
-		cmd['type'] = 2;
-		cmd['name'] = capitalizeFirstLetter(cmd['name']);
+	if (cmd.description == 'USER') {
+		cmd.type = 2;
+		cmd.name = capitalizeFirstLetter(cmd.name);
+		cmd.name_localizations.de = capitalizeFirstLetter(cmd.name_localizations.de)
 		delete cmd.description;
 	}
-	if (cmd['description'] == 'MESSAGE') {
-		cmd['type'] = 3;
-		cmd['name'] = capitalizeFirstLetter(cmd['name']);
+	if (cmd.description == 'MESSAGE') {
+		cmd.type = 3;
+		cmd.name = capitalizeFirstLetter(cmd.name);
+		cmd.name_localizations.de = capitalizeFirstLetter(cmd.name_localizations.de)
 		delete cmd.description;
 	}
 });
