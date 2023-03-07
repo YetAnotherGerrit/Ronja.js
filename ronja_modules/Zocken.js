@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, GuildScheduledEventStatus } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const { DateTime } = require("luxon");
@@ -15,7 +15,7 @@ function multiChar(a,c) {
 
 const myZocken = {
     defaultConfig: {
-        collectorTimeout: 10, // Maximum of Discord-API is 15 minutes.
+        timeZone: 'Europe/Berlin',
     },
 
     dbZocken: {},
@@ -147,7 +147,7 @@ const myZocken = {
                         return;
                     }
 
-                    startTime = DateTime.fromObject({hour: regexResult[1], minute: regexResult[2]});
+                    startTime = DateTime.fromObject({hour: regexResult[1], minute: regexResult[2]}, {zone: this.cfg.timeZone});
 
                 } else {
                     interaction.reply({content: this.l('Please choose a valid time: HH:MM (24 hour time format).'), ephemeral: true});
@@ -190,13 +190,19 @@ const myZocken = {
 
     hookForEventUserUpdate: async function(guildScheduledEvent, user) {
         if (guildScheduledEvent.entityMetadata.location.includes('/lfg')) {
-            this.createZockenText(guildScheduledEvent)
-            .then(guildDescription => {
-                guildScheduledEvent.setDescription(guildDescription);
-            });
+            let guildDescription = await this.createZockenText(guildScheduledEvent);
+            guildScheduledEvent.setDescription(guildDescription);
         }
     },
 
+    hookForEventStart: async function(oldGuildScheduledEvent, newGuildScheduledEvent) {
+        if (newGuildScheduledEvent.entityMetadata.location.includes('/lfg')) {
+            let eventSubcribers = await newGuildScheduledEvent.fetchSubscribers();
+            if (eventSubcribers.size < 2) {
+                newGuildScheduledEvent.setStatus(GuildScheduledEventStatus.Completed, 'Not enough participants.');
+            }
+        }
+    },
 
 };
 
