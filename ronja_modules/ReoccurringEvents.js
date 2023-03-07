@@ -20,6 +20,7 @@ const myReoccurringEvents = {
                 description: newGuildScheduledEvent.description, // Optional
                 channel: newGuildScheduledEvent.channel, // Optional, but not for STAGE_INSTANCE or VOICE
                 entityMetadata: newGuildScheduledEvent.entityMetadata, // Optional, but not for EXTERNAL,
+                image: newGuildScheduledEvent.coverImageURL() ? newGuildScheduledEvent.coverImageURL()+'?size=1024' : null, // Optional
                 reason: 'Reoccurring Event', // Optional
             });
         };
