@@ -29,7 +29,7 @@ const myZocken = {
         await Promise.all(eventSubcribers.map(async (eventSubcriber) => eventMembers.push(eventSubcriber.member.id)));
 
         if (eventMembers.length > 0) {
-            let zockenText = this.l('Possible game suggestions:\n\n');
+            let zockenText = '';
 
             let gamesPlayed = await this.client.myDB.Games.findAll({
                 raw: true,
