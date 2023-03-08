@@ -115,8 +115,8 @@ const myDynamicTextChannels = {
             this.sortTextChannelCategoryByName(autoChannel);
 
             this.notifyChannel(
-                this.l('New text channel created'),
-                this.l('Some of you guys played a new game recently. To provide you with a channel to talk about, <#%s> has been created.\n\nOthers will be added to that channel, once I see them playing it.', newChannel.id)
+                this.l('A new text channel was created'),
+                this.l('Some of you guys played a new game recently. To provide you with a channel to talk about it, <#%s> has been created.\n\nOthers will be added to that channel once I see them playing the same game.', newChannel.id)
             );
         } else {
             console.warn('WARNING: no dtcGamesCategory set in config file!');
@@ -134,8 +134,8 @@ const myDynamicTextChannels = {
                 this.sortTextChannelCategoryByName(autoChannel);
 
                 this.notifyChannel(
-                    this.l('Text channel unarchived'),
-                    this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-actived from archive.\n\nOthers will be added to that channel, once I see them playing it.', newChannel.id)
+                    this.l('A text channel was re-activated'),
+                    this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', newChannel.id)
                 );    
             }
         } else {

@@ -92,7 +92,7 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, this.l('The most played games oft last week:'));
+                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, this.l('The most played games of last week:'));
                 },
             },
             {
@@ -104,7 +104,7 @@ const myTop10 = {
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, this.l('Happy new year! This have been the highlights of last year:'));
+                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, this.l('Happy new year! These have been the highlights of last year:'));
                 },
             },
         ]

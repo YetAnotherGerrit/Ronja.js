@@ -63,7 +63,7 @@ const myZocken = {
             return zockenText;
     
         } else {
-            return this.l('Nobody is participating yet. Don\'t forget to click that "Interested"-Button!');
+            return this.l("Nobody is participating yet. Don't forget to click that \"Interested\"-Button!");
         }
     },
 
@@ -126,7 +126,7 @@ const myZocken = {
     hookForCommandInteraction: async function(interaction) {
         if (interaction.commandName == 'lfg') {
             if (interaction.options.getString('day') && !interaction.options.getString('time')) {
-                interaction.reply({content: this.l('When you choose a day you\'ll also need to specify a time!'), ephemeral: true});
+                interaction.reply({content: this.l('When you choose a day, you\'ll also need to specify a time!'), ephemeral: true});
                 return;
             }
 
@@ -150,7 +150,7 @@ const myZocken = {
                     startTime = DateTime.fromObject({hour: regexResult[1], minute: regexResult[2]}, {zone: this.cfg.timeZone});
 
                 } else {
-                    interaction.reply({content: this.l('Please choose a valid time: HH:MM (24 hour time format).'), ephemeral: true});
+                    interaction.reply({content: this.l('Please choose a valid time: HH:MM (24-hour time format).'), ephemeral: true});
                     return;
                 }
             }
@@ -164,11 +164,11 @@ const myZocken = {
             }
 
             if (startTime.diff(DateTime.now(), 'minutes') < 5) {
-                interaction.reply({content: this.l('The choosen time and day needs to be at least 5 minutes in the future.'), ephemeral: true});
+                interaction.reply({content: this.l('The chosen time and day need to be at least 5 minutes in the future.'), ephemeral: true});
                 return;
             }
 
-            await interaction.reply({content: this.l('%s would like to game! Event will be created...', interaction.member.displayName)});
+            await interaction.reply({content: this.l('%s would like to game! An event will be created...', interaction.member.displayName)});
 
             let newEvent = await interaction.guild.scheduledEvents.create({
                 name: interaction.options.getString('title') || this.l('%s\'s gaming session', interaction.member.displayName),
