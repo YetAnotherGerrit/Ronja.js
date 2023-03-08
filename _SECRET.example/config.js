@@ -1,8 +1,6 @@
 const mySecret = {
-	clientId: "xxxxxxxxxxxxxxxxxx",  // https://discord.com/developers/applications
-	guildId: "xxxxxxxxxxxxxxxxxx",   // Create application in dev portal to get ((clientId)), it's called "Application ID" there
-                                     // Create bot within this application to get ((token))
-                                     // Get ((guildId)) by right clicking on your server and choosing "Copy ID" (need to have dev mode enabled)
+	clientId: "xxxxxxxxxxxxxxxxxx", // https://discord.com/developers/applications
+	guildId: "xxxxxxxxxxxxxxxxxx",  // https://discordjs.guide/preparations/setting-up-a-bot-application.html
 	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
     language: 'en',                 // Set it to whatever tag you want to use. A template will be dynamically generated over time.
