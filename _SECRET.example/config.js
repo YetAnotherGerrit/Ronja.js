@@ -5,7 +5,7 @@ const mySecret = {
                                      // Get ((guildId)) by right clicking on your server and choosing "Copy ID" (need to have dev mode enabled)
 	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
-    language: 'en',
+    language: 'en',                 // Set it to whatever tag you want to use. A template will be dynamically generated over time.
 
     // DynamicTextChannels
     dtcGamesCategory: '',           // ID of channel category, where the game specific text channels should be created in
