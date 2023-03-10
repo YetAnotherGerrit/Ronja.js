@@ -59,7 +59,7 @@ const myICalFeed = {
 
     hookForCommandInteraction: async function(interaction)  {
 		if (interaction.commandName == 'ical') {
-            if ( this.cfg.icalFtpServer && this.cfg.icalFtpUsername && this.cfg.icalUrl) {
+            if (this.cfg.icalFtpServer && this.cfg.icalFtpUsername && this.cfg.icalFtpPassword && this.cfg.icalUrl) {
                 interaction.reply({content: this.l('Your ical-Feed will be generated...'), ephemeral: true});
                 await this.updateICalFile(interaction.guild, interaction.user);
                 interaction.editReply({
@@ -72,7 +72,7 @@ const myICalFeed = {
     },
 
     hookForEventUserUpdate: async function(oGuildScheduledEvent, oUser)  {
-        if ( this.cfg.icalFtpServer && this.cfg.icalFtpUsername && this.cfg.icalUrl)
+        if (this.cfg.icalFtpServer && this.cfg.icalFtpUsername && this.cfg.icalFtpPassword && this.cfg.icalUrl)
             this.updateICalFile(oGuildScheduledEvent.guild, oUser);
     },
 
