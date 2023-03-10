@@ -27,6 +27,7 @@ temporary.
   games they have.
 - /top10 command to show the most popular games on the server.
   - Also weekly, monthly and yearly top 10.
+- /ical command to get an ical-feed for the events you attend.
 - Serverprofile command to show common games for a specific user.
 - Serverstatus for New World.
 - Reoccurring Events (weekly, bi-weekly, n-weekly so far).

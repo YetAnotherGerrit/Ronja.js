@@ -82,5 +82,11 @@
   ],
   "Hey%s and everyone else! (%s)": [
     "Hey%s und alle anderen! (%s)"
+  ],
+  "Your ical-Feed will be generated...": [
+    "Dein ical-Feed wird erstellt..."
+  ],
+  "The ical-settings for this server are incomplete.": [
+    "Die ical-Einstellungen für diesen Server sind unvollständig."
   ]
 }

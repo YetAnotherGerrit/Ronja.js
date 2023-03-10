@@ -4,6 +4,10 @@ const { clientId, guildId, token } = require('./_SECRET/config.js');
 
 const commands = [
 	new SlashCommandBuilder()
+		.setName('ical')
+		.setDescription('Get an ical-feed of your events.').setDescriptionLocalizations({de: 'Erstelle einen ical-Feed für deine Events.'})
+	,
+	new SlashCommandBuilder()
 		.setName('top10')
 		.setDescription('List the top 10 games by player count.').setDescriptionLocalizations({de: 'Zeigt die Top 10-Spiele nach Anzahl von Mitspielern.'})
 		.addIntegerOption(option => option

@@ -9,6 +9,7 @@ const cron = require('node-cron');
 // Load Ronja's modular system
 const ronja_modules = [];
 
+ronja_modules.push(require('./ronja_modules/Calendarfeed.js'));
 ronja_modules.push(require('./ronja_modules/DynamicTextChannels.js'));
 ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
 ronja_modules.push(require('./ronja_modules/NWDB.js'));
