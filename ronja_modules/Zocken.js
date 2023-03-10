@@ -28,6 +28,16 @@ const myZocken = {
 
         await Promise.all(eventSubcribers.map(async (eventSubcriber) => eventMembers.push(eventSubcriber.member.id)));
 
+        let regex = new RegExp(/\((\d+)\)/);
+
+        let regexResult = guildEvent.entityMetadata.location.match(regex);
+
+        console.debug(regexResult[1]);
+
+        if (regexResult) {
+            if (!eventMembers.includes(regexResult[1])) eventMembers.push(regexResult[1])
+        }
+
         if (eventMembers.length > 0) {
             let zockenText = '';
 
@@ -177,7 +187,7 @@ const myZocken = {
                 privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                 entityType: GuildScheduledEventEntityType.External,
                 description: this.l('Don\'t forget to click that "Interested"-Button!'), // Optional
-                entityMetadata: {location: this.l('#%s via /lfg by %s', interaction.channel.name, interaction.member.displayName)}, // Optional, but not for EXTERNAL,
+                entityMetadata: {location: this.l('#%s via /lfg (%s)', interaction.channel.name, interaction.member.id)}, // Optional, but not for EXTERNAL,
             })
 
             let channelMemberPing = await this.createChannelMemberPing(interaction);

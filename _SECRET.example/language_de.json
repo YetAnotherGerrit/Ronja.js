@@ -77,8 +77,8 @@
   "Don't forget to click that \"Interested\"-Button!": [
     "Vergiss nicht, auf den \"Interessiert\"-Button zu klicken!"
   ],
-  "#%s via /lfg by %s": [
-    "#%s mit /lfg von %s"
+  "#%s via /lfg by %s (%s)": [
+    "#%s mit /lfg von %s (%s)"
   ],
   "Hey%s and everyone else! (%s)": [
     "Hey%s und alle anderen! (%s)"
