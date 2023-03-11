@@ -20,21 +20,26 @@ const myZocken = {
 
     dbZocken: {},
 
-    createZockenText: async function(guildEvent) {
+    createZockenText: async function(guildEvent, guildEventCreatorId) {
         let maxGames = 10;
         let eventMembers = [];
+        let regexResult;
 
-        let eventSubcribers = await guildEvent.fetchSubscribers({withMember: true});
+        if (guildEvent) {
+            let eventSubcribers = await guildEvent.fetchSubscribers({withMember: true});
 
-        await Promise.all(eventSubcribers.map(async (eventSubcriber) => eventMembers.push(eventSubcriber.member.id)));
-
-        let regex = new RegExp(/\((\d+)\)/);
-
-        let regexResult = guildEvent.entityMetadata.location.match(regex);
+            await Promise.all(eventSubcribers.map(async (eventSubcriber) => eventMembers.push(eventSubcriber.member.id)));
+    
+            let regex = new RegExp(/\((\d+)\)/);
+    
+            regexResult = guildEvent.entityMetadata.location.match(regex);
+        }
 
         if (regexResult) {
             if (!eventMembers.includes(regexResult[1])) eventMembers.push(regexResult[1])
         }
+
+        if (guildEventCreatorId) eventMembers.push(guildEventCreatorId);
 
         if (eventMembers.length > 0) {
             let zockenText = '';
@@ -184,7 +189,7 @@ const myZocken = {
                 scheduledEndTime: startTime.plus({hours: 1}).toString(), // Optional, but not for EXTERNAL
                 privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                 entityType: GuildScheduledEventEntityType.External,
-                description: this.l('Don\'t forget to click that "Interested"-Button!'), // Optional
+                description: await this.createZockenText(null, interaction.member.id), // Optional
                 entityMetadata: {location: this.l('#%s via /lfg by %s (%s)', interaction.channel.name, interaction.member.displayName, interaction.member.id)}, // Optional, but not for EXTERNAL,
             })
 
