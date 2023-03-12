@@ -205,13 +205,35 @@ const myZocken = {
             myReply.createMessageComponentCollector({time: this.cfg.collectorTimeout}).on('end', async collected => {
                 if (newEvent.isActive()) {
                     let eventSubcribers = await newEvent.fetchSubscribers();
-                    interaction.editReply({content: this.l("%s found %d more to game with.", interaction.member.displayName, eventSubcribers.size - 1), components: [ ] })
+
+                    interaction.editReply({
+                        content: '',
+                        embeds: [ new EmbedBuilder()
+                            .setColor(Colors.Green)
+                            .setDescription(this.l("%s found %d more to game with.", interaction.member.displayName, eventSubcribers.size - 1))
+                        ],
+                        components: [ ] 
+                    })
                 }
                 if (newEvent.isCompleted() || newEvent.isCanceled()) {
-                    interaction.editReply({content: this.l("Unfortunately, nobody was found. Maybe next time.", interaction.member.displayName), components: [ ] })
+                    interaction.editReply({
+                        content: '',
+                        embeds: [ new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(this.l("Unfortunately, nobody was found. Maybe next time."))
+                        ],
+                        components: [ ] 
+                    })
                 }
                 if (newEvent.isScheduled()) {
-                    interaction.editReply({content: this.l("%s wants hang out later, click \"Interested\" to join. (%s)", interaction.member.displayName, newEvent.url), components: [ ] })
+                    interaction.editReply({
+                        content: newEvent.url,
+                        embeds: [ new EmbedBuilder()
+                            .setColor(Colors.Blue)
+                            .setDescription(this.l("%s wants hang out later, click \"Interested\" to join.", interaction.member.displayName))
+                        ],
+                        components: [ ] 
+                    })
                 }
             })
 
@@ -246,7 +268,7 @@ const myZocken = {
                 embeds: [  new EmbedBuilder()
                     .setColor(Colors.Blue)
                     .setTitle(this.l('Why is my name (not) in here?'))
-                    .setDescription(this.l("There is at least one game that you've played both within the last 100 days. If you don't want to receive those notifications, you can change that here.\n\nYour current setting:\n> %s", statusZockenSelectText))
+                    .setDescription(this.l("You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s", statusZockenSelectText))
                 ],
                 components: [ new ActionRowBuilder()
                     .addComponents( new StringSelectMenuBuilder()
