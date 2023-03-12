@@ -16,6 +16,7 @@ function multiChar(a,c) {
 const myZocken = {
     defaultConfig: {
         timeZone: 'Europe/Berlin',
+        collectorTimeout: 15*60*1000,
     },
 
     dbZocken: {},
@@ -84,10 +85,8 @@ const myZocken = {
         let channelMemberPing = '';
 				
         await Promise.all(interaction.channel.members.map(async (channelMember) => {
-            /* From when the users could select if they want to get notified by channel ping, maybe reintroduce later.
             let result = await this.client.myDB.Member.findOne({where: {id: channelMember.id}});
-            let statusChannelMember = result ? result.zockenmention : 1; */
-            let statusChannelMember = 1;
+            let statusChannelMember = result ? result.zockenmention : 1;
 
             let commonGames = 0;
             let g = await this.client.myDB.Games.findAll({
@@ -181,7 +180,9 @@ const myZocken = {
                 return;
             }
 
-            await interaction.reply({content: this.l('%s would like to game! An event will be created...', interaction.member.displayName)});
+            
+
+            let myReply = await interaction.reply({content: this.l('%s would like to game! An event will be created...', interaction.member.displayName)});
 
             let newEvent = await interaction.guild.scheduledEvents.create({
                 name: interaction.options.getString('title') || this.l('%s\'s gaming session', interaction.member.displayName),
@@ -197,7 +198,106 @@ const myZocken = {
 
             interaction.editReply({
                 content: this.l('Hey%s and everyone else! (%s)', channelMemberPing, newEvent.url),
+                components: [ new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('zockenSelect').setLabel(this.l('Why is my name (not) in here?')).setStyle(ButtonStyle.Secondary)) ]
+
             })
+
+            myReply.createMessageComponentCollector({time: this.cfg.collectorTimeout}).on('end', async collected => {
+                if (newEvent.isActive()) {
+                    let eventSubcribers = await newEvent.fetchSubscribers();
+                    interaction.editReply({content: this.l("%s found %d more to game with.", interaction.member.displayName, eventSubcribers.size - 1), components: [ ] })
+                }
+                if (newEvent.isCompleted() || newEvent.isCanceled()) {
+                    interaction.editReply({content: this.l("Unfortunately, nobody was found. Maybe next time.", interaction.member.displayName), components: [ ] })
+                }
+                if (newEvent.isScheduled()) {
+                    interaction.editReply({content: this.l("%s wants hang out later, click \"Interested\" to join. (%s)", interaction.member.displayName, newEvent.url), components: [ ] })
+                }
+            })
+
+        }
+    },
+
+    hookForButtonInteraction: async function(interaction) {
+        if (interaction.customId = "zockenSelect") {
+            let [mem,memCreated] = await this.client.myDB.Member.findOrCreate({
+                where: {id: interaction.member.id},
+                defaults: {zockenmention: 1},
+            });
+
+            let statusZockenSelect = mem.zockenmention;
+            let statusZockenSelectText = '';
+
+            switch(statusZockenSelect) {
+                case 2:
+                    statusZockenSelectText = this.l("Ping me also offline.")
+                    break;
+
+                case 1:
+                    statusZockenSelectText = this.l("Ping me only, when I am online.")
+                    break;
+
+                case 0:
+                    statusZockenSelectText = this.l("Please, never ping me.")
+                    break;
+            }
+
+            let myReply = await interaction.reply({
+                embeds: [  new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setTitle(this.l('Why is my name (not) in here?'))
+                    .setDescription(this.l("There is at least one game that you've played both within the last 100 days. If you don't want to receive those notifications, you can change that here.\n\nYour current setting:\n> %s", statusZockenSelectText))
+                ],
+                components: [ new ActionRowBuilder()
+                    .addComponents( new StringSelectMenuBuilder()
+                        .setCustomId('zockenSelected')
+                        .setPlaceholder(this.l("Notifications..."))
+                        .addOptions([
+                            {
+                                label: this.l("Ping me also offline."),
+                                description: this.l("Also notify myself that someone wants to game, even when I am offline."),
+                                value: '2',
+                            },
+                            {
+                                label: this.l("Ping me only, when I am online.")+this.l(" (Default)"),
+                                description: this.l("Notify myself only when I am also online in Discord."),
+                                value: '1',
+                            },
+                            {
+                                label: this.l("Please, never ping me."),
+                                description: this.l("I am not interested in this kind of gaming requests."),
+                                value: '0'
+                            }
+                        ]),
+                    )
+                ],
+                ephemeral: true,
+            });
+
+            let collector = myReply.createMessageComponentCollector({time: this.cfg.collectorTimeout});
+
+            collector.on('collect', async i => {
+                if (i.customId === 'zockenSelected') {
+                    await this.client.myDB.Member.update(
+                        { zockenmention: parseInt(i.values[0]) },
+                        { where: {id: i.member.id} },
+                    );
+            
+                    await i.update({
+                        embeds: [ new EmbedBuilder().setColor(Colors.Green).setTitle(this.l("Succesful!")).setDescription(this.l("Your settings have been saved.")) ],
+                        components: [ ],
+                    });
+                };
+            });
+
+            collector.on('end', async c => {
+                if (c.size == 0) {
+                    await interaction.editReply({
+                        embeds: [ new EmbedBuilder().setColor(Colors.Blue).setTitle(this.l("Expired!")).setDescription(this.l("No changes have been saved.")) ],
+                        components: [ ],
+                    });
+                };
+            });
         }
     },
 

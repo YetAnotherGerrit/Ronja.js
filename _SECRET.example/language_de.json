@@ -88,5 +88,53 @@
   ],
   "The ical-settings for this server are incomplete.": [
     "Die ical-Einstellungen für diesen Server sind unvollständig."
+  ],
+  "%s found %d more to game with.": [
+    "%s hat %d Mitspieler zum zocken gefunden."
+  ],
+  "Unfortunately, nobody was found. Maybe next time.": [
+    "Leider hat sich niemand gefunden. Vielleicht beim nächsten Mal."
+  ],
+  "%s wants hang out later, click \"Interested\" to join. (%s)": [
+    "%s möchte demnächst zocken, nutze den \"Interessiert\"-Knopf um dich anzuschließen."
+  ],
+  "Ping me also offline.": [
+    "Erwähne mich auch Offline."
+  ],
+  "Ping me only, when I am online.": [
+    "Erwähne mich nur, wenn ich gerade Online bin."
+  ],
+  "Please, never ping me.": [
+    "Bitte, erwähne mich nie."
+  ],
+  "There is at least one game that you've played both within the last 100 days. If you don't want to receive those notifications, you can change that here.\n\nYour current setting:\n> %s": [
+    "Es gibt mindestens ein Spiel, das ihr beide in den letzten 100 Tagen gezockt habt. Falls du solche Erwähnungen nicht möchtest, kannst du das hier ändern.\n\nDeine aktuelle Einstellung:\n> %s"
+  ],
+  "Notifications...": [
+    "Erwähnungen..."
+  ],
+  "Also notify myself that someone wants to game, even when I am offline.": [
+    "Erwähne mich, wenn jemand zocken möchte, auch wenn ich Offline bin."
+  ],
+  " (Default)": [
+    " (Standard)"
+  ],
+  "Notify myself only when I am also online in Discord.": [
+    "Erwähne mich nur, wenn ich auch gerade Online bin."
+  ],
+  "I am not interested in this kind of gaming requests.": [
+    "Ich bin nicht interessiert an diesen Zockanfragen."
+  ],
+  "Succesful!": [
+    "Erfolgreich!"
+  ],
+  "Your settings have been saved.": [
+    "Deine Einstellung wurde erfolgreich gespeichert."
+  ],
+  "Expired!": [
+    "Abgelaufen!"
+  ],
+  "No changes have been saved.": [
+    "Keine Änderungen wurden gespeichert."
   ]
 }

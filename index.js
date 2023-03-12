@@ -51,7 +51,7 @@ client.once('ready', () => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName}.`)
+	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName} (${interaction.customId}).`)
 
 	if (interaction.isCommand()) {
 		ronja_modules.forEach(m => {
