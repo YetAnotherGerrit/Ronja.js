@@ -15,7 +15,7 @@ function multiChar(a,c) {
 const myZocken = {
     defaultConfig: {
         timeZone: 'Europe/Berlin',
-        collectorTimeout: 15*60*1000,
+        collectorTimeout: 14*60*1000,
     },
 
     dbZocken: {},
