@@ -25,16 +25,28 @@ const myICalFeed = {
 
         await Promise.all(scheduledEvents.map(async (guildEvent) => {
             let eventSubcribers = await guildEvent.fetchSubscribers();
+            let myRepeating;
+            let myReg = /\[w(\d+)\]/;
+            let myRegResult = myReg.exec(guildEvent.description);
+    
+            if (myRegResult) {
+                myRepeating = {
+                    freq: 'WEEKLY',
+                    interval: myRegResult[1],
+                }
+            }
 
             await Promise.all(eventSubcribers.map(async (eventSubcriber) => {
                 if (eventSubcriber.user.id == user.id) {
+
                     iCalendar.createEvent({
                         start: guildEvent.scheduledStartAt,
                         end: guildEvent.scheduledEndAt,
                         summary: 'Discord: ' + guildEvent.name,
-                        description: guildEvent.description + "\n" + guildEvent.location + "\n" + guildEvent.url
-
+                        description: guildEvent.description + "\n" + guildEvent.location + "\n" + guildEvent.url,
+                        repeating: myRepeating
                     });
+
                 }
 
             }));
