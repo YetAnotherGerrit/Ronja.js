@@ -1,9 +1,5 @@
-const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
 const iCal = require('ical-generator');
 const jsftp = require("jsftp");
-
-
 
 const myICalFeed = {
     defaultConfig: {

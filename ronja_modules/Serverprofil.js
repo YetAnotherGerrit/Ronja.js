@@ -1,14 +1,12 @@
 const { EmbedBuilder, Colors } = require('discord.js');
-
-// Database dependencies
 const Sequelize = require('sequelize');
 
-// Parameters for Datetime-Formating of toLocaleDateString
-// TODO: Move somewhere else
-const toLocaleDateStringCountry = 'de-DE';
-const toLocaleDateStringFormat = { year: 'numeric', month: '2-digit', day: '2-digit' };
-
 const myServerprofil = {
+    defaultConfig: {
+        toLocaleDateStringCountry: 'de-DE',
+        toLocaleDateStringFormat: { year: 'numeric', month: '2-digit', day: '2-digit' }
+    },
+
     hookForContextMenuInteraction: async function(interaction)  {
         if (interaction.commandName == 'Serverprofile') {
             let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);
@@ -17,7 +15,7 @@ const myServerprofil = {
             .setColor(Colors.Blue)
             .setTitle(this.l('Profile of %s', m.displayName))
             .setThumbnail(m.displayAvatarURL())
-            .setDescription(this.l(`%s is on this discord server since %s.`, m.displayName, m.joinedAt.toLocaleDateString(toLocaleDateStringCountry, toLocaleDateStringFormat)));
+            .setDescription(this.l(`%s is on this discord server since %s.`, m.displayName, m.joinedAt.toLocaleDateString(this.cfg.toLocaleDateStringCountry, this.cfg.toLocaleDateStringFormat)));
     
             if (interaction.member != m) {
                 let s = '';
@@ -62,7 +60,6 @@ const myServerprofil = {
     
         };
     },
-
 };
 
 module.exports = myServerprofil;

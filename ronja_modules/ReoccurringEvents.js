@@ -1,5 +1,3 @@
-const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
 const { DateTime } = require("luxon");
 
 const myReoccurringEvents = {

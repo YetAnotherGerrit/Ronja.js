@@ -1,7 +1,7 @@
 const { EmbedBuilder, Colors } = require('discord.js');
+const { DateTime } = require('luxon');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const { DateTime } = require('luxon');
 
 const myTop10 = {
     defaultConfig: {
@@ -34,7 +34,7 @@ const myTop10 = {
                     model: this.client.myDB.GamesPlayed,
                     where: {
                         lastplayed: {
-                            [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays})
+                            [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays}).toJSDate()
                         }
                     },
                 }

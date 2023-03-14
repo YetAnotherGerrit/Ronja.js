@@ -100,7 +100,7 @@ const myZocken = {
                         where: {
                             member: [interaction.member.id,channelMember.id],
                             lastplayed: {
-                                [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: 100})
+                                [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: 100}).toJSDate()
                             }
                         }
         
