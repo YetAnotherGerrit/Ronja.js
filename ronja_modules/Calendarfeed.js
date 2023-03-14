@@ -43,7 +43,7 @@ const myICalFeed = {
                         start: guildEvent.scheduledStartAt,
                         end: guildEvent.scheduledEndAt,
                         summary: 'Discord: ' + guildEvent.name,
-                        description: guildEvent.description + "\n" + guildEvent.location + "\n" + guildEvent.url,
+                        description: guildEvent.description + "\n" + guildEvent.entityMetadata.location + "\n" + guildEvent.url,
                         repeating: myRepeating
                     });
 
