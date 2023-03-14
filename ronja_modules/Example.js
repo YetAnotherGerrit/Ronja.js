@@ -1,6 +1,5 @@
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const Moment = require('moment');
 
 const myExample = {
     defaultConfig: {

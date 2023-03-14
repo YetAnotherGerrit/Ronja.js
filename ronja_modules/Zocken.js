@@ -2,7 +2,6 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, 
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
 const { DateTime } = require("luxon");
-const Moment = require('moment');
 
 // TODO: Noch ein eine eigene Befehlsbibliothek packen. Brauch ich öfters. Vielleicht gibt es auch einen eleganteren Weg.
 function multiChar(a,c) {
@@ -101,7 +100,7 @@ const myZocken = {
                         where: {
                             member: [interaction.member.id,channelMember.id],
                             lastplayed: {
-                                [Op.gte]: Moment().subtract(100,'days')
+                                [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: 100})
                             }
                         }
         
@@ -142,7 +141,7 @@ const myZocken = {
                 return;
             }
 
-            let startTime = DateTime.local();
+            let startTime = DateTime.now().setZone(this.cfg.timeZone);
 
             if (interaction.options.getString('time')) {
                 let regex = new RegExp(/(\d{2}):(\d{2})/);
@@ -175,19 +174,17 @@ const myZocken = {
                 startTime = startTime.plus({minutes: 10});
             }
 
-            if (startTime.diff(DateTime.now(), 'minutes') < 5) {
+            if (startTime.diff(DateTime.now(), 'minutes').minutes < 5) {
                 interaction.reply({content: this.l('The chosen time and day need to be at least 5 minutes in the future.'), ephemeral: true});
                 return;
             }
-
-            
 
             let myReply = await interaction.reply({content: this.l('%s would like to game! An event will be created...', interaction.member.displayName)});
 
             let newEvent = await interaction.guild.scheduledEvents.create({
                 name: interaction.options.getString('title') || this.l('%s\'s gaming session', interaction.member.displayName),
-                scheduledStartTime: startTime.toString(),
-                scheduledEndTime: startTime.plus({hours: 1}).toString(), // Optional, but not for EXTERNAL
+                scheduledStartTime: startTime.toJSDate(),
+                scheduledEndTime: startTime.plus({hours: 1}).toJSDate(), // Optional, but not for EXTERNAL
                 privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                 entityType: GuildScheduledEventEntityType.External,
                 description: await this.createZockenText(null, interaction.member.id), // Optional

@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const Moment = require('moment');
 const { ChannelType, PermissionFlagsBits, EmbedBuilder, Colors } = require('discord.js');
+const { DateTime } = require('luxon');
 
 
 const myDynamicTextChannels = {
@@ -14,6 +14,8 @@ const myDynamicTextChannels = {
         daysRelevantForCreation: 30,
         daysToArchive: 30,
         daysTarget: 100,
+
+        timeZone: 'Europe/Berlin',
     },
 
     defaultOverrides: async function(guild) {
@@ -34,7 +36,7 @@ const myDynamicTextChannels = {
         let players  = await this.client.myDB.GamesPlayed.findAndCountAll({
             where: {
                 GameId: game.id,
-                lastplayed: { [Op.gte]: Moment().subtract(pDays,'days') }
+                lastplayed: { [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays}) }
             },
         });
 
@@ -49,7 +51,7 @@ const myDynamicTextChannels = {
     hasGameBeenPlayedForChannel: async function(channel, pDays) {
         let gamesPlayed  = await this.client.myDB.GamesPlayed.findAndCountAll({
             where: {
-                lastplayed: { [Op.gte]: Moment().subtract(pDays,'days') }
+                lastplayed: { [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays}) }
             },
             include: [
                 {

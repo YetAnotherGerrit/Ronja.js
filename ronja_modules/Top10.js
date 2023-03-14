@@ -1,7 +1,7 @@
 const { EmbedBuilder, Colors } = require('discord.js');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const Moment = require('moment');
+const { DateTime } = require('luxon');
 
 const myTop10 = {
     defaultConfig: {
@@ -9,6 +9,8 @@ const myTop10 = {
         top10Weekly: true,
         top10Monthly: true,
         top10Yearly: true,
+
+        timeZone: 'Europe/Berlin',
     },
 
     createTop10Embed: async function (pDays = 14) {
@@ -32,7 +34,7 @@ const myTop10 = {
                     model: this.client.myDB.GamesPlayed,
                     where: {
                         lastplayed: {
-                            [Op.gte]: Moment().subtract(pDays,'days')
+                            [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays})
                         }
                     },
                 }
