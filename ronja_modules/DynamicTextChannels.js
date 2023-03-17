@@ -133,11 +133,6 @@ const myDynamicTextChannels = {
             
                 console.log(`Moved #${channel.name} to archive.`);
                 this.sortTextChannelCategoryByName(autoChannel);
-
-                this.notifyChannel(
-                    this.l('A text channel was re-activated'),
-                    this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', newChannel.id)
-                );    
             }
         } else {
             console.warn('WARNING: no dtcArchivedGamesCategory set in config file!');
@@ -157,7 +152,12 @@ const myDynamicTextChannels = {
                         this.assignAllPlayersToChannel(gameChannel, game, this.cfg.daysTarget);
 
                         console.log(`Moved #${gameChannel.name} from archive to active.`);
+                        
                         this.sortTextChannelCategoryByName(autoChannel);
+                        this.notifyChannel(
+                            this.l('A text channel was re-activated'),
+                            this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', newChannel.id)
+                        );    
                     }
                 } else {
                     gameChannel.permissionOverwrites.create(newPresence.member.user,{'ViewChannel': true});
