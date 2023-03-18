@@ -156,7 +156,7 @@ const myDynamicTextChannels = {
                         this.sortTextChannelCategoryByName(autoChannel);
                         this.notifyChannel(
                             this.l('A text channel was re-activated'),
-                            this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', newChannel.id)
+                            this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', gameChannel.id)
                         );    
                     }
                 } else {
