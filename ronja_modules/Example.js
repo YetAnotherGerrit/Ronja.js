@@ -1,6 +1,7 @@
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, GuildScheduledEventStatus } = require('discord.js');
+const { DateTime } = require('luxon');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const Moment = require('moment');
 
 const myExample = {
     defaultConfig: {
@@ -24,7 +25,22 @@ const myExample = {
     },
 
     // Don't forget to also add your slash-commands to the deploy-command.js file and run it once after every change.
-    hookForInteraction: async function(interaction)  {
+    hookForCommandInteraction: async function(interaction)  {
+        // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
+		if (interaction.commandName == 'ping') {
+            interaction.reply('Pong!');
+        };
+    },
+
+    // Don't forget to also add your context menu-commands to the deploy-command.js file and run it once after every change.
+    hookForContextMenuInteraction: async function(interaction)  {
+        // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
+		if (interaction.commandName == 'ping') {
+            interaction.reply('Pong!');
+        };
+    },
+
+    hookForButtonInteraction: async function(interaction)  {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
 		if (interaction.commandName == 'ping') {
             interaction.reply('Pong!');

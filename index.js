@@ -1,14 +1,12 @@
-// Discord-specific dependencies
+const { GatewayIntentBits, Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
 const { Ronja } = require('./core/Ronja.js');
 const deepmerge = require('deepmerge')
-const { GatewayIntentBits, Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
-
-// Cron-module
 const cron = require('node-cron');
 
 // Load Ronja's modular system
 const ronja_modules = [];
 
+ronja_modules.push(require('./ronja_modules/Calendarfeed.js'));
 ronja_modules.push(require('./ronja_modules/DynamicTextChannels.js'));
 ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
 ronja_modules.push(require('./ronja_modules/NWDB.js'));
@@ -16,9 +14,6 @@ ronja_modules.push(require('./ronja_modules/ReoccurringEvents.js'));
 ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
 ronja_modules.push(require('./ronja_modules/Top10.js'));
 ronja_modules.push(require('./ronja_modules/Zocken.js'));
-
-// Timezone TODO: move to config
-const myTimezone = 'Europe/Berlin';
 
 const client = new Ronja({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildScheduledEvents] });
 
@@ -41,7 +36,7 @@ client.once('ready', () => {
 		if (m.hookForCron) {
 			m.hookForCron().forEach(mc => {
 				if (!cron.validate(mc.schedule)) console.error(`ERROR: ${mc.schedule} is not a valid cron pattern.`);
-				cron.schedule(mc.schedule, mc.action, {timezone: myTimezone});
+				cron.schedule(mc.schedule, mc.action, {timezone: client.myConfig.timeZone});
 			});
 		};
 	});
@@ -50,18 +45,47 @@ client.once('ready', () => {
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isCommand() && !interaction.isContextMenuCommand() && !interaction.isButton()) return;
-	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName}.`)
+	console.log(`${interaction.member.displayName} used commandName ${interaction.commandName} (${interaction.customId}).`)
 
-	ronja_modules.forEach(m => {
-		if (m.hookForInteraction) m.hookForInteraction(interaction);
-	});
+	if (interaction.isCommand()) {
+		ronja_modules.forEach(m => {
+			if (m.hookForCommandInteraction) m.hookForCommandInteraction(interaction);
+		});
+	}
+
+	if (interaction.isContextMenuCommand()) {
+		ronja_modules.forEach(m => {
+			if (m.hookForContextMenuInteraction) m.hookForContextMenuInteraction(interaction);
+		});
+	}
+
+	if (interaction.isButton()) {
+		ronja_modules.forEach(m => {
+			if (m.hookForButtonInteraction) m.hookForButtonInteraction(interaction);
+		});
+	}
 });
 
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 
 	ronja_modules.forEach(m => {
 		if (m.hookForVoiceUpdate) m.hookForVoiceUpdate(oldState, newState);
+	});
+});
+
+client.on(Events.GuildScheduledEventUserAdd, async (oGuildScheduledEvent, oUser) => {
+
+	ronja_modules.forEach(m => {
+		if (m.hookForEventUserAdd) m.hookForEventUserAdd(oGuildScheduledEvent, oUser);
+		if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
+	});
+});
+
+client.on(Events.GuildScheduledEventUserRemove, async (oGuildScheduledEvent, oUser) => {
+
+	ronja_modules.forEach(m => {
+		if (m.hookForEventUserRemove) m.hookForEventUserRemove(oGuildScheduledEvent, oUser);
+		if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
 	});
 });
 

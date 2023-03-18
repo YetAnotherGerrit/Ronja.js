@@ -1,7 +1,7 @@
 const { EmbedBuilder, Colors } = require('discord.js');
+const { DateTime } = require('luxon');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const Moment = require('moment');
 
 const myTop10 = {
     defaultConfig: {
@@ -9,6 +9,8 @@ const myTop10 = {
         top10Weekly: true,
         top10Monthly: true,
         top10Yearly: true,
+
+        timeZone: 'Europe/Berlin',
     },
 
     createTop10Embed: async function (pDays = 14) {
@@ -32,7 +34,7 @@ const myTop10 = {
                     model: this.client.myDB.GamesPlayed,
                     where: {
                         lastplayed: {
-                            [Op.gte]: Moment().subtract(pDays,'days')
+                            [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays}).toJSDate()
                         }
                     },
                 }
@@ -69,14 +71,17 @@ const myTop10 = {
         .catch(console.error);
     },
 
-    hookForInteraction: async function(interaction)  {
+    hookForCommandInteraction: async function(interaction)  {
 		if (interaction.commandName == 'top10') {
-			let e = await this.createTop10Embed(interaction.options.getInteger('tage') || 14);
+            await interaction.reply(this.client.myLoadingEmbed());
 
-			await interaction.reply({
-				embeds: [ e	],
-				ephemeral: true,
-			});
+			this.createTop10Embed(interaction.options.getInteger('days') || 14)
+            .then(e => {
+                interaction.editReply({
+                    embeds: [ e	],
+                    ephemeral: true,
+                });
+            });
         }
     },
 
@@ -89,7 +94,7 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, this.l('The most played games oft last week:'));
+                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, this.l('The most played games of last week:'));
                 },
             },
             {
@@ -101,7 +106,7 @@ const myTop10 = {
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, this.l('Happy new year! This have been the highlights of last year:'));
+                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, this.l('Happy new year! These have been the highlights of last year:'));
                 },
             },
         ]

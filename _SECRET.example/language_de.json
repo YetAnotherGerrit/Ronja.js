@@ -1,47 +1,21 @@
 {
-  "Most popular games!": [
-    "Die beliebtesten Spiele!",
-    "Meistgespielte Spiele!"
+  "Loading...": [
+    "Wird verarbeitet..."
   ],
-  "Most played games of the last %d days:": [
-    "Meistgespielte Spiele der letzten %d Tage:"
+  "Please be patient.": [
+    "Bitte noch ein bisschen Geduld."
   ],
-  "Count me in!": [
-    "Ich bin dabei!",
-    "Ich bin am Start!",
-    "Sowas von!",
-    "Jepp."
+  "A new text channel was created": [
+    "Ein neuer Textkanal wurde erstellt"
   ],
-  "No, sorry...": [
-    "Nein, doch nicht.",
-    "Ne, bin raus...",
-    "Mhhh, nein."
+  "Some of you guys played a new game recently. To provide you with a channel to talk about it, <#%s> has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
+    "Einige von euch haben kürzlich ein neues Spiel gespielt. Um euch einen Kanal zur Verfügung zu stellen, in dem ihr darüber reden könnt, wurde <#%s> eingerichtet.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sehe, dass sie dasselbe Spiel spielen."
   ],
-  "Why is my name in here?": [
-    "Warum steht hier mein Name?",
-    "Was soll das?",
-    "Warum ich?"
+  "A text channel was re-activated": [
+    "Ein Textkanal wurde reaktiviert"
   ],
-  "Top 10 by player count:": [
-    "Top 10 nach Spielerzahl"
-  ],
-  "is": [
-    "ist"
-  ],
-  "%s %s in, who is willing to join?": [
-    "%s %s dabei, wer noch?",
-    "%s %s ist am Start, wer noch?"
-  ],
-  "The following buttons will be availble for %d minutes:": [
-    "Die folgenden Knöpfe sind für %d Minuten verfügbar:"
-  ],
-  "I'll suggest the following games:": [
-    "Ich schlage die folgenden Spiele vor:",
-    "Wie wäre es mit den folgenden Spielen?"
-  ],
-  "Hey%s and everyone else!": [
-    "Hey%s und alle anderen!",
-    "Hey%s und der Rest hier!"
+  "Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
+    "Einige von euch haben kürzlich ein vergessenes Spiel wiederentdeckt. <#%s> wurde aus dem Archiv reaktiviert.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sie es spielen sehe."
   ],
   " active players": [
     " aktive Spieler"
@@ -49,7 +23,121 @@
   ", %s in the queue": [
     ", %s in der Warteschlange"
   ],
-  "Unfortunately, nobody has been found.": [
-    "Leider hat sich niemand gefunden."
+  "Profile of %s": [
+    "Profil von %s"
+  ],
+  "%s is on this discord server since %s.": [
+    "%s ist auf diesem Discord-Server seit %s."
+  ],
+  "Common games": [
+    "Gemeinsame Spiele"
+  ],
+  "Most popular games!": [
+    "Die beliebtesten Spiele!"
+  ],
+  "Most played games of the last %d days:": [
+    "Meistgespielte Spiele der letzten %d Tage:"
+  ],
+  "Top 10 by player count:": [
+    "Top 10 nach Anzahl der Spieler:"
+  ],
+  "The most played games of last week:": [
+    "Die meistgespielten Spiele der letzten Woche:"
+  ],
+  "The most played games of last month:": [
+    "Die meistgespielten Spiele des letzten Monats:"
+  ],
+  "Happy new year! These have been the highlights of last year:": [
+    "Frohes neues Jahr! Das waren die Highlights des letzten Jahres:"
+  ],
+  "Nobody is participating yet. Don't forget to click that \"Interested\"-Button!": [
+    "Noch ist niemand dabei. Vergesst nicht, den \"Interessiert\"-Button anzuklicken!"
+  ],
+  "When you choose a day, you'll also need to specify a time!": [
+    "Wenn du einen Tag auswählst, musst du auch eine Uhrzeit angeben!"
+  ],
+  "Please choose a valid time: HH:MM. Hour needs to be within 0-23.": [
+    "Bitte wähle eine gültige Uhrzeit: SS:MM. Die Stunde muss zwischen 0-23 liegen."
+  ],
+  "Please choose a valid time: HH:MM. Minute needs to be within 0-59.": [
+    "Bitte wähle eine gültige Uhrzeit: SS:MM. Die Minute muss zwischen 0 und 59 liegen."
+  ],
+  "Please choose a valid time: HH:MM (24-hour time format).": [
+    "Bitte wählen Sie eine gültige Uhrzeit: HH:MM (24-Stunden-Zeitformat)."
+  ],
+  "The chosen time and day need to be at least 5 minutes in the future.": [
+    "Die gewählte Uhrzeit und der Tag müssen mindestens 5 Minuten in der Zukunft liegen."
+  ],
+  "%s would like to game! An event will be created...": [
+    "%s möchte spielen! Es wird ein Event erstellt..."
+  ],
+  "%s's gaming session": [
+    "%s will zocken"
+  ],
+  "Don't forget to click that \"Interested\"-Button!": [
+    "Vergiss nicht, auf den \"Interessiert\"-Button zu klicken!"
+  ],
+  "#%s via /lfg by %s (%s)": [
+    "#%s mit /lfg von %s (%s)"
+  ],
+  "Hey%s and everyone else! (%s)": [
+    "Hey%s und alle anderen! (%s)"
+  ],
+  "Your ical-Feed will be generated...": [
+    "Dein ical-Feed wird erstellt..."
+  ],
+  "The ical-settings for this server are incomplete.": [
+    "Die ical-Einstellungen für diesen Server sind unvollständig."
+  ],
+  "%s found %d more to game with.": [
+    "%s hat %d Mitspieler zum zocken gefunden."
+  ],
+  "Unfortunately, nobody was found. Maybe next time.": [
+    "Leider hat sich niemand gefunden. Vielleicht beim nächsten Mal."
+  ],
+  "%s wants hang out later, click \"Interested\" to join.": [
+    "%s möchte demnächst zocken, nutze den \"Interessiert\"-Knopf um dich anzuschließen."
+  ],
+  "Ping me also offline.": [
+    "Erwähne mich auch Offline."
+  ],
+  "Ping me only, when I am online.": [
+    "Erwähne mich nur, wenn ich gerade Online bin."
+  ],
+  "Please, never ping me.": [
+    "Bitte, erwähne mich nie."
+  ],
+  "You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
+    "Du wirst erwähnt, wenn es mindestens ein Spiel gibt, das ihr beide in den letzten 100 Tagen gezockt habt. Falls du solche Erwähnungen nicht möchtest, kannst du das hier ändern.\n\nDeine aktuelle Einstellung:\n> %s"
+  ],
+  "Notifications...": [
+    "Erwähnungen..."
+  ],
+  "Also notify myself that someone wants to game, even when I am offline.": [
+    "Erwähne mich, wenn jemand zocken möchte, auch wenn ich Offline bin."
+  ],
+  " (Default)": [
+    " (Standard)"
+  ],
+  "Notify myself only when I am also online in Discord.": [
+    "Erwähne mich nur, wenn ich auch gerade Online bin."
+  ],
+  "I am not interested in this kind of gaming requests.": [
+    "Ich bin nicht interessiert an diesen Zockanfragen."
+  ],
+  "Succesful!": [
+    "Erfolgreich!"
+  ],
+  "Your settings have been saved.": [
+    "Deine Einstellung wurde erfolgreich gespeichert."
+  ],
+  "Expired!": [
+    "Abgelaufen!"
+  ],
+  "No changes have been saved.": [
+    "Keine Änderungen wurden gespeichert."
+  ],
+  "Why is my name (not) in here?": [
+    "Warum steht da (nicht) mein Name?"
   ]
 }

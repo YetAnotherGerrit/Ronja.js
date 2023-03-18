@@ -1,7 +1,7 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, GuildScheduledEventStatus } = require('discord.js');
+const { DateTime } = require("luxon");
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const Moment = require('moment');
 
 // TODO: Noch ein eine eigene Befehlsbibliothek packen. Brauch ich öfters. Vielleicht gibt es auch einen eleganteren Weg.
 function multiChar(a,c) {
@@ -14,244 +14,231 @@ function multiChar(a,c) {
 
 const myZocken = {
     defaultConfig: {
-        collectorTimeout: 10, // Maximum of Discord-API is 15 minutes.
+        timeZone: 'Europe/Berlin',
+        collectorTimeout: 14*60*1000,
     },
 
     dbZocken: {},
 
-    createZockenEmbed: async function(interaction) {
-        let maxgames = 10;
-        let sPlayer = '';
-        let aPlayerNames = [];
+    createZockenText: async function(guildEvent, guildEventCreatorId) {
+        let maxGames = 10;
+        let eventMembers = [];
+        let regexResult;
+
+        if (guildEvent) {
+            let eventSubcribers = await guildEvent.fetchSubscribers({withMember: true});
+
+            await Promise.all(eventSubcribers.map(async (eventSubcriber) => eventMembers.push(eventSubcriber.member.id)));
     
-        if (this.dbZocken[interaction.channel.id].length === 0) {
-            sPlayer = this.l('Nobody');
-        } else {
-            await this.dbZocken[interaction.channel.id].forEach(playerId => {
-                interaction.guild.members.fetch(playerId).then(m => {
-                    aPlayerNames.push(m.displayName);
-                });
-            });
-            sPlayer = aPlayerNames.join(', ') || this.l('Nobody');
-            
-            // Ersetze letztes Komma durch "und":
-            if (sPlayer.lastIndexOf(',') > -1) {
-                sPlayer = sPlayer.substring(0,sPlayer.lastIndexOf(',')) + this.l(' and') + sPlayer.substring(sPlayer.lastIndexOf(',')+1,sPlayer.length);
-            }
-        };
+            let regex = new RegExp(/\((\d+)\)/);
     
-    
-        let e = new EmbedBuilder()
-        .setColor(Colors.Blue)
-        .setTitle(this.l('Time to zock!'))
-        .setDescription(this.l('%s %s in, who is willing to join?', sPlayer, this.dbZocken[interaction.channel.id].length > 1 ? this.l('are') : this.l('is')))
-        .setFooter({ text: this.l('The following buttons will be availble for %d minutes:', this.cfg.collectorTimeout) });
-    
-        if (this.dbZocken[interaction.channel.id].length > 0) {
-            let channelCount = await this.client.myDB.Games.count({where: {channel: interaction.channel.id}});
-            if (channelCount === 0 ) {
-                let s = '';
-                let g = await this.client.myDB.Games.findAll({
-                    raw: true,
-                    attributes: [
-                        'name',
-                        [Sequelize.fn('COUNT', '*'),'cName']
-                    ],
-                    include: [
-                        {
-                            model: this.client.myDB.GamesPlayed,
-                            where: {
-                                member: this.dbZocken[interaction.channel.id]
-                            }
-        
+            regexResult = guildEvent.entityMetadata.location.match(regex);
+        }
+
+        if (regexResult) {
+            if (!eventMembers.includes(regexResult[1])) eventMembers.push(regexResult[1])
+        }
+
+        if (guildEventCreatorId) eventMembers.push(guildEventCreatorId);
+
+        if (eventMembers.length > 0) {
+            let zockenText = '';
+
+            let gamesPlayed = await this.client.myDB.Games.findAll({
+                raw: true,
+                attributes: [
+                    'name',
+                    [Sequelize.fn('COUNT', '*'),'cName']
+                ],
+                include: [
+                    {
+                        model: this.client.myDB.GamesPlayed,
+                        where: {
+                            member: eventMembers
                         }
-                    ],
-                    order: [
-                        [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
-                        [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],
-                    ],
-                    group: 'Games.name',
-                });
-        
-                g.forEach(gg => {
-                    if (maxgames > 0) {
-                        s = s.concat(multiChar(gg.cName,':bust_in_silhouette:'), ' ', gg.name, '\n');
-                        maxgames = maxgames - 1;
+    
                     }
-                });
-        
-                // s = Object.keys(g).map(key => g[key].name).join(', ');
-        
-                if (s != '') {
-                    e.addFields([{ name: this.l("I'll suggest the following games:"), value: s }]);
-                };
-            };
-        };
-    
-        return e;
-    },
-
-    createZockenFinalString: async function(interaction) {
-        let sPlayer = '';
-        let aPlayerNames = [];
-
-        let returnValue = '';
-    
-        if (this.dbZocken[interaction.channel.id].length === 0) {
-            sPlayer = this.l('Nobody');
-        } else {
-            await this.dbZocken[interaction.channel.id].forEach(playerId => {
-                interaction.guild.members.fetch(playerId).then(m => {
-                    aPlayerNames.push(m.displayName);
-                });
+                ],
+                order: [
+                    [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
+                    [this.client.myDB.GamesPlayed, 'lastplayed', 'DESC'],
+                ],
+                group: 'Games.name',
             });
-            sPlayer = aPlayerNames.join(', ') || this.l('Nobody');
-            
-            // Ersetze letztes Komma durch "und":
-            if (sPlayer.lastIndexOf(',') > -1) {
-                sPlayer = sPlayer.substring(0,sPlayer.lastIndexOf(',')) + ' und' + sPlayer.substring(sPlayer.lastIndexOf(',')+1,sPlayer.length);
-            }
-        };
 
-        if (this.dbZocken[interaction.channel.id].length > 1) {
-            returnValue = this.l('%s have found together.', sPlayer);
+            gamesPlayed.forEach(gamePlayed => {
+                if (maxGames > 0) {
+                    zockenText = zockenText.concat(multiChar(gamePlayed.cName,':bust_in_silhouette:'), ' ', gamePlayed.name, '\n');
+                    maxGames = maxGames - 1;
+                }
+            });
+    
+            return zockenText;
+    
         } else {
-            returnValue = this.l('Unfortunately, nobody has been found.');
-        };
-
-        return returnValue;
+            return this.l("Nobody is participating yet. Don't forget to click that \"Interested\"-Button!");
+        }
     },
 
-    hookForInteraction: async function(interaction)  {
-        let myActionRow = new ActionRowBuilder()
-        .addComponents(
-            new ButtonBuilder()
-                .setCustomId('zockenYes')
-                .setLabel(this.l('Count me in!'))
-                .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-                .setCustomId('zockenNo')
-                .setLabel(this.l('No, sorry...'))
-                .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-                .setCustomId('zockenSelect')
-                .setLabel(this.l('Why is my name in here?'))
-                .setStyle(ButtonStyle.Secondary),
-        );
-    
-        if (interaction.commandName == 'zocken') {
-			if (this.dbZocken[interaction.channel.id]) {
-
-				await interaction.reply({
-					embeds: [ new EmbedBuilder() 
-                        .setColor(Colors.Red)
-                        .setTitle(this.l('Error!'))
-                        .setDescription(this.l('There is already a running Zocken!-request in this channel. Please wait until it has expired.'))
-                    ],
-					ephemeral: true,
-				});
-			} else {
-				this.dbZocken[interaction.channel.id] = [interaction.member.id];
-
-				let e = await this.createZockenEmbed(interaction);
-				let channelMemberPing = '';
+    createChannelMemberPing: async function(interaction) {
+        let channelMemberPing = '';
 				
-				await Promise.all(interaction.channel.members.map(async (channelMember) => {
-					let result = await this.client.myDB.Member.findOne({where: {id: channelMember.id}});
-					let statusChannelMember = result ? result.zockenmention : 1;
+        await Promise.all(interaction.channel.members.map(async (channelMember) => {
+            let result = await this.client.myDB.Member.findOne({where: {id: channelMember.id}});
+            let statusChannelMember = result ? result.zockenmention : 1;
 
-					let commonGames = 0;
-					let g = await this.client.myDB.Games.findAll({
-						raw: true,
-						attributes: [
-							'name',
-							[Sequelize.fn('COUNT', '*'),'cName']
-						],
-						include: [
-							{
-								model: this.client.myDB.GamesPlayed,
-								where: {
-									member: [interaction.member.id,channelMember.id],
-									lastplayed: {
-										[Op.gte]: Moment().subtract(100,'days')
-									}
-								}
-				
-							}
-						],
-						order: [
-							[Sequelize.fn('count', Sequelize.col('*')),'DESC'],
-							['name', 'ASC'],
-						
-						],
-						group: 'Games.name',
-					});
-		
-					g.forEach(gg => {
-						if (gg.cName === 2) {
-							commonGames = commonGames + 1;
-						}
-					});
+            let commonGames = 0;
+            let g = await this.client.myDB.Games.findAll({
+                raw: true,
+                attributes: [
+                    'name',
+                    [Sequelize.fn('COUNT', '*'),'cName']
+                ],
+                include: [
+                    {
+                        model: this.client.myDB.GamesPlayed,
+                        where: {
+                            member: [interaction.member.id,channelMember.id],
+                            lastplayed: {
+                                [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: 100}).toJSDate()
+                            }
+                        }
+        
+                    }
+                ],
+                order: [
+                    [Sequelize.fn('count', Sequelize.col('*')),'DESC'],
+                    ['name', 'ASC'],
+                
+                ],
+                group: 'Games.name',
+            });
 
-					if (!channelMember.user.bot &&
-						commonGames > 0 &&
-							(
-								(channelMember.presence && ((channelMember.presence.status == 'online' && statusChannelMember > 0) || (channelMember.presence.status == 'idle' && statusChannelMember > 0) || (channelMember.presence.status == 'offline' && statusChannelMember > 1))) ||
-								(!channelMember.presence && statusChannelMember > 1)
-							)
-						) {
-						channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
-					}
-				}));
+            g.forEach(gg => {
+                if (gg.cName === 2) {
+                    commonGames = commonGames + 1;
+                }
+            });
 
-				await interaction.reply({
-					content: this.l(`Hey%s and everyone else!`, channelMemberPing),
-					embeds: [ e	],
-					components: [ myActionRow ],
-				});
+            if (!channelMember.user.bot &&
+                commonGames > 0 &&
+                    (
+                        (channelMember.presence && ((channelMember.presence.status == 'online' && statusChannelMember > 0) || (channelMember.presence.status == 'idle' && statusChannelMember > 0) || (channelMember.presence.status == 'offline' && statusChannelMember > 1))) ||
+                        (!channelMember.presence && statusChannelMember > 1)
+                    )
+                ) {
+                channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
+            }
+        }));
 
-				let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.cfg.collectorTimeout});
+        return channelMemberPing;
+    },
 
-				collector.on('collect', async i => {
-					if (i.customId === 'zockenYes') {
-						this.dbZocken[interaction.channel.id].includes(i.member.id) || this.dbZocken[interaction.channel.id].push(i.member.id);
+    hookForCommandInteraction: async function(interaction) {
+        if (interaction.commandName == 'lfg') {
+            if (interaction.options.getString('day') && !interaction.options.getString('time')) {
+                interaction.reply({content: this.l('When you choose a day, you\'ll also need to specify a time!'), ephemeral: true});
+                return;
+            }
 
-						let e = await this.createZockenEmbed(interaction);
+            let startTime = DateTime.now().setZone(this.cfg.timeZone);
 
-						await i.update({
-							embeds: [ e	],
-							components: [ myActionRow ],
-						});
-					};
+            if (interaction.options.getString('time')) {
+                let regex = new RegExp(/(\d{2}):(\d{2})/);
 
-					if (i.customId === 'zockenNo') {
-						let index = this.dbZocken[interaction.channel.id].indexOf(i.member.id);
-						if (index > -1) {
-							this.dbZocken[interaction.channel.id].splice(index, 1);
-						}
+                let regexResult = interaction.options.getString('time').match(regex);
 
-						e = await this.createZockenEmbed(interaction);
+                if (regexResult) {
+                    if (regexResult[1] < 0 || regexResult[1] > 23) {
+                        interaction.reply({content: this.l('Please choose a valid time: HH:MM. Hour needs to be within 0-23.'), ephemeral: true});
+                        return;
+                    }
+                    if (regexResult[2] < 0 || regexResult[2] > 59) {
+                        interaction.reply({content: this.l('Please choose a valid time: HH:MM. Minute needs to be within 0-59.'), ephemeral: true});
+                        return;
+                    }
 
-						await i.update({
-							embeds: [ e	],
-							components: [ myActionRow ],
-						});
-					};
-				});
+                    startTime = DateTime.fromObject({hour: regexResult[1], minute: regexResult[2]}, {zone: this.cfg.timeZone});
 
-				collector.on('end', async c => {
+                } else {
+                    interaction.reply({content: this.l('Please choose a valid time: HH:MM (24-hour time format).'), ephemeral: true});
+                    return;
+                }
+            }
+
+            if (interaction.options.getString('day') == 'tomorrow') {
+                startTime = startTime.plus({days: 1});
+            }
+
+            if (!interaction.options.getString('day') && !interaction.options.getString('time')) {
+                startTime = startTime.plus({minutes: 10});
+            }
+
+            if (startTime.diff(DateTime.now(), 'minutes').minutes < 5) {
+                interaction.reply({content: this.l('The chosen time and day need to be at least 5 minutes in the future.'), ephemeral: true});
+                return;
+            }
+
+            let myReply = await interaction.reply({content: this.l('%s would like to game! An event will be created...', interaction.member.displayName)});
+
+            let newEvent = await interaction.guild.scheduledEvents.create({
+                name: interaction.options.getString('title') || this.l('%s\'s gaming session', interaction.member.displayName),
+                scheduledStartTime: startTime.toJSDate(),
+                scheduledEndTime: startTime.plus({hours: 1}).toJSDate(), // Optional, but not for EXTERNAL
+                privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+                entityType: GuildScheduledEventEntityType.External,
+                description: await this.createZockenText(null, interaction.member.id), // Optional
+                entityMetadata: {location: this.l('#%s via /lfg by %s (%s)', interaction.channel.name, interaction.member.displayName, interaction.member.id)}, // Optional, but not for EXTERNAL,
+            })
+
+            let channelMemberPing = await this.createChannelMemberPing(interaction);
+
+            interaction.editReply({
+                content: this.l('Hey%s and everyone else! (%s)', channelMemberPing, newEvent.url),
+                components: [ new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('zockenSelect').setLabel(this.l('Why is my name (not) in here?')).setStyle(ButtonStyle.Secondary)) ]
+
+            })
+
+            myReply.createMessageComponentCollector({time: this.cfg.collectorTimeout}).on('end', async collected => {
+                if (newEvent.isActive()) {
+                    let eventSubcribers = await newEvent.fetchSubscribers();
+
                     interaction.editReply({
-                        content: await this.createZockenFinalString(interaction),
-                        embeds: [ ],
-                        components: [ ],
-                    });
+                        content: '',
+                        embeds: [ new EmbedBuilder()
+                            .setColor(Colors.Green)
+                            .setDescription(this.l("%s found %d more to game with.", interaction.member.displayName, eventSubcribers.size - 1))
+                        ],
+                        components: [ ] 
+                    })
+                }
+                if (newEvent.isCompleted() || newEvent.isCanceled()) {
+                    interaction.editReply({
+                        content: '',
+                        embeds: [ new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(this.l("Unfortunately, nobody was found. Maybe next time."))
+                        ],
+                        components: [ ] 
+                    })
+                }
+                if (newEvent.isScheduled()) {
+                    interaction.editReply({
+                        content: newEvent.url,
+                        embeds: [ new EmbedBuilder()
+                            .setColor(Colors.Blue)
+                            .setDescription(this.l("%s wants hang out later, click \"Interested\" to join.", interaction.member.displayName))
+                        ],
+                        components: [ ] 
+                    })
+                }
+            })
 
-                    delete this.dbZocken[interaction.channel.id];
-				});
-			};
-        };
+        }
+    },
 
-        if (interaction.customId === 'zockenSelect') {
+    hookForButtonInteraction: async function(interaction) {
+        if (interaction.customId = "zockenSelect") {
             let [mem,memCreated] = await this.client.myDB.Member.findOrCreate({
                 where: {id: interaction.member.id},
                 defaults: {zockenmention: 1},
@@ -262,42 +249,42 @@ const myZocken = {
 
             switch(statusZockenSelect) {
                 case 2:
-                    statusZockenSelectText = this.l('Ping me also offline.')
+                    statusZockenSelectText = this.l("Ping me also offline.")
                     break;
 
                 case 1:
-                    statusZockenSelectText = this.l('Ping me only, when I am online.')
+                    statusZockenSelectText = this.l("Ping me only, when I am online.")
                     break;
 
                 case 0:
-                    statusZockenSelectText = this.l('Please, never ping me.')
+                    statusZockenSelectText = this.l("Please, never ping me.")
                     break;
             }
 
-            await interaction.reply({
+            let myReply = await interaction.reply({
                 embeds: [  new EmbedBuilder()
                     .setColor(Colors.Blue)
-                    .setTitle(this.l('Why is my name in here?'))
-                    .setDescription(this.l("There is at least one game that you've played both within the last 100 days. If you don't want to receive those notifications, you can change that here.\n\nYour current setting:\n> %s", statusZockenSelectText))
+                    .setTitle(this.l('Why is my name (not) in here?'))
+                    .setDescription(this.l("You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s", statusZockenSelectText))
                 ],
                 components: [ new ActionRowBuilder()
                     .addComponents( new StringSelectMenuBuilder()
                         .setCustomId('zockenSelected')
-                        .setPlaceholder(this.l('Notifications...'))
+                        .setPlaceholder(this.l("Notifications..."))
                         .addOptions([
                             {
-                                label: this.l('Ping me also offline.'),
-                                description: this.l('Also notify myself that someone wants to game, even when I am offline.'),
+                                label: this.l("Ping me also offline."),
+                                description: this.l("Also notify myself that someone wants to game, even when I am offline."),
                                 value: '2',
                             },
                             {
-                                label: this.l('Ping me only, when I am online. (Default)'),
-                                description: this.l('Notify myself only when I am also online in Discord.'),
+                                label: this.l("Ping me only, when I am online.")+this.l(" (Default)"),
+                                description: this.l("Notify myself only when I am also online in Discord."),
                                 value: '1',
                             },
                             {
-                                label: this.l('Please, never ping me.'),
-                                description: this.l('I am not interested in this kind of gaming requests.'),
+                                label: this.l("Please, never ping me."),
+                                description: this.l("I am not interested in this kind of gaming requests."),
                                 value: '0'
                             }
                         ]),
@@ -306,7 +293,7 @@ const myZocken = {
                 ephemeral: true,
             });
 
-            let collector = interaction.channel.createMessageComponentCollector({time: 1000*60*this.cfg.collectorTimeout});
+            let collector = myReply.createMessageComponentCollector({time: this.cfg.collectorTimeout});
 
             collector.on('collect', async i => {
                 if (i.customId === 'zockenSelected') {
@@ -316,7 +303,7 @@ const myZocken = {
                     );
             
                     await i.update({
-                        embeds: [ new EmbedBuilder().setColor(Colors.Green).setTitle(this.l('Succesful!')).setDescription(this.l('Your settings have been saved.')) ],
+                        embeds: [ new EmbedBuilder().setColor(Colors.Green).setTitle(this.l("Succesful!")).setDescription(this.l("Your settings have been saved.")) ],
                         components: [ ],
                     });
                 };
@@ -325,13 +312,30 @@ const myZocken = {
             collector.on('end', async c => {
                 if (c.size == 0) {
                     await interaction.editReply({
-                        embeds: [ new EmbedBuilder().setColor(Colors.Blue).setTitle(this.l('Expired!')).setDescription(this.l('No changes have been saved.')) ],
+                        embeds: [ new EmbedBuilder().setColor(Colors.Blue).setTitle(this.l("Expired!")).setDescription(this.l("No changes have been saved.")) ],
                         components: [ ],
                     });
                 };
             });
-        };
+        }
     },
+
+    hookForEventUserUpdate: async function(guildScheduledEvent, user) {
+        if (guildScheduledEvent.entityMetadata.location.includes('/lfg')) {
+            let guildDescription = await this.createZockenText(guildScheduledEvent);
+            guildScheduledEvent.setDescription(guildDescription);
+        }
+    },
+
+    hookForEventStart: async function(oldGuildScheduledEvent, newGuildScheduledEvent) {
+        if (newGuildScheduledEvent.entityMetadata.location.includes('/lfg')) {
+            let eventSubcribers = await newGuildScheduledEvent.fetchSubscribers();
+            if (eventSubcribers.size < 2) {
+                newGuildScheduledEvent.setStatus(GuildScheduledEventStatus.Completed, 'Not enough participants.');
+            }
+        }
+    },
+
 };
 
 module.exports = myZocken;

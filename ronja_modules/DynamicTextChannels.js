@@ -1,8 +1,7 @@
+const { ChannelType, PermissionFlagsBits, EmbedBuilder, Colors } = require('discord.js');
+const { DateTime } = require('luxon');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const Moment = require('moment');
-const { ChannelType, PermissionFlagsBits, EmbedBuilder, Colors } = require('discord.js');
-
 
 const myDynamicTextChannels = {
     defaultConfig: {
@@ -14,6 +13,8 @@ const myDynamicTextChannels = {
         daysRelevantForCreation: 30,
         daysToArchive: 30,
         daysTarget: 100,
+
+        timeZone: 'Europe/Berlin',
     },
 
     defaultOverrides: async function(guild) {
@@ -34,7 +35,7 @@ const myDynamicTextChannels = {
         let players  = await this.client.myDB.GamesPlayed.findAndCountAll({
             where: {
                 GameId: game.id,
-                lastplayed: { [Op.gte]: Moment().subtract(pDays,'days') }
+                lastplayed: { [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays}).toJSDate() }
             },
         });
 
@@ -49,7 +50,7 @@ const myDynamicTextChannels = {
     hasGameBeenPlayedForChannel: async function(channel, pDays) {
         let gamesPlayed  = await this.client.myDB.GamesPlayed.findAndCountAll({
             where: {
-                lastplayed: { [Op.gte]: Moment().subtract(pDays,'days') }
+                lastplayed: { [Op.gte]: DateTime.now().setZone(this.cfg.timeZone).minus({days: pDays}).toJSDate() }
             },
             include: [
                 {
@@ -83,6 +84,22 @@ const myDynamicTextChannels = {
         }        
     },
 
+    notifyChannel: async function(myTitle, myDescription) {
+        if (this.cfg.dtcNotificationChannel) {
+            this.client.channels.fetch(this.cfg.dtcNotificationChannel)
+            .then(notificationChannel => {
+                let e = new EmbedBuilder()
+                .setColor(Colors.Blue)
+                .setTitle(myTitle)
+                .setDescription(myDescription);
+        
+                notificationChannel.send({embeds: [e]})
+                .catch(console.error);
+            })
+            .catch(console.warn);
+        }
+    },
+
     createTextChannel: async function(game, newActivity, newPresence) {
         if (this.cfg.dtcGamesCategory) {
             let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
@@ -98,20 +115,10 @@ const myDynamicTextChannels = {
             console.log(`Created new text channel #${newChannel.name}.`);
             this.sortTextChannelCategoryByName(autoChannel);
 
-            // Optional feature: notify some general channel about text channel creation
-            if (this.cfg.dtcNotificationChannel) {
-                this.client.channels.fetch(this.cfg.dtcNotificationChannel)
-                .then(notificationChannel => {
-                    let e = new EmbedBuilder()
-                    .setColor(Colors.Blue)
-                    .setTitle(this.l('New text channel created'))
-                    .setDescription(this.l('Some of you guys played a new game recently. To provide you with a channel to talk about <#%s> has been created.\n\nYou will be added to that channel, once I see you playing it, too.', newChannel.id));
-            
-                    notificationChannel.send({embeds: [e]})
-                    .catch(console.error);
-                })
-                .catch(console.warn);
-            }
+            this.notifyChannel(
+                this.l('A new text channel was created'),
+                this.l('Some of you guys played a new game recently. To provide you with a channel to talk about it, <#%s> has been created.\n\nOthers will be added to that channel once I see them playing the same game.', newChannel.id)
+            );
         } else {
             console.warn('WARNING: no dtcGamesCategory set in config file!');
         }
@@ -143,6 +150,14 @@ const myDynamicTextChannels = {
                         gameChannel.setParent(autoChannel);
                         await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
                         this.assignAllPlayersToChannel(gameChannel, game, this.cfg.daysTarget);
+
+                        console.log(`Moved #${gameChannel.name} from archive to active.`);
+                        
+                        this.sortTextChannelCategoryByName(autoChannel);
+                        this.notifyChannel(
+                            this.l('A text channel was re-activated'),
+                            this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', gameChannel.id)
+                        );    
                     }
                 } else {
                     gameChannel.permissionOverwrites.create(newPresence.member.user,{'ViewChannel': true});

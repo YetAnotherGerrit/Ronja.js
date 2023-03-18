@@ -1,6 +1,4 @@
-const Sequelize = require('sequelize');
-const Op = Sequelize.Op;
-const Moment = require('moment');
+const { DateTime } = require("luxon");
 
 const myReoccurringEvents = {
     hookForEventStart: async function(oldGuildScheduledEvent, newGuildScheduledEvent)  {
@@ -13,13 +11,14 @@ const myReoccurringEvents = {
 
             newGuildScheduledEvent.guild.scheduledEvents.create({
                 name: newGuildScheduledEvent.name,
-                scheduledStartTime: Moment(newGuildScheduledEvent.scheduledStartTimestamp).add(pDays,'days'),
-                scheduledEndTime: newGuildScheduledEvent.scheduledEndTimestamp ? Moment(newGuildScheduledEvent.scheduledEndTimestamp).add(pDays,'days') : newGuildScheduledEvent.scheduledEndTimestamp, // Optional, but not for EXTERNAL
+                scheduledStartTime: DateTime.fromJSDate(newGuildScheduledEvent.scheduledStartAt).plus({days: pDays}).toJSDate(),
+                scheduledEndTime: newGuildScheduledEvent.scheduledEndTimestamp ? DateTime.fromJSDate(newGuildScheduledEvent.scheduledEndAt).plus({days: pDays}).toJSDate() : newGuildScheduledEvent.scheduledEndTimestamp, // Optional, but not for EXTERNAL
                 privacyLevel: newGuildScheduledEvent.privacyLevel,
                 entityType: newGuildScheduledEvent.entityType,
                 description: newGuildScheduledEvent.description, // Optional
                 channel: newGuildScheduledEvent.channel, // Optional, but not for STAGE_INSTANCE or VOICE
                 entityMetadata: newGuildScheduledEvent.entityMetadata, // Optional, but not for EXTERNAL,
+                image: newGuildScheduledEvent.coverImageURL() ? newGuildScheduledEvent.coverImageURL()+'?size=1024' : null, // Optional
                 reason: 'Reoccurring Event', // Optional
             });
         };
