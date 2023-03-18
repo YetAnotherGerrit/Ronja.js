@@ -4,6 +4,7 @@ const mySecret = {
 	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
     language: 'en',                 // Set it to whatever tag you want to use. A template will be dynamically generated over time.
+    timeZone: 'Europe/Berlin',
 
     // DynamicTextChannels
     dtcGamesCategory: '',           // ID of channel category, where the game specific text channels should be created in

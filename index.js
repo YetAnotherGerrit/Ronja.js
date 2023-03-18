@@ -1,9 +1,6 @@
-// Discord-specific dependencies
+const { GatewayIntentBits, Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
 const { Ronja } = require('./core/Ronja.js');
 const deepmerge = require('deepmerge')
-const { GatewayIntentBits, Events, ActivityType, GuildScheduledEventStatus } = require('discord.js');
-
-// Cron-module
 const cron = require('node-cron');
 
 // Load Ronja's modular system
@@ -17,9 +14,6 @@ ronja_modules.push(require('./ronja_modules/ReoccurringEvents.js'));
 ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
 ronja_modules.push(require('./ronja_modules/Top10.js'));
 ronja_modules.push(require('./ronja_modules/Zocken.js'));
-
-// Timezone TODO: move to config
-const myTimezone = 'Europe/Berlin';
 
 const client = new Ronja({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildScheduledEvents] });
 
@@ -42,7 +36,7 @@ client.once('ready', () => {
 		if (m.hookForCron) {
 			m.hookForCron().forEach(mc => {
 				if (!cron.validate(mc.schedule)) console.error(`ERROR: ${mc.schedule} is not a valid cron pattern.`);
-				cron.schedule(mc.schedule, mc.action, {timezone: myTimezone});
+				cron.schedule(mc.schedule, mc.action, {timezone: client.myConfig.timeZone});
 			});
 		};
 	});
