@@ -102,8 +102,8 @@ const myDynamicTextChannels = {
 
     createTextChannel: async function(game, newActivity, newPresence) {
         if (this.cfg.dtcGamesCategory) {
-            let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
-            let newChannel = await autoChannel.children.create({
+            let dtcGamesCategory = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
+            let newChannel = await dtcGamesCategory.children.create({
                 name: newActivity.name,
                 type: ChannelType.GuildText,
                 permissionOverwrites: await this.defaultOverrides(newPresence.guild),
@@ -113,7 +113,7 @@ const myDynamicTextChannels = {
             game.update({channel: newChannel.id});
     
             console.log(`Created new text channel #${newChannel.name}.`);
-            this.sortTextChannelCategoryByName(autoChannel);
+            this.sortTextChannelCategoryByName(dtcGamesCategory);
 
             this.notifyChannel(
                 this.l('A new text channel was created'),
@@ -127,12 +127,11 @@ const myDynamicTextChannels = {
     checkActiveTextChannel: async function(channel) {
         if (this.cfg.dtcArchivedGamesCategory) {
             if (!await this.hasGameBeenPlayedForChannel(channel, this.cfg.daysToArchive)) {
-                let autoChannel = await this.client.channels.fetch(this.cfg.dtcArchivedGamesCategory);
-                channel.setParent(autoChannel);
+                let dtcArchivedGamesCategory = await this.client.channels.fetch(this.cfg.dtcArchivedGamesCategory);
+                channel.setParent(dtcArchivedGamesCategory);
                 channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
             
                 console.log(`Moved #${channel.name} to archive.`);
-                this.sortTextChannelCategoryByName(autoChannel);
             }
         } else {
             console.warn('WARNING: no dtcArchivedGamesCategory set in config file!');
@@ -146,14 +145,14 @@ const myDynamicTextChannels = {
                 let gameChannel = await this.client.channels.fetch(game.channel);
                 if (gameChannel.parentId == this.cfg.dtcArchivedGamesCategory) {
                     if (await this.countPlayersForGame(game, this.cfg.daysTarget) > 1) {
-                        let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
-                        gameChannel.setParent(autoChannel);
+                        let dtcGamesCategory = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
+                        gameChannel.setParent(dtcGamesCategory);
                         await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
                         this.assignAllPlayersToChannel(gameChannel, game, this.cfg.daysTarget);
 
                         console.log(`Moved #${gameChannel.name} from archive to active.`);
                         
-                        this.sortTextChannelCategoryByName(autoChannel);
+                        this.sortTextChannelCategoryByName(dtcGamesCategory);
                         this.notifyChannel(
                             this.l('A text channel was re-activated'),
                             this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', gameChannel.id)
@@ -179,10 +178,14 @@ const myDynamicTextChannels = {
                 schedule: '0 5 * * *', // https://crontab.guru/
                 action: async () => {
                     if (this.cfg.dtcGamesCategory) {
-                        let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
-                        await Promise.all(autoChannel.children.cache.map(async (gameChannel) => {
-                            this.checkActiveTextChannel(gameChannel);
+                        let dtcGamesCategory = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
+                        await Promise.all(dtcGamesCategory.children.cache.map(async (gameChannel) => {
+                            await this.checkActiveTextChannel(gameChannel);
                         }));
+
+                        let dtcArchivedGamesCategory = await this.client.channels.fetch(this.cfg.dtcArchivedGamesCategory);
+                        this.sortTextChannelCategoryByName(dtcArchivedGamesCategory);
+
                     } else {
                         console.warn('WARNING: no dtcGamesCategory set in config file!');
                     }
