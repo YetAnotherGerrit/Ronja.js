@@ -180,7 +180,7 @@ const myDynamicTextChannels = {
                 action: async () => {
                     if (this.cfg.dtcGamesCategory) {
                         let autoChannel = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
-                        await Promise.all(autoChannel.children.map(async (gameChannel) => {
+                        await Promise.all(autoChannel.children.cache.map(async (gameChannel) => {
                             this.checkActiveTextChannel(gameChannel);
                         }));
                     } else {
