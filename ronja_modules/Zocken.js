@@ -343,7 +343,7 @@ const myZocken = {
 
     hookForVoiceUpdate: async function(oldState, newState) {
 
-        if (newState.channel.type === ChannelType.GuildVoice && newState.channel.userLimit === 0 && newState.channel.members.size > 0) {
+        if (newState.channel && newState.channel.type === ChannelType.GuildVoice && newState.channel.userLimit === 0 && newState.channel.members.size > 0) {
             if (!this.dbVoiceStatus[newState.channel.id]) {
                 this.dbVoiceStatus[newState.channel.id] = await newState.channel.send(this.l("Open the voice channel's text channel to see what games the members can play..."));
             }
