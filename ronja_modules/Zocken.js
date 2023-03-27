@@ -342,22 +342,26 @@ const myZocken = {
     },
 
     hookForVoiceUpdate: async function(oldState, newState) {
+        if (newState.channel) this.updateChannelVoiceStatus(newState.channel);
+        if ((oldState.channel && !newState.channel) || (oldState.channel && newState.channel && oldState.channel.id != newState.channel.id)) this.updateChannelVoiceStatus(oldState.channel);
+    },
 
-        if (newState.channel && newState.channel.type === ChannelType.GuildVoice && newState.channel.userLimit === 0 && newState.channel.members.size > 0) {
-            if (!this.dbVoiceStatus[newState.channel.id]) {
-                this.dbVoiceStatus[newState.channel.id] = await newState.channel.send(this.l("Open the voice channel's text channel to see what games the members can play..."));
+    updateChannelVoiceStatus: async function(channel) {
+        if (channel && channel.type === ChannelType.GuildVoice && channel.userLimit === 0 && channel.members.size > 0) {
+            if (!this.dbVoiceStatus[channel.id]) {
+                this.dbVoiceStatus[channel.id] = await channel.send(this.l("Open the voice channel's text channel to see what games the members can play..."));
             }
 
-            let myMsg = this.dbVoiceStatus[newState.channel.id];
+            let myMsg = this.dbVoiceStatus[channel.id];
             let voiceMembers = [];
 
-            newState.channel.members.forEach(member => {
+            channel.members.forEach(member => {
                 voiceMembers.push(member.id);
             })
 
             myMsg.edit(this.l("This games are played by the channel members:\n") + await this.createZockenText(voiceMembers));
         }
-    },
+    }
 
 };
 
