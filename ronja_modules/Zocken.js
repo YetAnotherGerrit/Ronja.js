@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, GuildScheduledEventStatus } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, GuildScheduledEventStatus, ChannelType } = require('discord.js');
 const { DateTime } = require("luxon");
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -18,10 +18,9 @@ const myZocken = {
         collectorTimeout: 14*60*1000,
     },
 
-    dbZocken: {},
+    dbVoiceStatus: {},
 
-    createZockenText: async function(guildEvent, guildEventCreatorId) {
-        let maxGames = 10;
+    createZockenTextForEvent: async function(guildEvent, guildEventCreatorId) {
         let eventMembers = [];
         let regexResult;
 
@@ -41,7 +40,13 @@ const myZocken = {
 
         if (guildEventCreatorId) eventMembers.push(guildEventCreatorId);
 
-        if (eventMembers.length > 0) {
+        return await this.createZockenText(eventMembers) || this.l("Nobody is participating yet. Don't forget to click that \"Interested\"-Button!");
+    },
+
+    createZockenText: async function(zockenMembers) {
+        let maxGames = 10;
+
+        if (zockenMembers.length > 0) {
             let zockenText = '';
 
             let gamesPlayed = await this.client.myDB.Games.findAll({
@@ -54,7 +59,7 @@ const myZocken = {
                     {
                         model: this.client.myDB.GamesPlayed,
                         where: {
-                            member: eventMembers
+                            member: zockenMembers
                         }
     
                     }
@@ -76,7 +81,7 @@ const myZocken = {
             return zockenText;
     
         } else {
-            return this.l("Nobody is participating yet. Don't forget to click that \"Interested\"-Button!");
+            return null;
         }
     },
 
@@ -187,7 +192,7 @@ const myZocken = {
                 scheduledEndTime: startTime.plus({hours: 1}).toJSDate(), // Optional, but not for EXTERNAL
                 privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                 entityType: GuildScheduledEventEntityType.External,
-                description: await this.createZockenText(null, interaction.member.id), // Optional
+                description: await this.createZockenTextForEvent(null, interaction.member.id), // Optional
                 entityMetadata: {location: this.l('#%s via /lfg by %s (%s)', interaction.channel.name, interaction.member.displayName, interaction.member.id)}, // Optional, but not for EXTERNAL,
             })
 
@@ -322,7 +327,7 @@ const myZocken = {
 
     hookForEventUserUpdate: async function(guildScheduledEvent, user) {
         if (guildScheduledEvent.entityMetadata.location.includes('/lfg')) {
-            let guildDescription = await this.createZockenText(guildScheduledEvent);
+            let guildDescription = await this.createZockenTextForEvent(guildScheduledEvent);
             guildScheduledEvent.setDescription(guildDescription);
         }
     },
@@ -335,6 +340,28 @@ const myZocken = {
             }
         }
     },
+
+    hookForVoiceUpdate: async function(oldState, newState) {
+        if (newState.channel) this.updateChannelVoiceStatus(newState.channel);
+        if ((oldState.channel && !newState.channel) || (oldState.channel && newState.channel && oldState.channel.id != newState.channel.id)) this.updateChannelVoiceStatus(oldState.channel);
+    },
+
+    updateChannelVoiceStatus: async function(channel) {
+        if (channel && channel.type === ChannelType.GuildVoice && channel.userLimit === 0 && channel.members.size > 0) {
+            if (!this.dbVoiceStatus[channel.id]) {
+                this.dbVoiceStatus[channel.id] = await channel.send(this.l("Open the voice channel's text channel to see what games the members can play..."));
+            }
+
+            let myMsg = this.dbVoiceStatus[channel.id];
+            let voiceMembers = [];
+
+            channel.members.forEach(member => {
+                voiceMembers.push(member.id);
+            })
+
+            myMsg.edit(this.l("This games are played by the channel members:\n") + await this.createZockenText(voiceMembers));
+        }
+    }
 
 };
 
