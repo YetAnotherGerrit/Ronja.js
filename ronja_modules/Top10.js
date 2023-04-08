@@ -53,7 +53,7 @@ const myTop10 = {
             }
         });
 
-        e.addFields([{ name: this.l('Top 10 by player count:'), value: s }]);
+        e.addFields([{ name: this.l('Top 10 by player count:'), value: s || this.l("No games have been played.") }]);
     
         return e;
     },
