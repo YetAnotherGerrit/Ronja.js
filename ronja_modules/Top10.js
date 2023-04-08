@@ -73,15 +73,11 @@ const myTop10 = {
 
     hookForCommandInteraction: async function(interaction)  {
 		if (interaction.commandName == 'top10') {
-            await interaction.reply(this.client.myLoadingEmbed());
+            await interaction.deferReply({ephemeral: true});
 
-			this.createTop10Embed(interaction.options.getInteger('days') || 14)
-            .then(e => {
-                interaction.editReply({
-                    embeds: [ e	],
-                    ephemeral: true,
-                });
-            });
+			let e = await this.createTop10Embed(interaction.options.getInteger('days') || 14);
+
+            interaction.editReply({embeds: [ e ]});
         }
     },
 
