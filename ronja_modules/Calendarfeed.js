@@ -66,14 +66,15 @@ const myICalFeed = {
 
     hookForCommandInteraction: async function(interaction)  {
 		if (interaction.commandName == 'ical') {
+            await interaction.deferReply({ephemeral: true});
+
             if (this.cfg.icalFtpServer && this.cfg.icalFtpUsername && this.cfg.icalFtpPassword && this.cfg.icalUrl) {
-                interaction.reply({content: this.l('Your ical-Feed will be generated...'), ephemeral: true});
                 await this.updateICalFile(interaction.guild, interaction.user);
                 interaction.editReply({
                     content: this.cfg.icalUrl + interaction.user.id + '.ics'
                 })
             } else {
-                interaction.reply({content: this.l('The ical-settings for this server are incomplete.'), ephemeral: true});
+                interaction.editReply({content: this.l('The ical-settings for this server are incomplete.')});
             }
         };
     },

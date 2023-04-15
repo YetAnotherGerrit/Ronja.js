@@ -9,6 +9,8 @@ const myServerprofil = {
 
     hookForContextMenuInteraction: async function(interaction)  {
         if (interaction.commandName == 'Serverprofile') {
+            await interaction.deferReply({ephemeral: true});
+
             let m = await interaction.guild.members.fetch(interaction.options.getUser('user').id);
 
             let e = new EmbedBuilder()
@@ -53,11 +55,7 @@ const myServerprofil = {
                  };
             };
     
-            await interaction.reply({
-                embeds: [ e	],
-                ephemeral: true,
-            });
-    
+            interaction.editReply({embeds: [ e ]});
         };
     },
 };
