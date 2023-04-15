@@ -117,7 +117,7 @@ const myDynamicTextChannels = {
 
             this.notifyChannel(
                 this.l('A new text channel was created'),
-                this.l('Some of you guys played a new game recently. To provide you with a channel to talk about it, <#%s> has been created.\n\nOthers will be added to that channel once I see them playing the same game.', newChannel.id)
+                this.l('Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.', newChannel.name)
             );
         } else {
             console.warn('WARNING: no dtcGamesCategory set in config file!');
@@ -144,7 +144,7 @@ const myDynamicTextChannels = {
             if (game.channel) {
                 let gameChannel = await this.client.channels.fetch(game.channel);
                 if (gameChannel.parentId == this.cfg.dtcArchivedGamesCategory) {
-                    if (await this.countPlayersForGame(game, this.cfg.daysTarget) > 1) {
+                    if (await this.countPlayersForGame(game, this.cfg.daysTarget) > 0) { //debug
                         let dtcGamesCategory = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
                         gameChannel.setParent(dtcGamesCategory);
                         await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
@@ -155,7 +155,7 @@ const myDynamicTextChannels = {
                         this.sortTextChannelCategoryByName(dtcGamesCategory);
                         this.notifyChannel(
                             this.l('A text channel was re-activated'),
-                            this.l('Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', gameChannel.id)
+                            this.l('Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.', game.name, gameChannel.name)
                         );    
                     }
                 } else {

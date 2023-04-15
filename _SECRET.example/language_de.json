@@ -8,13 +8,13 @@
   "A new text channel was created": [
     "Ein neuer Textkanal wurde erstellt"
   ],
-  "Some of you guys played a new game recently. To provide you with a channel to talk about it, <#%s> has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
+  "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
     "Einige von euch haben kürzlich ein neues Spiel gespielt. Um euch einen Kanal zur Verfügung zu stellen, in dem ihr darüber reden könnt, wurde <#%s> eingerichtet.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sehe, dass sie dasselbe Spiel spielen."
   ],
   "A text channel was re-activated": [
     "Ein Textkanal wurde reaktiviert"
   ],
-  "Some of you guys re-discovered a forgotten game recently. <#%s> has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
+  "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
     "Einige von euch haben kürzlich ein vergessenes Spiel wiederentdeckt. <#%s> wurde aus dem Archiv reaktiviert.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sie es spielen sehe."
   ],
   " active players": [
