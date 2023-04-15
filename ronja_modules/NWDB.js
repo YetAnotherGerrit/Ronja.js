@@ -25,14 +25,14 @@ const myNWDB = {
         let resultString;
         
         if (serverStatus == 'ACTIVE') {
-            resultString = getServer + ": " + serverPlayers + this.l(" active players");
+            resultString = getServer + ": " + serverPlayers + this.l(this.cfg.language," active players");
         }
         else {
-            resultString = getServer + ": " + this.l(serverStatus) + " (" + serverPlayers + "/" + serverLimit + ")";
+            resultString = getServer + ": " + this.l(this.cfg.language,serverStatus) + " (" + serverPlayers + "/" + serverLimit + ")";
         }
 
         if (serverQueue > 0) {
-            resultString = resultString + this.l(', %s in the queue', serverQueue);
+            resultString = resultString + this.l(this.cfg.language,', %s in the queue', serverQueue);
         }
 
         resultString = resultString;
