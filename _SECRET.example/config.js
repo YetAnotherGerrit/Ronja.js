@@ -3,7 +3,6 @@ const mySecret = {
 	guildId: "xxxxxxxxxxxxxxxxxx",  // https://discordjs.guide/preparations/setting-up-a-bot-application.html
 	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
-    language: 'en',                 // Set it to whatever tag you want to use. A template will be dynamically generated over time.
     timeZone: 'Europe/Berlin',
 
     // DynamicTextChannels

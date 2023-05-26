@@ -145,5 +145,11 @@
   ],
   "No games have been played.": [
     "Es wurde nicht gespielt."
+  ],
+  "Failed!": [
+    "Gescheitert!"
+  ],
+  "Language could not be saved. Make sure the bot has the permission to change server settings.": [
+    "Sprache konnte nicht gespeichert werden. Prüfe, ob der Bot die Berechtigungen zum Ändern der Servereinstellungen hat."
   ]
 }
