@@ -144,7 +144,7 @@ const myDynamicTextChannels = {
             if (game.channel) {
                 let gameChannel = await this.client.channels.fetch(game.channel);
                 if (gameChannel.parentId == this.cfg.dtcArchivedGamesCategory) {
-                    if (await this.countPlayersForGame(game, this.cfg.daysTarget) > 0) { //debug
+                    if (await this.countPlayersForGame(game, this.cfg.daysTarget) > 1) {
                         let dtcGamesCategory = await this.client.channels.fetch(this.cfg.dtcGamesCategory);
                         gameChannel.setParent(dtcGamesCategory);
                         await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
