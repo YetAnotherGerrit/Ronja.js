@@ -8,7 +8,7 @@ const myNWDB = {
         newWorldCronPattern: '*/5 * * * *',
     },
 
-    myGetServerStatus: async function(getServer) {
+    myGetServerStatus: async function(lng, getServer) {
         let url = 'https://nwdb.info/server-status';
         let regex = new RegExp(`\\[(\\d+),(\\d+),(\\d+),\\d+,\\\\\\"${getServer}\\\\\\",\\\\\\"Vanaheim Zeta\\\\\\",\\\\\\"eu-central-1\\\\\\",\\d+,\\\\\\"(\\w+)`);
 
@@ -25,14 +25,14 @@ const myNWDB = {
         let resultString;
         
         if (serverStatus == 'ACTIVE') {
-            resultString = getServer + ": " + serverPlayers + this.l(this.cfg.language," active players");
+            resultString = getServer + ": " + serverPlayers + this.l(lng," active players");
         }
         else {
-            resultString = getServer + ": " + this.l(this.cfg.language,serverStatus) + " (" + serverPlayers + "/" + serverLimit + ")";
+            resultString = getServer + ": " + this.l(lng,serverStatus) + " (" + serverPlayers + "/" + serverLimit + ")";
         }
 
         if (serverQueue > 0) {
-            resultString = resultString + this.l(this.cfg.language,', %s in the queue', serverQueue);
+            resultString = resultString + this.l(lng,', %s in the queue', serverQueue);
         }
 
         resultString = resultString;
@@ -51,7 +51,7 @@ const myNWDB = {
                 action: () => {
                     this.client.channels.fetch(this.cfg.newWorldChannel)
                     .then(c => {
-                        this.myGetServerStatus(this.cfg.newWorldServer)
+                        this.myGetServerStatus(c.guild.preferredLocale, this.cfg.newWorldServer)
                         .then(res => {
                             if (res != '') {
                                 c.setTopic(res);

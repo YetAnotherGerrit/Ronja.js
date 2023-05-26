@@ -327,7 +327,7 @@ const myZocken = {
 
     hookForEventUserUpdate: async function(guildScheduledEvent, user) {
         if (guildScheduledEvent.entityMetadata.location.includes('/lfg')) {
-            let guildDescription = await this.createZockenTextForEvent(this.cfg.language, guildScheduledEvent);
+            let guildDescription = await this.createZockenTextForEvent(guildScheduledEvent.guild.preferredLocale, guildScheduledEvent);
             guildScheduledEvent.setDescription(guildDescription);
         }
     },
@@ -349,7 +349,7 @@ const myZocken = {
     updateChannelVoiceStatus: async function(channel) {
         if (channel && channel.type === ChannelType.GuildVoice && channel.userLimit === 0 && channel.members.size > 0) {
             if (!this.dbVoiceStatus[channel.id]) {
-                this.dbVoiceStatus[channel.id] = await channel.send(this.l(this.cfg.language,"Open the voice channel's text channel to see what games the members can play..."));
+                this.dbVoiceStatus[channel.id] = await channel.send(this.l(channel.guild.preferredLocale, "Open the voice channel's text channel to see what games the members can play..."));
             }
 
             let myMsg = this.dbVoiceStatus[channel.id];
@@ -359,7 +359,7 @@ const myZocken = {
                 voiceMembers.push(member.id);
             })
 
-            myMsg.edit(this.l(this.cfg.language,"This games are played by the channel members:\n") + await this.createZockenText(voiceMembers));
+            myMsg.edit(this.l(channel.guild.preferredLocale, "This games are played by the channel members:\n") + await this.createZockenText(voiceMembers));
         }
     }
 

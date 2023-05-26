@@ -61,9 +61,9 @@ const myTop10 = {
     postTop10ToChannel: async function(pDays, pDescription) {
         this.client.channels.fetch(this.cfg.top10CronKanal)
         .then(c => {
-            this.createTop10Embed(this.cfg.language, pDays)
+            this.createTop10Embed(c.guild.preferredLocale, pDays)
             .then(e => {
-                e.setDescription(pDescription)
+                e.setDescription(this.l(c.guild.preferredLocale, pDescription))
                 c.send({embeds: [e]});
             })
             .catch(console.error);
@@ -90,19 +90,19 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, this.l(this.cfg.language,'The most played games of last week:'));
+                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, 'The most played games of last week:');
                 },
             },
             {
                 schedule: '0 7 1 * *',
                 action: () => {
-                    if (this.cfg.top10Monthly) this.postTop10ToChannel(30, this.l(this.cfg.language,'The most played games of last month:'));
+                    if (this.cfg.top10Monthly) this.postTop10ToChannel(30, 'The most played games of last month:');
                 },
             },
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, this.l(this.cfg.language,'Happy new year! These have been the highlights of last year:'));
+                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, 'Happy new year! These have been the highlights of last year:');
                 },
             },
         ]
