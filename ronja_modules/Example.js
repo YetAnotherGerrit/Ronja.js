@@ -57,6 +57,12 @@ const myExample = {
         console.debug('A scheduled guild event has been updated!')
     },
 
+    /* TODO:
+    hookForEventUserAdd
+    hookForEventUserUpdate
+    hookForEventUserRemove
+    */
+
     hookForEventStart: async function(oldGuildScheduledEvent, newGuildScheduledEvent)  {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
         console.debug('A scheduled guild event has started!')
