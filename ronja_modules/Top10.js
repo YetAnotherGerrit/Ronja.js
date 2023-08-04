@@ -13,13 +13,13 @@ const myTop10 = {
         timeZone: 'Europe/Berlin',
     },
 
-    createTop10Embed: async function (pDays = 14) {
+    createTop10Embed: async function (lng, pDays = 14) {
         let maxgames = 10;
 
         let e = new EmbedBuilder()
         .setColor(Colors.Blue)
-        .setTitle(this.l('Most popular games!'))
-        .setDescription(this.l('Most played games of the last %d days:', pDays));
+        .setTitle(this.l(lng,'Most popular games!'))
+        .setDescription(this.l(lng,'Most played games of the last %d days:', pDays));
 
         let s = '';
     
@@ -53,7 +53,7 @@ const myTop10 = {
             }
         });
 
-        e.addFields([{ name: this.l('Top 10 by player count:'), value: s || this.l("No games have been played.") }]);
+        e.addFields([{ name: this.l(lng,'Top 10 by player count:'), value: s || this.l(lng,"No games have been played.") }]);
     
         return e;
     },
@@ -61,9 +61,9 @@ const myTop10 = {
     postTop10ToChannel: async function(pDays, pDescription) {
         this.client.channels.fetch(this.cfg.top10CronKanal)
         .then(c => {
-            this.createTop10Embed(pDays)
+            this.createTop10Embed(c.guild.preferredLocale, pDays)
             .then(e => {
-                e.setDescription(pDescription)
+                e.setDescription(this.l(c.guild.preferredLocale, pDescription))
                 c.send({embeds: [e]});
             })
             .catch(console.error);
@@ -75,7 +75,7 @@ const myTop10 = {
 		if (interaction.commandName == 'top10') {
             await interaction.deferReply({ephemeral: true});
 
-			let e = await this.createTop10Embed(interaction.options.getInteger('days') || 14);
+			let e = await this.createTop10Embed(interaction.locale,interaction.options.getInteger('days') || 14);
 
             interaction.editReply({embeds: [ e ]});
         }
@@ -90,19 +90,19 @@ const myTop10 = {
             {
                 schedule: '0 8 * * 1',
                 action: () => {
-                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, this.l('The most played games of last week:'));
+                    if (this.cfg.top10Weekly) this.postTop10ToChannel(7, 'The most played games of last week:');
                 },
             },
             {
                 schedule: '0 7 1 * *',
                 action: () => {
-                    if (this.cfg.top10Monthly) this.postTop10ToChannel(30, this.l('The most played games of last month:'));
+                    if (this.cfg.top10Monthly) this.postTop10ToChannel(30, 'The most played games of last month:');
                 },
             },
             {
                 schedule: '0 0 1 1 *',
                 action: () => {
-                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, this.l('Happy new year! These have been the highlights of last year:'));
+                    if (this.cfg.top10Yearly) this.postTop10ToChannel(365, 'Happy new year! These have been the highlights of last year:');
                 },
             },
         ]

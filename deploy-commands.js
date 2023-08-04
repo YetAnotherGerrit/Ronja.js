@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, REST, Routes } = require('discord.js');
+const { SlashCommandBuilder, REST, Routes, PermissionFlagsBits } = require('discord.js');
 
 const { clientId, guildId, token } = require('./_SECRET/config.js');
 
@@ -6,6 +6,7 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName('ical')
 		.setDescription('Get an ical-feed of your events.').setDescriptionLocalizations({de: 'Erstelle einen ical-Feed für deine Events.'})
+		.setDMPermission(false)
 	,
 	new SlashCommandBuilder()
 		.setName('top10')
@@ -15,10 +16,12 @@ const commands = [
 			.setDescription('Top 10 for what period?').setDescriptionLocalizations({de: 'Top 10 für welchen Zeitraum?'})
 			.setRequired(false)
 		)
+		.setDMPermission(false)
 	,
 	new SlashCommandBuilder()
 		.setName('serverprofile').setNameLocalizations({de: 'serverprofil'})
 		.setDescription('USER')
+		.setDMPermission(false)
 	,
 	new SlashCommandBuilder()
 		.setName('lfg').setNameLocalizations({de: 'zocken'})
@@ -42,6 +45,13 @@ const commands = [
 			.setDescription('Give your gaming session a name.').setDescriptionLocalizations({de: 'Gib deinem /zocken-Aufruf einen Namen.'})
 			.setRequired(false)			
 		)
+		.setDMPermission(false)
+	,
+	new SlashCommandBuilder()
+		.setName('setlang').setNameLocalizations({de: 'setzesprache'})
+		.setDescription('Set you personal language as preferred server language.').setDescriptionLocalizations({de: 'Setze deine persönliche Sprache als bevorzugte Serversprache.'})
+		.setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+		.setDMPermission(false)
 	,
 ]
 .map(command => command.toJSON());

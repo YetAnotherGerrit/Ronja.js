@@ -70,11 +70,9 @@ const myICalFeed = {
 
             if (this.cfg.icalFtpServer && this.cfg.icalFtpUsername && this.cfg.icalFtpPassword && this.cfg.icalUrl) {
                 await this.updateICalFile(interaction.guild, interaction.user);
-                interaction.editReply({
-                    content: this.cfg.icalUrl + interaction.user.id + '.ics'
-                })
+                interaction.editReply({content: this.cfg.icalUrl + interaction.user.id + '.ics'})
             } else {
-                interaction.editReply({content: this.l('The ical-settings for this server are incomplete.')});
+                interaction.editReply({content: this.l(interaction.locale,'The ical-settings for this server are incomplete.')});
             }
         };
     },

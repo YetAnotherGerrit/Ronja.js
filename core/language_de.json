@@ -15,7 +15,7 @@
     "Ein Textkanal wurde reaktiviert"
   ],
   "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
-    "Einige von euch haben kürzlich ein vergessenes Spiel wiederentdeckt. <#%s> wurde aus dem Archiv reaktiviert.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sie es spielen sehe."
+    "Einige von euch haben kürzlich %s wiederentdeckt. #%s wurde aus dem Archiv reaktiviert.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sie es spielen sehe."
   ],
   " active players": [
     " aktive Spieler"
@@ -145,5 +145,14 @@
   ],
   "No games have been played.": [
     "Es wurde nicht gespielt."
+  ],
+  "Failed!": [
+    "Failed!"
+  ],
+  "Could not be safed. Maybe the bot is missing some permissions?": [
+    "Could not be safed. Maybe the bot is missing some permissions?"
+  ],
+  "Language of the guild was changed to %s.": [
+    "Serversprache wurde auf %s geändert."
   ]
 }

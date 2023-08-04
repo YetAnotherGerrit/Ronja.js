@@ -3,7 +3,8 @@ const Sequelize = require('sequelize');
 
 const mySECRET = require('../_SECRET/config.js');
 
-const fs = require('fs');
+const fs = require('node:fs');
+const path = require('node:path');
 const util = require('util');
 
 class Ronja extends Client {
@@ -54,43 +55,47 @@ class Ronja extends Client {
 
         this.myConfig = mySECRET;
 
-        if (fs.existsSync(`./_SECRET/language_${this.myConfig.language}.json`)) fs.readFile(`./_SECRET/language_${this.myConfig.language}.json`, "utf8", (err, jsonString) => {
-            if (err) {
-              console.log("Error reading file from disk:", err);
-              return;
+        let languagePath = __dirname;
+        let languageFiles = fs.readdirSync(languagePath).filter(file => file.startsWith('language_'));
+        
+        for (let file of languageFiles) {
+            let filePath = path.join(languagePath, file);
+            let regexResult = filePath.match(new RegExp(/language\_(.*)\.json/));
+
+            if (regexResult) {
+                fs.readFile(filePath, "utf8", (err, jsonString) => {
+                    if (err) {
+                      console.log("Error reading file from disk:", err);
+                      return;
+                    }
+                    try {
+                      this.myLanguage[regexResult[1]] = JSON.parse(jsonString);
+                    } catch (err) {
+                      console.log("Error parsing JSON string:", err);
+                    }
+                });
             }
-            try {
-              this.myLanguage = JSON.parse(jsonString);
-            } catch (err) {
-              console.log("Error parsing JSON string:", err);
-            }
-        });
+
+        }
+
+
+
 
     };
 
     myTranslator() {
-        if (this.myLanguage[arguments[0]]) {
-            arguments[0] = this.myLanguage[arguments[0]][Math.floor(Math.random() * this.myLanguage[arguments[0]].length)];
+        if (this.myLanguage[arguments[0]] && this.myLanguage[arguments[0]][arguments[1]]) {
+            arguments[1] = this.myLanguage[arguments[0]][arguments[1]][Math.floor(Math.random() * this.myLanguage[arguments[0]][arguments[1]].length)];
         } else {
-            this.myLanguage[arguments[0]] = [arguments[0]];
-            fs.writeFile(`./_SECRET/language_${this.myConfig.language}.json`, JSON.stringify(this.myLanguage, null, 2), err => {
+            if (!this.myLanguage[arguments[0]]) this.myLanguage[arguments[0]] = {};
+            this.myLanguage[arguments[0]][arguments[1]] = [arguments[1]];
+            fs.writeFile(`./core/language_${arguments[0]}.json`, JSON.stringify(this.myLanguage[arguments[0]], null, 2), err => {
                 if (err) console.log("Error writing file:", err);
             });            
         }
-        return util.format(...arguments);
-    };
-
-    // Run with "false" if no ephemeral.
-    myLoadingEmbed(myEphemeral = true) {
-        return {
-            embeds: [
-                new EmbedBuilder()
-                .setColor(Colors.Grey)
-                .setTitle(this.myTranslator('Loading...'))
-                .setDescription(this.myTranslator('Please be patient.'))
-            ],
-            ephemeral: myEphemeral,
-        }
+        let params = Array.prototype.slice.call(arguments);
+        params.shift();
+        return util.format(...params);
     };
 
     myReady() {

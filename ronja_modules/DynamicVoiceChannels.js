@@ -47,7 +47,12 @@ const myDynamicVoiceChannels = {
        } 
     
        if (oldState.channel && oldState.channel != newState.channel && oldState.channel.type === ChannelType.GuildVoice && oldState.channel.userLimit === 0 && oldState.channel.members.size === 0) {
-           await oldState.channel.delete();
+           try {
+                await oldState.channel.delete();
+           } catch {
+                // TODO: Add some error-protocoll handler.
+                console.error(`[ERROR] Could not delete voice channel ${oldState.channel.name}.`);
+           }
        }
     
        if (oldState.channel && oldState.channel != newState.channel && oldState.channel.userLimit === 0 && oldState.channel.members.size > 0) await this.setGameAsChannelName(oldState.channel);

@@ -12,6 +12,7 @@ ronja_modules.push(require('./ronja_modules/DynamicVoiceChannels.js'));
 ronja_modules.push(require('./ronja_modules/NWDB.js'));
 ronja_modules.push(require('./ronja_modules/ReoccurringEvents.js'));
 ronja_modules.push(require('./ronja_modules/Serverprofil.js'));
+ronja_modules.push(require('./ronja_modules/SetLanguage.js'));
 ronja_modules.push(require('./ronja_modules/Top10.js'));
 ronja_modules.push(require('./ronja_modules/Zocken.js'));
 
