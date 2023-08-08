@@ -1,5 +1,5 @@
 const iCal = require('ical-generator');
-const jsftp = require("jsftp");
+const sFftpClient = require("ssh2-sftp-client");
 
 const myICalFeed = {
     defaultConfig: {
@@ -15,12 +15,7 @@ const myICalFeed = {
         let iCalendar = new iCal({name: 'Discord Events'});
 
 
-        let myFtp = new jsftp({
-            host: this.cfg.icalFtpServer,
-            port: this.cfg.icalFtpPort || 21,
-            user: this.cfg.icalFtpUsername,
-            pass: this.cfg.icalFtpPassword
-          });
+        let myFtp = new sFftpClient();
         
 
         await Promise.all(scheduledEvents.map(async (guildEvent) => {
@@ -56,12 +51,14 @@ const myICalFeed = {
 
         let buff = Buffer.from(iCalendar.toString(), "utf-8");
 
-        await myFtp.put(buff, user.id+'.ics', err => {
-            if (err) {
-              console.error(err)
-            }
+        await myFtp.connect({
+            host: this.cfg.icalFtpServer,
+            port: this.cfg.icalFtpPort || 22,
+            username: this.cfg.icalFtpUsername,
+            password: this.cfg.icalFtpPassword
         });
 
+        await myFtp.put(buff, user.id+'.ics');
     },
 
     hookForCommandInteraction: async function(interaction)  {
@@ -70,9 +67,11 @@ const myICalFeed = {
 
             if (this.cfg.icalFtpServer && this.cfg.icalFtpUsername && this.cfg.icalFtpPassword && this.cfg.icalUrl) {
                 await this.updateICalFile(interaction.guild, interaction.user);
-                interaction.editReply({content: this.cfg.icalUrl + interaction.user.id + '.ics'})
+                interaction.editReply({
+                    content: this.cfg.icalUrl + interaction.user.id + '.ics'
+                })
             } else {
-                interaction.editReply({content: this.l(interaction.locale,'The ical-settings for this server are incomplete.')});
+                interaction.editReply({content: this.l(interaction.locale, 'The ical-settings for this server are incomplete.')});
             }
         };
     },
