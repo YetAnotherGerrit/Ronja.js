@@ -1,7 +1,7 @@
 const mySecret = {
-	clientId: "xxxxxxxxxxxxxxxxxx", // https://discord.com/developers/applications
-	guildId: "xxxxxxxxxxxxxxxxxx",  // https://discordjs.guide/preparations/setting-up-a-bot-application.html
-	token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    clientId: "xxxxxxxxxxxxxxxxxx", // https://discord.com/developers/applications
+    guildId: "xxxxxxxxxxxxxxxxxx",  // https://discordjs.guide/preparations/setting-up-a-bot-application.html
+    token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 
     timeZone: 'Europe/Berlin',
 
