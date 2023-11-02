@@ -359,7 +359,8 @@ const myZocken = {
                 voiceMembers.push(member.id);
             })
 
-            myMsg.edit(this.l(channel.guild.preferredLocale, "This games are played by the channel members:\n") + await this.createZockenText(voiceMembers));
+            myMsg.edit(this.l(channel.guild.preferredLocale, "This games are played by the channel members:\n") + await this.createZockenText(voiceMembers))
+            .catch(console.error);
         }
     }
 
