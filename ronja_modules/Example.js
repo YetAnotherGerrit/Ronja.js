@@ -1,60 +1,73 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder, ButtonStyle, Colors, GuildScheduledEventPrivacyLevel, GuildScheduledEventEntityType, GuildScheduledEventStatus } = require('discord.js');
-const { DateTime } = require('luxon');
-const Sequelize = require('sequelize');
+const {
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    StringSelectMenuBuilder,
+    ButtonStyle,
+    Colors,
+    GuildScheduledEventPrivacyLevel,
+    GuildScheduledEventEntityType,
+    GuildScheduledEventStatus,
+} = require("discord.js");
+const { DateTime } = require("luxon");
+const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myExample = {
     defaultConfig: {
-        someSetting: 'someValue',
+        someSetting: "someValue",
     },
 
-    hookForCron: function() {
+    hookForCron: function () {
         return [
             {
-                schedule: '*/5 * * * *', // https://crontab.guru/
+                schedule: "*/5 * * * *", // https://crontab.guru/
                 action: () => {
-                        console.debug('Do this every 5 minutes!')
+                    console.debug("Do this every 5 minutes!");
                 },
 
-                schedule: '0 8 * * *', // https://crontab.guru/
+                schedule: "0 8 * * *", // https://crontab.guru/
                 action: () => {
-                        console.debug('Do this every morning at 8:00!')
+                    console.debug("Do this every morning at 8:00!");
                 },
-            }
+            },
         ];
     },
 
     // Don't forget to also add your slash-commands to the deploy-command.js file and run it once after every change.
-    hookForCommandInteraction: async function(interaction)  {
+    hookForCommandInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
-		if (interaction.commandName == 'ping') {
-            interaction.reply('Pong!');
-        };
+        if (interaction.commandName == "ping") {
+            interaction.reply("Pong!");
+        }
     },
 
     // Don't forget to also add your context menu-commands to the deploy-command.js file and run it once after every change.
-    hookForContextMenuInteraction: async function(interaction)  {
+    hookForContextMenuInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
-		if (interaction.commandName == 'ping') {
-            interaction.reply('Pong!');
-        };
+        if (interaction.commandName == "ping") {
+            interaction.reply("Pong!");
+        }
     },
 
-    hookForButtonInteraction: async function(interaction)  {
+    hookForButtonInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
-		if (interaction.commandName == 'ping') {
-            interaction.reply('Pong!');
-        };
+        if (interaction.commandName == "ping") {
+            interaction.reply("Pong!");
+        }
     },
 
-    hookForVoiceUpdate: async function(oldState, newState) {
+    hookForVoiceUpdate: async function (oldState, newState) {
         // https://discord.js.org/#/docs/discord.js/stable/class/VoiceState
-        console.debug('The voice status of a user has updated!');
+        console.debug("The voice status of a user has updated!");
     },
 
-    hookForEventUpdate: async function(oldGuildScheduledEvent, newGuildScheduledEvent)  {
+    hookForEventUpdate: async function (
+        oldGuildScheduledEvent,
+        newGuildScheduledEvent
+    ) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
-        console.debug('A scheduled guild event has been updated!')
+        console.debug("A scheduled guild event has been updated!");
     },
 
     /* TODO:
@@ -63,19 +76,25 @@ const myExample = {
     hookForEventUserRemove
     */
 
-    hookForEventStart: async function(oldGuildScheduledEvent, newGuildScheduledEvent)  {
+    hookForEventStart: async function (
+        oldGuildScheduledEvent,
+        newGuildScheduledEvent
+    ) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
-        console.debug('A scheduled guild event has started!')
+        console.debug("A scheduled guild event has started!");
     },
 
-    hookForStartedPlaying: async function(oldPresence, newPresence, newActivity, game)  {
+    hookForStartedPlaying: async function (
+        oldPresence,
+        newPresence,
+        newActivity,
+        game
+    ) {
         // https://discord.js.org/#/docs/discord.js/stable/class/ClientPresence
         // https://discord.js.org/#/docs/discord.js/stable/class/Activity
         // game = client.myDB.Games-entry
-        console.debug('Someone started playing a game!')
+        console.debug("Someone started playing a game!");
     },
-
-
 };
 
 module.exports = myExample;
