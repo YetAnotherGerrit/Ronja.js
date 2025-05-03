@@ -1,13 +1,31 @@
 {
-  "dependencies": {
-    "axios": "^1.2.3",
-    "deepmerge": "^4.3.0",
-    "discord.js": "^14.8.0",
-    "ical-generator": "^3.6.1",
-    "luxon": "^3.3.0",
-    "node-cron": "^3.0.2",
-    "sequelize": "^6.28.2",
-    "sqlite3": "^5.1.4",
-    "ssh2-sftp-client": "^9.1.0"
-  }
+    "name": "ronja-discord",
+    "version": "2.0.0",
+    "description": "A bot for discord guilds that provide a multi gaming community for a circle of friends.",
+    "homepage": "https://github.com/YetAnotherGerrit/Ronja.js",
+    "bugs": {
+        "url": "https://github.com/YetAnotherGerrit/Ronja.js/issues"
+    },
+    "license": "GPL-3.0-only",
+    "author": {
+        "name": "YetAnotherGerrit",
+        "url": "https://github.com/YetAnotherGerrit"
+    },
+    "repository": "github:YetAnotherGerrit/Ronja.js",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "deploy-commands": "node deploy-commands.js"
+    },
+    "dependencies": {
+        "axios": "^1.2.3",
+        "deepmerge": "^4.3.0",
+        "discord.js": "^14.8.0",
+        "ical-generator": "^3.6.1",
+        "luxon": "^3.3.0",
+        "node-cron": "^3.0.2",
+        "sequelize": "^6.28.2",
+        "sqlite3": "^5.1.4",
+        "ssh2-sftp-client": "^9.1.0"
+    }
 }

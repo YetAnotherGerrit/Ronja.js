@@ -4,7 +4,7 @@ if "%1"=="postinstall" (
     mkdir _SECRET
     copy _SECRET.example\config.js _SECRET\config.js
     echo Please open _SECRET\config.js in your favourite editor and add your
-    echo clientId, guildId and token at least.
+    echo clientId and token at least.
     echo.
     echo After that run: %0 postupdate
     echo.

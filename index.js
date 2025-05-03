@@ -4,6 +4,7 @@ const {
     ActivityType,
     GuildScheduledEventStatus,
 } = require("discord.js");
+
 const { Ronja } = require("./core/Ronja.js");
 const deepmerge = require("deepmerge");
 const cron = require("node-cron");
