@@ -6,29 +6,29 @@ to play with your friends and need to decide on what game to play.
 
 ## Features
 
-- Dynamicly created voice channels
-  - Let the members create temporary channels as needed.
-  - Rename voice channels based on the dominant game that is played by
-    the voice channel's members.
-- Dynamicly created text channels
-  - Channels for specific games are created when a specific amount of
-    members on the guild are owning the same game.
-  - Automatic archiving of channels about games that are not played anymore.
-- /lfg command to find members to game with by assisting on what common
-  games you have.
-- /top10 command to show the most popular games in the guild.
-  - Also weekly, monthly and yearly top 10.
-- /ical command to get an ical-feed for the events you attend.
-- Serverprofile command to show common games for a specific member.
-- Serverstatus for New World.
-- Reoccurring Events (weekly, bi-weekly, n-weekly so far).
+-   Dynamicly created voice channels
+    -   Let the members create temporary channels as needed.
+    -   Rename voice channels based on the dominant game that is played by
+        the voice channel's members.
+-   Dynamicly created text channels
+    -   Channels for specific games are created when a specific amount of
+        members on the guild are owning the same game.
+    -   Automatic archiving of channels about games that are not played anymore.
+-   /lfg command to find members to game with by assisting on what common
+    games you have.
+-   /top10 command to show the most popular games in the guild.
+    -   Also weekly, monthly and yearly top 10.
+-   /ical command to get an ical-feed for the events you attend.
+-   Serverprofile command to show common games for a specific member.
+-   Serverstatus for New World.
+-   Reoccurring Events (weekly, bi-weekly, n-weekly so far).
 
 ### Not-Features
 
-- Ronja.js is not (yet?) build to run on more than one guild server.
-- This is not a bot that you can simply invite to your guild. You will need
-  to host Ronja yourself. But it doesn't require a lot of resources. It should
-  run on a Raspberry Pi or any other small host.
+-   Ronja.js is not (yet?) build to run on more than one guild server.
+-   This is not a bot that you can simply invite to your guild. You will need
+    to host Ronja yourself. But it doesn't require a lot of resources. It should
+    run on a Raspberry Pi or any other small host.
 
 ## Setup
 
@@ -55,16 +55,18 @@ to play with your friends and need to decide on what game to play.
 
 2. Setup a bot account:
    https://discordjs.guide/preparations/setting-up-a-bot-application.html
-   - Enable "Presence Intent"
+
+    - Enable "Presence Intent"
 
 3. Invite the bot to your guild:
    https://discordjs.guide/preparations/adding-your-bot-to-servers.html
    Currently Ronja.js has no multi-guild-support.
-   
-   You will need the following permissions:
-   - bot, application.commands
-   - Manage Roles, Manage Channels, Read Messages/View Channels, Manage Events, Send Messages,
-     Embed Links, Mention Everyone, Move Members
+
+    You will need the following permissions:
+
+    - bot, application.commands
+    - Manage Roles, Manage Channels, Read Messages/View Channels, Manage Events, Send Messages,
+      Embed Links, Mention Everyone, Move Members
 
 4. Download the latest version of Ronja.js:
    https://github.com/YetAnotherGerrit/Ronja.js/releases/latest
@@ -73,7 +75,7 @@ to play with your friends and need to decide on what game to play.
 
 6. Run `./ronja.sh postinstall` (Linux) or `.\ronja.bat postinstall` (Windows)
 
-7. Adjust your config file `_SECRET/config.js`.
+7. Set RONJA_CLIENT_ID and RONJA_TOKEN environment variables
 
 8. Run `./ronja.sh postupdate` (Linux) or `.\ronja.bat postupdate` (Windows)
 

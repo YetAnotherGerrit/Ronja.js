@@ -92,7 +92,7 @@ const myExample = {
     ) {
         // https://discord.js.org/#/docs/discord.js/stable/class/ClientPresence
         // https://discord.js.org/#/docs/discord.js/stable/class/Activity
-        // game = client.myDB.Games-entry
+        // game = client.db.Game-entry
         console.debug("Someone started playing a game!");
     },
 };

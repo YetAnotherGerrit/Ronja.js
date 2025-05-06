@@ -5,7 +5,7 @@ const Op = Sequelize.Op;
 
 const myTop10 = {
     defaultConfig: {
-        top10CronKanal: null, // please set in _SECRET/config.js
+        top10CronKanal: null,
         top10Weekly: true,
         top10Monthly: true,
         top10Yearly: true,
@@ -25,16 +25,16 @@ const myTop10 = {
 
         let s = "";
 
-        let g = await this.client.myDB.Games.findAll({
+        let g = await this.client.db.Game.findAll({
             raw: true,
             attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
             include: [
                 {
-                    model: this.client.myDB.GamesPlayed,
+                    model: this.client.db.GameStatus,
                     where: {
                         lastplayed: {
                             [Op.gte]: DateTime.now()
-                                .setZone(this.cfg.timeZone)
+                                .setZone(this.cfg("timeZone"))
                                 .minus({ days: pDays })
                                 .toJSDate(),
                         },
@@ -43,7 +43,7 @@ const myTop10 = {
             ],
             order: [
                 [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
-                [this.client.myDB.GamesPlayed, "lastplayed", "DESC"],
+                [this.client.db.GameStatus, "lastplayed", "DESC"],
             ],
             group: "Games.name",
         });
@@ -73,7 +73,7 @@ const myTop10 = {
 
     postTop10ToChannel: async function (pDays, pDescription) {
         this.client.channels
-            .fetch(this.cfg.top10CronKanal)
+            .fetch(this.cfg("top10CronKanal"))
             .then((c) => {
                 this.createTop10Embed(c.guild.preferredLocale, pDays)
                     .then((e) => {
@@ -101,17 +101,18 @@ const myTop10 = {
     },
 
     hookForCron: function () {
-        if (!this.cfg.top10CronKanal) {
+        if (!this.cfg("top10CronKanal")) {
             console.info(
-                "INFO: no top10CronKanal set in config file, disabling Top10-postings!"
+                "INFO: no top10CronKanal set, disabling Top10-postings!"
             );
             return [];
         }
+
         return [
             {
                 schedule: "0 8 * * 1",
                 action: () => {
-                    if (this.cfg.top10Weekly)
+                    if (this.cfg("top10Weekly"))
                         this.postTop10ToChannel(
                             7,
                             "The most played games of last week:"
@@ -121,7 +122,7 @@ const myTop10 = {
             {
                 schedule: "0 7 1 * *",
                 action: () => {
-                    if (this.cfg.top10Monthly)
+                    if (this.cfg("top10Monthly"))
                         this.postTop10ToChannel(
                             30,
                             "The most played games of last month:"
@@ -131,7 +132,7 @@ const myTop10 = {
             {
                 schedule: "0 0 1 1 *",
                 action: () => {
-                    if (this.cfg.top10Yearly)
+                    if (this.cfg("top10Yearly"))
                         this.postTop10ToChannel(
                             365,
                             "Happy new year! These have been the highlights of last year:"

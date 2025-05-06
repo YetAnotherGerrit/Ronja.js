@@ -1,3 +1,11 @@
+console.log("Ronja.js Discord Bot");
+console.log("====================");
+
+// Load database models
+console.debug("Connecting to database...");
+const db = require("./models/index.js");
+
+// Load general modules
 const {
     GatewayIntentBits,
     Events,
@@ -6,12 +14,10 @@ const {
 } = require("discord.js");
 
 const { Ronja } = require("./core/Ronja.js");
-const deepmerge = require("deepmerge");
 const cron = require("node-cron");
 
 // Load Ronja's modular system
 const ronja_modules = [];
-
 ronja_modules.push(require("./ronja_modules/Calendarfeed.js"));
 ronja_modules.push(require("./ronja_modules/DynamicTextChannels.js"));
 ronja_modules.push(require("./ronja_modules/DynamicVoiceChannels.js"));
@@ -21,6 +27,7 @@ ronja_modules.push(require("./ronja_modules/SetLanguage.js"));
 ronja_modules.push(require("./ronja_modules/Top10.js"));
 ronja_modules.push(require("./ronja_modules/Zocken.js"));
 
+// Initialize the bot
 const client = new Ronja({
     intents: [
         GatewayIntentBits.Guilds,
@@ -30,19 +37,22 @@ const client = new Ronja({
     ],
 });
 
-client.once("ready", () => {
-    client.myReady();
+// Add database to bot client
+client.db = db;
+
+// When the client is ready prepare the modules
+client.once(Events.ClientReady, async () => {
+    await client.myReady();
 
     ronja_modules.forEach((m) => {
-        if (m.defaultConfig) {
-            m.cfg = deepmerge(m.defaultConfig, client.myConfig);
-        } else {
-            m.cfg = client.myConfig;
-        }
         m.client = client;
 
         m.l = function () {
             return this.client.myTranslator(...arguments);
+        };
+
+        m.cfg = function (name) {
+            return this.client.myConfigGet(m.defaultConfig || {}, name);
         };
 
         if (m.hookForCron) {
@@ -61,6 +71,7 @@ client.once("ready", () => {
     console.log("Ready!");
 });
 
+// Listen for Interactions and forward to all modules
 client.on(Events.InteractionCreate, async (interaction) => {
     console.log(
         `${interaction.member.displayName} used commandName ${interaction.commandName} (${interaction.customId}).`
@@ -88,12 +99,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 });
 
+// Listen for VoiceStateUpdate and forward to all modules
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
     ronja_modules.forEach((m) => {
         if (m.hookForVoiceUpdate) m.hookForVoiceUpdate(oldState, newState);
     });
 });
 
+// Listen for GuildScheduledEventUserAdd and forward to all modules
 client.on(
     Events.GuildScheduledEventUserAdd,
     async (oGuildScheduledEvent, oUser) => {
@@ -106,6 +119,7 @@ client.on(
     }
 );
 
+// Listen for GuildScheduledEventUserRemove and forward to all modules
 client.on(
     Events.GuildScheduledEventUserRemove,
     async (oGuildScheduledEvent, oUser) => {
@@ -118,6 +132,7 @@ client.on(
     }
 );
 
+// Listen for GuildScheduledEventUpdate and forward to all modules
 client.on(
     Events.GuildScheduledEventUpdate,
     async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
@@ -144,12 +159,15 @@ client.on(
     }
 );
 
+// Listen for PresenceUpdate, update games played and forward to all modules if someone started playing a game
 client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
     if (newPresence.member.user.bot) return;
 
     newPresence.activities.forEach(async (newActivity) => {
         if (newActivity.type === ActivityType.Playing) {
+            // Check if user started playing....
             let justStarted = true;
+            // If the activity is already in the old state, they did not start.
             oldPresence?.activities.forEach((oldActivity) => {
                 if (oldActivity.name === newActivity.name) justStarted = false;
             });
@@ -158,12 +176,12 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
                 console.log(
                     `${newPresence.member.displayName} starts playing ${newActivity.name}.`
                 );
-                let [game, gameCreated] = await client.myDB.Games.findOrCreate({
+                let [game, gameCreated] = await client.db.Game.findOrCreate({
                     where: { name: newActivity.name },
                 });
 
                 let [gamePlayed, gamePlayedCreated] =
-                    await client.myDB.GamesPlayed.findOrCreate({
+                    await client.db.GameStatus.findOrCreate({
                         where: {
                             GameId: game.id,
                             member: newPresence.member.id,
@@ -191,8 +209,8 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
     });
 });
 
-// client.on('debug', console.debug);
-client.on("warn", console.warn);
-client.on("error", console.error);
+// client.on(Events.Debug, console.debug);
+client.on(Events.Warn, console.warn);
+client.on(Events.Error, console.error);
 
-client.login(client.myConfig.token);
+client.login(process.env.RONJA_TOKEN);

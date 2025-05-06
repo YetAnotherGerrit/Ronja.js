@@ -1,59 +1,19 @@
 const { Client, EmbedBuilder, Colors } = require("discord.js");
 const Sequelize = require("sequelize");
 
-const mySECRET = require("../_SECRET/config.js");
+require("dotenv").config();
 
 const fs = require("node:fs");
 const path = require("node:path");
 const util = require("util");
 
 class Ronja extends Client {
-    mySeq = {};
-    myDB = {};
+    db = {};
     myConfig = {};
     myLanguage = {};
 
     constructor(options) {
         super(options);
-
-        this.mySeq = new Sequelize("database", "user", "password", {
-            host: "localhost",
-            dialect: "sqlite",
-            logging: false,
-            // SQLite only:
-            storage: "_SECRET/database.sqlite",
-        });
-
-        this.myDB = {
-            Games: this.mySeq.define("Games", {
-                name: {
-                    type: Sequelize.STRING,
-                    unique: true,
-                },
-                channel: {
-                    type: Sequelize.STRING,
-                    defaultValue: null,
-                    allowNull: true,
-                },
-            }),
-
-            GamesPlayed: this.mySeq.define("GamesPlayed", {
-                member: Sequelize.STRING,
-                lastplayed: Sequelize.DATE,
-            }),
-
-            Member: this.mySeq.define("Member", {
-                zockenmention: {
-                    type: Sequelize.TINYINT,
-                    defaultValue: 1,
-                },
-            }),
-        };
-
-        this.myDB.Games.hasMany(this.myDB.GamesPlayed);
-        this.myDB.GamesPlayed.belongsTo(this.myDB.Games);
-
-        this.myConfig = mySECRET;
 
         let languagePath = __dirname;
         let languageFiles = fs
@@ -81,6 +41,22 @@ class Ronja extends Client {
                 });
             }
         }
+    }
+
+    async myConfigUpdate() {
+        this.myConfig = await this.db.Setting.findAll();
+    }
+
+    myConfigGet(defaultConfig, name) {
+        return this.myConfig[name] || defaultConfig[name] || null;
+    }
+
+    myConfigSet(name, value) {
+        this.myConfig[name] = value;
+        this.db.Setting.upsert({
+            name: name,
+            value: value,
+        });
     }
 
     myTranslator() {
@@ -112,10 +88,8 @@ class Ronja extends Client {
         return util.format(...params);
     }
 
-    myReady() {
-        this.myDB.Games.sync();
-        this.myDB.GamesPlayed.sync();
-        this.myDB.Member.sync();
+    async myReady() {
+        await this.myConfigUpdate();
     }
 }
 

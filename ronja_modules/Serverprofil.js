@@ -31,20 +31,20 @@ const myServerprofil = {
                         `%s is on this discord server since %s.`,
                         m.displayName,
                         m.joinedAt.toLocaleDateString(
-                            this.cfg.toLocaleDateStringCountry,
-                            this.cfg.toLocaleDateStringFormat
+                            this.cfg("toLocaleDateStringCountry"),
+                            this.cfg("toLocaleDateStringFormat")
                         )
                     )
                 );
 
             if (interaction.member != m) {
                 let s = "";
-                let g = await this.client.myDB.Games.findAll({
+                let g = await this.client.db.Game.findAll({
                     raw: true,
                     attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
                     include: [
                         {
-                            model: this.client.myDB.GamesPlayed,
+                            model: this.client.db.GameStatus,
                             where: {
                                 member: [interaction.member.id, m.id],
                             },

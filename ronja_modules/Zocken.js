@@ -77,12 +77,12 @@ const myZocken = {
         if (zockenMembers.length > 0) {
             let zockenText = "";
 
-            let gamesPlayed = await this.client.myDB.Games.findAll({
+            let gamesPlayed = await this.client.db.Game.findAll({
                 raw: true,
                 attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
                 include: [
                     {
-                        model: this.client.myDB.GamesPlayed,
+                        model: this.client.db.GameStatus,
                         where: {
                             member: zockenMembers,
                         },
@@ -90,7 +90,7 @@ const myZocken = {
                 ],
                 order: [
                     [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
-                    [this.client.myDB.GamesPlayed, "lastplayed", "DESC"],
+                    [this.client.db.GameStatus, "lastplayed", "DESC"],
                 ],
                 group: "Games.name",
             });
@@ -118,18 +118,18 @@ const myZocken = {
 
         await Promise.all(
             interaction.channel.members.map(async (channelMember) => {
-                let result = await this.client.myDB.Member.findOne({
+                let result = await this.client.db.MemberSetting.findOne({
                     where: { id: channelMember.id },
                 });
                 let statusChannelMember = result ? result.zockenmention : 1;
 
                 let commonGames = 0;
-                let g = await this.client.myDB.Games.findAll({
+                let g = await this.client.db.Game.findAll({
                     raw: true,
                     attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
                     include: [
                         {
-                            model: this.client.myDB.GamesPlayed,
+                            model: this.client.db.GameStatus,
                             where: {
                                 member: [
                                     interaction.member.id,
@@ -137,7 +137,7 @@ const myZocken = {
                                 ],
                                 lastplayed: {
                                     [Op.gte]: DateTime.now()
-                                        .setZone(this.cfg.timeZone)
+                                        .setZone(this.cfg("timeZone"))
                                         .minus({ days: 100 })
                                         .toJSDate(),
                                 },
@@ -195,7 +195,7 @@ const myZocken = {
                 return;
             }
 
-            let startTime = DateTime.now().setZone(this.cfg.timeZone);
+            let startTime = DateTime.now().setZone(this.cfg("timeZone"));
 
             if (interaction.options.getString("time")) {
                 let regex = new RegExp(/(\d{2}):(\d{2})/);
@@ -228,7 +228,7 @@ const myZocken = {
 
                     startTime = DateTime.fromObject(
                         { hour: regexResult[1], minute: regexResult[2] },
-                        { zone: this.cfg.timeZone }
+                        { zone: this.cfg("timeZone") }
                     );
                 } else {
                     interaction.reply({
@@ -328,7 +328,7 @@ const myZocken = {
 
             myReply
                 .createMessageComponentCollector({
-                    time: this.cfg.collectorTimeout,
+                    time: this.cfg("collectorTimeout"),
                 })
                 .on("end", async (collected) => {
                     if (newEvent.isActive()) {
@@ -390,10 +390,11 @@ const myZocken = {
 
     hookForButtonInteraction: async function (interaction) {
         if ((interaction.customId = "zockenSelect")) {
-            let [mem, memCreated] = await this.client.myDB.Member.findOrCreate({
-                where: { id: interaction.member.id },
-                defaults: { zockenmention: 1 },
-            });
+            let [mem, memCreated] =
+                await this.client.db.MemberSetting.findOrCreate({
+                    where: { id: interaction.member.id },
+                    defaults: { zockenmention: 1 },
+                });
 
             let statusZockenSelect = mem.zockenmention;
             let statusZockenSelectText = "";
@@ -492,12 +493,12 @@ const myZocken = {
             });
 
             let collector = myReply.createMessageComponentCollector({
-                time: this.cfg.collectorTimeout,
+                time: this.cfg("collectorTimeout"),
             });
 
             collector.on("collect", async (i) => {
                 if (i.customId === "zockenSelected") {
-                    await this.client.myDB.Member.update(
+                    await this.client.db.MemberSetting.update(
                         { zockenmention: parseInt(i.values[0]) },
                         { where: { id: i.member.id } }
                     );

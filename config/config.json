@@ -1,0 +1,11 @@
+{
+    "development": {
+        "dialect": "sqlite",
+        "storage": "_SECRET/database.sqlite"
+    },
+    "production": {
+        "dialect": "sqlite",
+        "storage": "_SECRET/database.sqlite",
+        "logging": false
+    }
+}

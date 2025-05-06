@@ -56,10 +56,10 @@ const myICalFeed = {
         let buff = Buffer.from(iCalendar.toString(), "utf-8");
 
         await myFtp.connect({
-            host: this.cfg.icalFtpServer,
-            port: this.cfg.icalFtpPort || 22,
-            username: this.cfg.icalFtpUsername,
-            password: this.cfg.icalFtpPassword,
+            host: this.cfg("icalFtpServer"),
+            port: this.cfg("icalFtpPort") || 22,
+            username: this.cfg("icalFtpUsername"),
+            password: this.cfg("icalFtpPassword"),
         });
 
         await myFtp.put(buff, user.id + ".ics");
@@ -70,14 +70,14 @@ const myICalFeed = {
             await interaction.deferReply({ ephemeral: true });
 
             if (
-                this.cfg.icalFtpServer &&
-                this.cfg.icalFtpUsername &&
-                this.cfg.icalFtpPassword &&
-                this.cfg.icalUrl
+                this.cfg("icalFtpServer") &&
+                this.cfg("icalFtpUsername") &&
+                this.cfg("icalFtpPassword") &&
+                this.cfg("icalUrl")
             ) {
                 await this.updateICalFile(interaction.guild, interaction.user);
                 interaction.editReply({
-                    content: this.cfg.icalUrl + interaction.user.id + ".ics",
+                    content: this.cfg("icalUrl") + interaction.user.id + ".ics",
                 });
             } else {
                 interaction.editReply({
@@ -92,10 +92,10 @@ const myICalFeed = {
 
     hookForEventUserUpdate: async function (oGuildScheduledEvent, oUser) {
         if (
-            this.cfg.icalFtpServer &&
-            this.cfg.icalFtpUsername &&
-            this.cfg.icalFtpPassword &&
-            this.cfg.icalUrl
+            this.cfg("icalFtpServer") &&
+            this.cfg("icalFtpUsername") &&
+            this.cfg("icalFtpPassword") &&
+            this.cfg("icalUrl")
         )
             this.updateICalFile(oGuildScheduledEvent.guild, oUser);
     },

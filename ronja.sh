@@ -3,10 +3,7 @@
 case $1 in
 
     postinstall)
-        mkdir ./_SECRET
-        cp ./_SECRET.example/config.js ./_SECRET/config.js
-        echo "Please open ./_SECRET/config.js in your favourite editor and add your"
-        echo "clientId and token at least."
+        echo "Please set RONJA_CLIENT_ID and RONJA_TOKEN environment variables"
         echo ""
         echo "After that run: $0 postupdate"
         echo ""
