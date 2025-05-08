@@ -73,12 +73,12 @@ to play with your friends and need to decide on what game to play.
 
 5. Extract to whatever folder you want to use.
 
-6. Run `./ronja.sh postinstall` (Linux) or `.\ronja.bat postinstall` (Windows)
+6. Set `RONJA_CLIENT_ID` and `RONJA_TOKEN` environment variables
 
-7. Set RONJA_CLIENT_ID and RONJA_TOKEN environment variables
+7. Set `NODE_ENV` to `production`
 
-8. Run `./ronja.sh postupdate` (Linux) or `.\ronja.bat postupdate` (Windows)
+8. Run `npm deploy-commands`
 
-9. Run `./ronja.sh start` (Linux) or `.\ronja.bat start` (Windows)
+9. Run `npm start`
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax -->
