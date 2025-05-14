@@ -14,8 +14,9 @@
     "repository": "github:YetAnotherGerrit/Ronja.js",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js",
-        "deploy-commands": "node deploy-commands.js"
+        "start": "node .",
+        "deploy-commands": "node deploy-commands.js",
+        "migrate": "npx sequelize-cli db:migrate"
     },
     "dependencies": {
         "discord.js": "^14.8.0",

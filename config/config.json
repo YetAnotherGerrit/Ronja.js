@@ -1,7 +1,12 @@
 {
     "development": {
         "dialect": "sqlite",
-        "storage": "_SECRET/database.sqlite"
+        "storage": "_SECRET/dev-database.sqlite"
+    },
+    "docker": {
+        "dialect": "sqlite",
+        "storage": "/data/database.sqlite",
+        "logging": false
     },
     "production": {
         "dialect": "sqlite",
