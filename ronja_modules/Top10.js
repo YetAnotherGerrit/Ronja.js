@@ -45,7 +45,7 @@ const myTop10 = {
                 [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
                 [this.client.db.GameStatus, "lastplayed", "DESC"],
             ],
-            group: "Games.name",
+            group: "Game.name",
         });
 
         g.forEach((gg) => {
