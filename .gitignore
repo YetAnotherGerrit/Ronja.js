@@ -76,5 +76,5 @@ typings/
 .fusebox/
 
 # SECRET
-_SECRET/
+.data/
 .DS_Store

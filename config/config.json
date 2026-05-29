@@ -1,7 +1,7 @@
 {
     "development": {
         "dialect": "sqlite",
-        "storage": "_SECRET/dev-database.sqlite"
+        "storage": ".data/dev-database.sqlite"
     },
     "docker": {
         "dialect": "sqlite",
@@ -10,7 +10,7 @@
     },
     "production": {
         "dialect": "sqlite",
-        "storage": "_SECRET/database.sqlite",
+        "storage": ".data/database.sqlite",
         "logging": false
     }
 }
