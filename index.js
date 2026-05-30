@@ -13,6 +13,8 @@ const {
     GuildScheduledEventStatus,
 } = require("discord.js");
 
+require("dotenv").config();
+
 const { Ronja } = require("./core/Ronja.js");
 const cron = require("node-cron");
 

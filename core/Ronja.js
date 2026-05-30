@@ -1,8 +1,6 @@
 const { Client, EmbedBuilder, Colors } = require("discord.js");
 const Sequelize = require("sequelize");
 
-require("dotenv").config();
-
 const fs = require("node:fs");
 const path = require("node:path");
 const util = require("util");
