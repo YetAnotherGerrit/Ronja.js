@@ -9,19 +9,6 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myDynamicTextChannels = {
-    defaultConfig: {
-        dtcGamesCategory: null, // please set in _SECRET/config.js
-        dtcArchivedGamesCategory: null, // please set in _SECRET/config.js
-        dtcNotificationChannel: null,
-
-        minimumPlayersForCreation: 3,
-        daysRelevantForCreation: 30,
-        daysToArchive: 30,
-        daysTarget: 100,
-
-        timeZone: "Europe/Berlin",
-    },
-
     defaultOverrides: async function (guild) {
         return [
             {
@@ -138,7 +125,7 @@ const myDynamicTextChannels = {
             this.assignAllPlayersToChannel(
                 newChannel,
                 game,
-                this.cfg("daysTarget")
+                this.cfg("dtcDaysTarget")
             );
             game.update({ channel: newChannel.id });
 
@@ -166,7 +153,7 @@ const myDynamicTextChannels = {
             if (
                 !(await this.hasGameBeenPlayedForChannel(
                     channel,
-                    this.cfg("daysToArchive")
+                    this.cfg("dtcDaysToArchive")
                 ))
             ) {
                 let dtcArchivedGamesCategory = await this.client.channels.fetch(
@@ -204,7 +191,7 @@ const myDynamicTextChannels = {
                     if (
                         (await this.countPlayersForGame(
                             game,
-                            this.cfg("daysTarget")
+                            this.cfg("dtcDaysTarget")
                         )) > 1
                     ) {
                         let dtcGamesCategory = await this.client.channels.fetch(
@@ -217,7 +204,7 @@ const myDynamicTextChannels = {
                         this.assignAllPlayersToChannel(
                             gameChannel,
                             game,
-                            this.cfg("daysTarget")
+                            this.cfg("dtcDaysTarget")
                         );
 
                         console.log(
@@ -248,8 +235,8 @@ const myDynamicTextChannels = {
                 if (
                     (await this.countPlayersForGame(
                         game,
-                        this.cfg("daysRelevantForCreation")
-                    )) >= this.cfg("minimumPlayersForCreation")
+                        this.cfg("dtcDaysRelevantForCreation")
+                    )) >= this.cfg("dtcMinimumPlayersForCreation")
                 ) {
                     this.createTextChannel(game, newActivity, newPresence);
                 }

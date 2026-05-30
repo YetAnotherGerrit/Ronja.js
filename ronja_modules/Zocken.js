@@ -23,12 +23,10 @@ function multiChar(a, c) {
     return s;
 }
 
-const myZocken = {
-    defaultConfig: {
-        timeZone: "Europe/Berlin",
-        collectorTimeout: 14 * 60 * 1000,
-    },
 
+
+const myZocken = {
+    collectorTimeout: 14 * 60 * 1000,
     dbVoiceStatus: {},
 
     createZockenTextForEvent: async function (
@@ -328,7 +326,7 @@ const myZocken = {
 
             myReply
                 .createMessageComponentCollector({
-                    time: this.cfg("collectorTimeout"),
+                    time: this.collectorTimeout,
                 })
                 .on("end", async (collected) => {
                     if (newEvent.isActive()) {
@@ -493,7 +491,7 @@ const myZocken = {
             });
 
             let collector = myReply.createMessageComponentCollector({
-                time: this.cfg("collectorTimeout"),
+                time: this.collectorTimeout,
             });
 
             collector.on("collect", async (i) => {

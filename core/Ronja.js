@@ -42,11 +42,14 @@ class Ronja extends Client {
     }
 
     async myConfigUpdate() {
-        this.myConfig = await this.db.Setting.findAll();
+        let settings = await this.db.Setting.findAll();
+        for (let setting of settings) {
+            this.myConfig[setting.name] = setting.value;
+        }
     }
 
-    myConfigGet(defaultConfig, name) {
-        return this.myConfig[name] || defaultConfig[name] || null;
+    myConfigGet(name) {
+        return this.myConfig[name] || null;
     }
 
     myConfigSet(name, value) {

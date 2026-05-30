@@ -16,7 +16,8 @@
     "scripts": {
         "start": "node .",
         "deploy-commands": "node deploy-commands.js",
-        "migrate": "npx sequelize-cli db:migrate"
+        "dev:migrate": "npx sequelize-cli db:migrate",
+        "dev:migrate:new": "npx sequelize-cli migration:generate --name"
     },
     "dependencies": {
         "discord.js": "^14.8.0",

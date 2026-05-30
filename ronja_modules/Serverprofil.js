@@ -2,15 +2,14 @@ const { EmbedBuilder, Colors } = require("discord.js");
 const Sequelize = require("sequelize");
 
 const myServerprofil = {
-    defaultConfig: {
-        toLocaleDateStringCountry: "de-DE",
-        toLocaleDateStringFormat: {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-        },
+    
+    toLocaleDateStringCountry: "de-DE",
+    toLocaleDateStringFormat: {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
     },
-
+    
     hookForContextMenuInteraction: async function (interaction) {
         if (interaction.commandName == "Serverprofile") {
             await interaction.deferReply({ ephemeral: true });
@@ -31,8 +30,8 @@ const myServerprofil = {
                         `%s is on this discord server since %s.`,
                         m.displayName,
                         m.joinedAt.toLocaleDateString(
-                            this.cfg("toLocaleDateStringCountry"),
-                            this.cfg("toLocaleDateStringFormat")
+                            this.toLocaleDateStringCountry,  // TODO replace config with using the locale of the client/interaction
+                            this.toLocaleDateStringFormat
                         )
                     )
                 );

@@ -4,15 +4,6 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myTop10 = {
-    defaultConfig: {
-        top10CronKanal: null,
-        top10Weekly: true,
-        top10Monthly: true,
-        top10Yearly: true,
-
-        timeZone: "Europe/Berlin",
-    },
-
     createTop10Embed: async function (lng, pDays = 14) {
         let maxgames = 10;
 
@@ -73,7 +64,7 @@ const myTop10 = {
 
     postTop10ToChannel: async function (pDays, pDescription) {
         this.client.channels
-            .fetch(this.cfg("top10CronKanal"))
+            .fetch(this.cfg("top10CronChannel"))
             .then((c) => {
                 this.createTop10Embed(c.guild.preferredLocale, pDays)
                     .then((e) => {
@@ -101,9 +92,9 @@ const myTop10 = {
     },
 
     hookForCron: function () {
-        if (!this.cfg("top10CronKanal")) {
+        if (!this.cfg("top10CronChannel")) {
             console.info(
-                "INFO: no top10CronKanal set, disabling Top10-postings!"
+                "INFO: no top10CronChannel set, disabling Top10-postings!"
             );
             return [];
         }

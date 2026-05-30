@@ -2,14 +2,6 @@ const iCal = require("ical-generator");
 const sFftpClient = require("ssh2-sftp-client");
 
 const myICalFeed = {
-    defaultConfig: {
-        icalFtpServer: "",
-        icalFtpPort: "",
-        icalFtpUsername: "",
-        icalFtpPassword: "",
-        icalUrl: "",
-    },
-
     updateICalFile: async function (guild, user) {
         let scheduledEvents = await guild.scheduledEvents.fetch({
             cache: true,

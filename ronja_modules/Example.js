@@ -14,10 +14,6 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myExample = {
-    defaultConfig: {
-        someSetting: "someValue",
-    },
-
     hookForCron: function () {
         return [
             {

@@ -53,7 +53,7 @@ client.once(Events.ClientReady, async () => {
         };
 
         m.cfg = function (name) {
-            return this.client.myConfigGet(m.defaultConfig || {}, name);
+            return this.client.myConfigGet(name);
         };
 
         if (m.hookForCron) {
@@ -63,7 +63,7 @@ client.once(Events.ClientReady, async () => {
                         `ERROR: ${mc.schedule} is not a valid cron pattern.`
                     );
                 cron.schedule(mc.schedule, mc.action, {
-                    timezone: client.myConfig.timeZone,
+                    timezone: client.myConfig.timezone,
                 });
             });
         }
