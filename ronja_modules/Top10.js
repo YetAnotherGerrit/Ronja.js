@@ -10,9 +10,7 @@ const myTop10 = {
         let e = new EmbedBuilder()
             .setColor(Colors.Blue)
             .setTitle(this.l(lng, "Most popular games!"))
-            .setDescription(
-                this.l(lng, "Most played games of the last %d days:", pDays)
-            );
+            .setDescription(this.l(lng, "Most played games of the last %d days:", pDays));
 
         let s = "";
 
@@ -41,13 +39,7 @@ const myTop10 = {
 
         g.forEach((gg) => {
             if (maxgames > 0) {
-                s = s.concat(
-                    "**",
-                    gg.cName,
-                    "**  :busts_in_silhouette:  ",
-                    gg.name,
-                    "\n"
-                );
+                s = s.concat("**", gg.cName, "**  :busts_in_silhouette:  ", gg.name, "\n");
                 maxgames = maxgames - 1;
             }
         });
@@ -68,9 +60,7 @@ const myTop10 = {
             .then((c) => {
                 this.createTop10Embed(c.guild.preferredLocale, pDays)
                     .then((e) => {
-                        e.setDescription(
-                            this.l(c.guild.preferredLocale, pDescription)
-                        );
+                        e.setDescription(this.l(c.guild.preferredLocale, pDescription));
                         c.send({ embeds: [e] });
                     })
                     .catch(console.error);
@@ -93,9 +83,7 @@ const myTop10 = {
 
     hookForCron: function () {
         if (!this.cfg("top10CronChannel")) {
-            console.info(
-                "INFO: no top10CronChannel set, disabling Top10-postings!"
-            );
+            console.info("INFO: no top10CronChannel set, disabling Top10-postings!");
             return [];
         }
 
@@ -104,20 +92,14 @@ const myTop10 = {
                 schedule: "0 8 * * 1",
                 action: () => {
                     if (this.cfg("top10Weekly"))
-                        this.postTop10ToChannel(
-                            7,
-                            "The most played games of last week:"
-                        );
+                        this.postTop10ToChannel(7, "The most played games of last week:");
                 },
             },
             {
                 schedule: "0 7 1 * *",
                 action: () => {
                     if (this.cfg("top10Monthly"))
-                        this.postTop10ToChannel(
-                            30,
-                            "The most played games of last month:"
-                        );
+                        this.postTop10ToChannel(30, "The most played games of last month:");
                 },
             },
             {

@@ -2,27 +2,22 @@ const { EmbedBuilder, Colors } = require("discord.js");
 const Sequelize = require("sequelize");
 
 const myServerprofil = {
-    
     toLocaleDateStringCountry: "de-DE",
     toLocaleDateStringFormat: {
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
     },
-    
+
     hookForContextMenuInteraction: async function (interaction) {
         if (interaction.commandName == "Serverprofile") {
             await interaction.deferReply({ ephemeral: true });
 
-            let m = await interaction.guild.members.fetch(
-                interaction.options.getUser("user").id
-            );
+            let m = await interaction.guild.members.fetch(interaction.options.getUser("user").id);
 
             let e = new EmbedBuilder()
                 .setColor(Colors.Blue)
-                .setTitle(
-                    this.l(interaction.locale, "Profile of %s", m.displayName)
-                )
+                .setTitle(this.l(interaction.locale, "Profile of %s", m.displayName))
                 .setThumbnail(m.displayAvatarURL())
                 .setDescription(
                     this.l(
@@ -30,7 +25,7 @@ const myServerprofil = {
                         `%s is on this discord server since %s.`,
                         m.displayName,
                         m.joinedAt.toLocaleDateString(
-                            this.toLocaleDateStringCountry,  // TODO replace config with using the locale of the client/interaction
+                            this.toLocaleDateStringCountry, // TODO replace config with using the locale of the client/interaction
                             this.toLocaleDateStringFormat
                         )
                     )

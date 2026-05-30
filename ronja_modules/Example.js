@@ -58,10 +58,7 @@ const myExample = {
         console.debug("The voice status of a user has updated!");
     },
 
-    hookForEventUpdate: async function (
-        oldGuildScheduledEvent,
-        newGuildScheduledEvent
-    ) {
+    hookForEventUpdate: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
         console.debug("A scheduled guild event has been updated!");
     },
@@ -72,20 +69,12 @@ const myExample = {
     hookForEventUserRemove
     */
 
-    hookForEventStart: async function (
-        oldGuildScheduledEvent,
-        newGuildScheduledEvent
-    ) {
+    hookForEventStart: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
         console.debug("A scheduled guild event has started!");
     },
 
-    hookForStartedPlaying: async function (
-        oldPresence,
-        newPresence,
-        newActivity,
-        game
-    ) {
+    hookForStartedPlaying: async function (oldPresence, newPresence, newActivity, game) {
         // https://discord.js.org/#/docs/discord.js/stable/class/ClientPresence
         // https://discord.js.org/#/docs/discord.js/stable/class/Activity
         // game = client.db.Game-entry

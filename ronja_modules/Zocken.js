@@ -23,17 +23,11 @@ function multiChar(a, c) {
     return s;
 }
 
-
-
 const myZocken = {
     collectorTimeout: 14 * 60 * 1000,
     dbVoiceStatus: {},
 
-    createZockenTextForEvent: async function (
-        lng,
-        guildEvent,
-        guildEventCreatorId
-    ) {
+    createZockenTextForEvent: async function (lng, guildEvent, guildEventCreatorId) {
         let eventMembers = [];
         let regexResult;
 
@@ -54,8 +48,7 @@ const myZocken = {
         }
 
         if (regexResult) {
-            if (!eventMembers.includes(regexResult[1]))
-                eventMembers.push(regexResult[1]);
+            if (!eventMembers.includes(regexResult[1])) eventMembers.push(regexResult[1]);
         }
 
         if (guildEventCreatorId) eventMembers.push(guildEventCreatorId);
@@ -129,10 +122,7 @@ const myZocken = {
                         {
                             model: this.client.db.GameStatus,
                             where: {
-                                member: [
-                                    interaction.member.id,
-                                    channelMember.id,
-                                ],
+                                member: [interaction.member.id, channelMember.id],
                                 lastplayed: {
                                     [Op.gte]: DateTime.now()
                                         .setZone(this.cfg("timeZone"))
@@ -159,17 +149,13 @@ const myZocken = {
                     !channelMember.user.bot &&
                     commonGames > 0 &&
                     ((channelMember.presence &&
-                        ((channelMember.presence.status == "online" &&
-                            statusChannelMember > 0) ||
-                            (channelMember.presence.status == "idle" &&
-                                statusChannelMember > 0) ||
+                        ((channelMember.presence.status == "online" && statusChannelMember > 0) ||
+                            (channelMember.presence.status == "idle" && statusChannelMember > 0) ||
                             (channelMember.presence.status == "offline" &&
                                 statusChannelMember > 1))) ||
                         (!channelMember.presence && statusChannelMember > 1))
                 ) {
-                    channelMemberPing = channelMemberPing.concat(
-                        ` <@${channelMember.id}>`
-                    );
+                    channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
                 }
             })
         );
@@ -179,10 +165,7 @@ const myZocken = {
 
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName == "lfg") {
-            if (
-                interaction.options.getString("day") &&
-                !interaction.options.getString("time")
-            ) {
+            if (interaction.options.getString("day") && !interaction.options.getString("time")) {
                 interaction.reply({
                     content: this.l(
                         interaction.locale,
@@ -198,9 +181,7 @@ const myZocken = {
             if (interaction.options.getString("time")) {
                 let regex = new RegExp(/(\d{2}):(\d{2})/);
 
-                let regexResult = interaction.options
-                    .getString("time")
-                    .match(regex);
+                let regexResult = interaction.options.getString("time").match(regex);
 
                 if (regexResult) {
                     if (regexResult[1] < 0 || regexResult[1] > 23) {
@@ -244,10 +225,7 @@ const myZocken = {
                 startTime = startTime.plus({ days: 1 });
             }
 
-            if (
-                !interaction.options.getString("day") &&
-                !interaction.options.getString("time")
-            ) {
+            if (!interaction.options.getString("day") && !interaction.options.getString("time")) {
                 startTime = startTime.plus({ minutes: 10 });
             }
 
@@ -298,9 +276,7 @@ const myZocken = {
                 }, // Optional, but not for EXTERNAL,
             });
 
-            let channelMemberPing = await this.createChannelMemberPing(
-                interaction
-            );
+            let channelMemberPing = await this.createChannelMemberPing(interaction);
 
             interaction.editReply({
                 content: this.l(
@@ -313,12 +289,7 @@ const myZocken = {
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
                             .setCustomId("zockenSelect")
-                            .setLabel(
-                                this.l(
-                                    interaction.locale,
-                                    "Why is my name (not) in here?"
-                                )
-                            )
+                            .setLabel(this.l(interaction.locale, "Why is my name (not) in here?"))
                             .setStyle(ButtonStyle.Secondary)
                     ),
                 ],
@@ -387,22 +358,18 @@ const myZocken = {
     },
 
     hookForButtonInteraction: async function (interaction) {
-        if ((interaction.customId = "zockenSelect")) {
-            let [mem, memCreated] =
-                await this.client.db.MemberSetting.findOrCreate({
-                    where: { id: interaction.member.id },
-                    defaults: { zockenmention: 1 },
-                });
+        if (interaction.customId === "zockenSelect") {
+            let [mem, memCreated] = await this.client.db.MemberSetting.findOrCreate({
+                where: { id: interaction.member.id },
+                defaults: { zockenmention: 1 },
+            });
 
             let statusZockenSelect = mem.zockenmention;
             let statusZockenSelectText = "";
 
             switch (statusZockenSelect) {
                 case 2:
-                    statusZockenSelectText = this.l(
-                        interaction.locale,
-                        "Ping me also offline."
-                    );
+                    statusZockenSelectText = this.l(interaction.locale, "Ping me also offline.");
                     break;
 
                 case 1:
@@ -413,10 +380,7 @@ const myZocken = {
                     break;
 
                 case 0:
-                    statusZockenSelectText = this.l(
-                        interaction.locale,
-                        "Please, never ping me."
-                    );
+                    statusZockenSelectText = this.l(interaction.locale, "Please, never ping me.");
                     break;
             }
 
@@ -424,12 +388,7 @@ const myZocken = {
                 embeds: [
                     new EmbedBuilder()
                         .setColor(Colors.Blue)
-                        .setTitle(
-                            this.l(
-                                interaction.locale,
-                                "Why is my name (not) in here?"
-                            )
-                        )
+                        .setTitle(this.l(interaction.locale, "Why is my name (not) in here?"))
                         .setDescription(
                             this.l(
                                 interaction.locale,
@@ -442,15 +401,10 @@ const myZocken = {
                     new ActionRowBuilder().addComponents(
                         new StringSelectMenuBuilder()
                             .setCustomId("zockenSelected")
-                            .setPlaceholder(
-                                this.l(interaction.locale, "Notifications...")
-                            )
+                            .setPlaceholder(this.l(interaction.locale, "Notifications..."))
                             .addOptions([
                                 {
-                                    label: this.l(
-                                        interaction.locale,
-                                        "Ping me also offline."
-                                    ),
+                                    label: this.l(interaction.locale, "Ping me also offline."),
                                     description: this.l(
                                         interaction.locale,
                                         "Also notify myself that someone wants to game, even when I am offline."
@@ -462,11 +416,7 @@ const myZocken = {
                                         this.l(
                                             interaction.locale,
                                             "Ping me only, when I am online."
-                                        ) +
-                                        this.l(
-                                            interaction.locale,
-                                            " (Default)"
-                                        ),
+                                        ) + this.l(interaction.locale, " (Default)"),
                                     description: this.l(
                                         interaction.locale,
                                         "Notify myself only when I am also online in Discord."
@@ -474,10 +424,7 @@ const myZocken = {
                                     value: "1",
                                 },
                                 {
-                                    label: this.l(
-                                        interaction.locale,
-                                        "Please, never ping me."
-                                    ),
+                                    label: this.l(interaction.locale, "Please, never ping me."),
                                     description: this.l(
                                         interaction.locale,
                                         "I am not interested in this kind of gaming requests."
@@ -505,14 +452,9 @@ const myZocken = {
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Green)
-                                .setTitle(
-                                    this.l(interaction.locale, "Succesful!")
-                                )
+                                .setTitle(this.l(interaction.locale, "Succesful!"))
                                 .setDescription(
-                                    this.l(
-                                        interaction.locale,
-                                        "Your settings have been saved."
-                                    )
+                                    this.l(interaction.locale, "Your settings have been saved.")
                                 ),
                         ],
                         components: [],
@@ -526,14 +468,9 @@ const myZocken = {
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Blue)
-                                .setTitle(
-                                    this.l(interaction.locale, "Expired!")
-                                )
+                                .setTitle(this.l(interaction.locale, "Expired!"))
                                 .setDescription(
-                                    this.l(
-                                        interaction.locale,
-                                        "No changes have been saved."
-                                    )
+                                    this.l(interaction.locale, "No changes have been saved.")
                                 ),
                         ],
                         components: [],
@@ -553,13 +490,9 @@ const myZocken = {
         }
     },
 
-    hookForEventStart: async function (
-        oldGuildScheduledEvent,
-        newGuildScheduledEvent
-    ) {
+    hookForEventStart: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         if (newGuildScheduledEvent.entityMetadata.location.includes("/lfg")) {
-            let eventSubcribers =
-                await newGuildScheduledEvent.fetchSubscribers();
+            let eventSubcribers = await newGuildScheduledEvent.fetchSubscribers();
             if (eventSubcribers.size < 2) {
                 newGuildScheduledEvent.setStatus(
                     GuildScheduledEventStatus.Completed,
@@ -573,9 +506,7 @@ const myZocken = {
         if (newState.channel) this.updateChannelVoiceStatus(newState.channel);
         if (
             (oldState.channel && !newState.channel) ||
-            (oldState.channel &&
-                newState.channel &&
-                oldState.channel.id != newState.channel.id)
+            (oldState.channel && newState.channel && oldState.channel.id != newState.channel.id)
         )
             this.updateChannelVoiceStatus(oldState.channel);
     },

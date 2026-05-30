@@ -26,9 +26,7 @@ const myExample = {
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Green)
-                                .setTitle(
-                                    this.l(interaction.locale, "Succesful!")
-                                )
+                                .setTitle(this.l(interaction.locale, "Succesful!"))
                                 .setDescription(
                                     this.l(
                                         interaction.locale,

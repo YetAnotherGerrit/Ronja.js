@@ -17,7 +17,11 @@
         "start": "node .",
         "deploy-commands": "node deploy-commands.js",
         "dev:migrate": "npx sequelize-cli db:migrate",
-        "dev:migrate:new": "npx sequelize-cli migration:generate --name"
+        "dev:migrate:new": "npx sequelize-cli migration:generate --name",
+        "dev:lint": "eslint .",
+        "dev:lint:fix": "eslint . --fix",
+        "dev:format": "prettier . --write",
+        "dev:format:check": "prettier . --check"
     },
     "dependencies": {
         "discord.js": "^14.8.0",
@@ -30,6 +34,13 @@
         "ssh2-sftp-client": "^9.1.0"
     },
     "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@eslint/json": "^2.0.0",
+        "@eslint/markdown": "^8.0.2",
+        "eslint": "^10.4.1",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^17.6.0",
+        "prettier": "^3.8.3",
         "sequelize-cli": "^6.6.3"
     }
 }

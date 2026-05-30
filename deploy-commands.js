@@ -1,9 +1,4 @@
-const {
-    SlashCommandBuilder,
-    REST,
-    Routes,
-    PermissionFlagsBits,
-} = require("discord.js");
+const { SlashCommandBuilder, REST, Routes, PermissionFlagsBits } = require("discord.js");
 
 const { clientId, token } = require("./_SECRET/config.js");
 
@@ -70,9 +65,7 @@ const commands = [
             option
                 .setName("time")
                 .setNameLocalizations({ de: "uhrzeit" })
-                .setDescription(
-                    "Select the time you want to play (HH:MM). Use 24h time format."
-                )
+                .setDescription("Select the time you want to play (HH:MM). Use 24h time format.")
                 .setDescriptionLocalizations({
                     de: "Setze die Uhrzeit zu der du spielen möchtest (SS:MM).",
                 })
@@ -92,9 +85,7 @@ const commands = [
     new SlashCommandBuilder()
         .setName("setlang")
         .setNameLocalizations({ de: "setzesprache" })
-        .setDescription(
-            "Set you personal language as preferred server language."
-        )
+        .setDescription("Set you personal language as preferred server language.")
         .setDescriptionLocalizations({
             de: "Setze deine persönliche Sprache als bevorzugte Serversprache.",
         })
@@ -110,17 +101,13 @@ commands.forEach((cmd) => {
     if (cmd.description == "USER") {
         cmd.type = 2;
         cmd.name = capitalizeFirstLetter(cmd.name);
-        cmd.name_localizations.de = capitalizeFirstLetter(
-            cmd.name_localizations.de
-        );
+        cmd.name_localizations.de = capitalizeFirstLetter(cmd.name_localizations.de);
         delete cmd.description;
     }
     if (cmd.description == "MESSAGE") {
         cmd.type = 3;
         cmd.name = capitalizeFirstLetter(cmd.name);
-        cmd.name_localizations.de = capitalizeFirstLetter(
-            cmd.name_localizations.de
-        );
+        cmd.name_localizations.de = capitalizeFirstLetter(cmd.name_localizations.de);
         delete cmd.description;
     }
 });

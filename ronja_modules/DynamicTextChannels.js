@@ -1,9 +1,4 @@
-const {
-    ChannelType,
-    PermissionFlagsBits,
-    EmbedBuilder,
-    Colors,
-} = require("discord.js");
+const { ChannelType, PermissionFlagsBits, EmbedBuilder, Colors } = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
@@ -72,9 +67,7 @@ const myDynamicTextChannels = {
         let players = await this.getPlayersForGame(game, pDays);
 
         players.rows.forEach(async (player) => {
-            let player_member = await channel.guild.members.fetch(
-                player.member
-            );
+            let player_member = await channel.guild.members.fetch(player.member);
             channel.permissionOverwrites.create(player_member, {
                 ViewChannel: true,
             });
@@ -101,9 +94,7 @@ const myDynamicTextChannels = {
                         .setTitle(myTitle)
                         .setDescription(myDescription);
 
-                    notificationChannel
-                        .send({ embeds: [e] })
-                        .catch(console.error);
+                    notificationChannel.send({ embeds: [e] }).catch(console.error);
                 })
                 .catch(console.warn);
         }
@@ -111,32 +102,21 @@ const myDynamicTextChannels = {
 
     createTextChannel: async function (game, newActivity, newPresence) {
         if (this.cfg("dtcGamesCategory")) {
-            let dtcGamesCategory = await this.client.channels.fetch(
-                this.cfg("dtcGamesCategory")
-            );
+            let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
             let newChannel = await dtcGamesCategory.children.create({
                 name: newActivity.name,
                 type: ChannelType.GuildText,
-                permissionOverwrites: await this.defaultOverrides(
-                    newPresence.guild
-                ),
+                permissionOverwrites: await this.defaultOverrides(newPresence.guild),
             });
 
-            this.assignAllPlayersToChannel(
-                newChannel,
-                game,
-                this.cfg("dtcDaysTarget")
-            );
+            this.assignAllPlayersToChannel(newChannel, game, this.cfg("dtcDaysTarget"));
             game.update({ channel: newChannel.id });
 
             console.log(`Created new text channel #${newChannel.name}.`);
             this.sortTextChannelCategoryByName(dtcGamesCategory);
 
             this.notifyChannel(
-                this.l(
-                    newPresence.guild.preferredLocale,
-                    "A new text channel was created"
-                ),
+                this.l(newPresence.guild.preferredLocale, "A new text channel was created"),
                 this.l(
                     newPresence.guild.preferredLocale,
                     "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.",
@@ -150,50 +130,27 @@ const myDynamicTextChannels = {
 
     checkActiveTextChannel: async function (channel) {
         if (this.cfg("dtcArchivedGamesCategory")) {
-            if (
-                !(await this.hasGameBeenPlayedForChannel(
-                    channel,
-                    this.cfg("dtcDaysToArchive")
-                ))
-            ) {
+            if (!(await this.hasGameBeenPlayedForChannel(channel, this.cfg("dtcDaysToArchive")))) {
                 let dtcArchivedGamesCategory = await this.client.channels.fetch(
                     this.cfg("dtcArchivedGamesCategory")
                 );
                 channel.setParent(dtcArchivedGamesCategory);
-                channel.permissionOverwrites.set(
-                    await this.defaultOverrides(channel.guild)
-                );
+                channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
 
                 console.log(`Moved #${channel.name} to archive.`);
             }
         } else {
-            console.warn(
-                "WARNING: no dtcArchivedGamesCategory set in config file!"
-            );
+            console.warn("WARNING: no dtcArchivedGamesCategory set in config file!");
         }
     },
 
-    hookForStartedPlaying: async function (
-        oldPresence,
-        newPresence,
-        newActivity,
-        game
-    ) {
+    hookForStartedPlaying: async function (oldPresence, newPresence, newActivity, game) {
         if (this.cfg("dtcArchivedGamesCategory")) {
             // TODO: Check if member has access right for parent-category dtcGamesCategory
             if (game.channel) {
-                let gameChannel = await this.client.channels.fetch(
-                    game.channel
-                );
-                if (
-                    gameChannel.parentId == this.cfg("dtcArchivedGamesCategory")
-                ) {
-                    if (
-                        (await this.countPlayersForGame(
-                            game,
-                            this.cfg("dtcDaysTarget")
-                        )) > 1
-                    ) {
+                let gameChannel = await this.client.channels.fetch(game.channel);
+                if (gameChannel.parentId == this.cfg("dtcArchivedGamesCategory")) {
+                    if ((await this.countPlayersForGame(game, this.cfg("dtcDaysTarget"))) > 1) {
                         let dtcGamesCategory = await this.client.channels.fetch(
                             this.cfg("dtcGamesCategory")
                         );
@@ -207,9 +164,7 @@ const myDynamicTextChannels = {
                             this.cfg("dtcDaysTarget")
                         );
 
-                        console.log(
-                            `Moved #${gameChannel.name} from archive to active.`
-                        );
+                        console.log(`Moved #${gameChannel.name} from archive to active.`);
 
                         this.sortTextChannelCategoryByName(dtcGamesCategory);
                         this.notifyChannel(
@@ -226,10 +181,9 @@ const myDynamicTextChannels = {
                         );
                     }
                 } else {
-                    gameChannel.permissionOverwrites.create(
-                        newPresence.member.user,
-                        { ViewChannel: true }
-                    );
+                    gameChannel.permissionOverwrites.create(newPresence.member.user, {
+                        ViewChannel: true,
+                    });
                 }
             } else {
                 if (
@@ -242,9 +196,7 @@ const myDynamicTextChannels = {
                 }
             }
         } else {
-            console.warn(
-                "WARNING: no dtcArchivedGamesCategory set in config file!"
-            );
+            console.warn("WARNING: no dtcArchivedGamesCategory set in config file!");
         }
     },
 
@@ -258,26 +210,17 @@ const myDynamicTextChannels = {
                             this.cfg("dtcGamesCategory")
                         );
                         await Promise.all(
-                            dtcGamesCategory.children.cache.map(
-                                async (gameChannel) => {
-                                    await this.checkActiveTextChannel(
-                                        gameChannel
-                                    );
-                                }
-                            )
+                            dtcGamesCategory.children.cache.map(async (gameChannel) => {
+                                await this.checkActiveTextChannel(gameChannel);
+                            })
                         );
 
-                        let dtcArchivedGamesCategory =
-                            await this.client.channels.fetch(
-                                this.cfg("dtcArchivedGamesCategory")
-                            );
-                        this.sortTextChannelCategoryByName(
-                            dtcArchivedGamesCategory
+                        let dtcArchivedGamesCategory = await this.client.channels.fetch(
+                            this.cfg("dtcArchivedGamesCategory")
                         );
+                        this.sortTextChannelCategoryByName(dtcArchivedGamesCategory);
                     } else {
-                        console.warn(
-                            "WARNING: no dtcGamesCategory set in config file!"
-                        );
+                        console.warn("WARNING: no dtcGamesCategory set in config file!");
                     }
                 },
             },

@@ -20,9 +20,7 @@ class Ronja extends Client {
 
         for (let file of languageFiles) {
             let filePath = path.join(languagePath, file);
-            let regexResult = filePath.match(
-                new RegExp(/language\_(.*)\.json/)
-            );
+            let regexResult = filePath.match(new RegExp(/language_(.*)\.json/));
 
             if (regexResult) {
                 fs.readFile(filePath, "utf8", (err, jsonString) => {
@@ -31,8 +29,7 @@ class Ronja extends Client {
                         return;
                     }
                     try {
-                        this.myLanguage[regexResult[1]] =
-                            JSON.parse(jsonString);
+                        this.myLanguage[regexResult[1]] = JSON.parse(jsonString);
                     } catch (err) {
                         console.log("Error parsing JSON string:", err);
                     }
@@ -61,20 +58,13 @@ class Ronja extends Client {
     }
 
     myTranslator() {
-        if (
-            this.myLanguage[arguments[0]] &&
-            this.myLanguage[arguments[0]][arguments[1]]
-        ) {
+        if (this.myLanguage[arguments[0]] && this.myLanguage[arguments[0]][arguments[1]]) {
             arguments[1] =
                 this.myLanguage[arguments[0]][arguments[1]][
-                    Math.floor(
-                        Math.random() *
-                            this.myLanguage[arguments[0]][arguments[1]].length
-                    )
+                    Math.floor(Math.random() * this.myLanguage[arguments[0]][arguments[1]].length)
                 ];
         } else {
-            if (!this.myLanguage[arguments[0]])
-                this.myLanguage[arguments[0]] = {};
+            if (!this.myLanguage[arguments[0]]) this.myLanguage[arguments[0]] = {};
             this.myLanguage[arguments[0]][arguments[1]] = [arguments[1]];
             fs.writeFile(
                 `./core/language_${arguments[0]}.json`,

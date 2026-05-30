@@ -59,9 +59,7 @@ client.once(Events.ClientReady, async () => {
         if (m.hookForCron) {
             m.hookForCron().forEach((mc) => {
                 if (!cron.validate(mc.schedule))
-                    console.error(
-                        `ERROR: ${mc.schedule} is not a valid cron pattern.`
-                    );
+                    console.error(`ERROR: ${mc.schedule} is not a valid cron pattern.`);
                 cron.schedule(mc.schedule, mc.action, {
                     timezone: client.myConfig.timezone,
                 });
@@ -80,22 +78,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isCommand()) {
         ronja_modules.forEach((m) => {
-            if (m.hookForCommandInteraction)
-                m.hookForCommandInteraction(interaction);
+            if (m.hookForCommandInteraction) m.hookForCommandInteraction(interaction);
         });
     }
 
     if (interaction.isContextMenuCommand()) {
         ronja_modules.forEach((m) => {
-            if (m.hookForContextMenuInteraction)
-                m.hookForContextMenuInteraction(interaction);
+            if (m.hookForContextMenuInteraction) m.hookForContextMenuInteraction(interaction);
         });
     }
 
     if (interaction.isButton()) {
         ronja_modules.forEach((m) => {
-            if (m.hookForButtonInteraction)
-                m.hookForButtonInteraction(interaction);
+            if (m.hookForButtonInteraction) m.hookForButtonInteraction(interaction);
         });
     }
 });
@@ -108,30 +103,20 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
 });
 
 // Listen for GuildScheduledEventUserAdd and forward to all modules
-client.on(
-    Events.GuildScheduledEventUserAdd,
-    async (oGuildScheduledEvent, oUser) => {
-        ronja_modules.forEach((m) => {
-            if (m.hookForEventUserAdd)
-                m.hookForEventUserAdd(oGuildScheduledEvent, oUser);
-            if (m.hookForEventUserUpdate)
-                m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
-        });
-    }
-);
+client.on(Events.GuildScheduledEventUserAdd, async (oGuildScheduledEvent, oUser) => {
+    ronja_modules.forEach((m) => {
+        if (m.hookForEventUserAdd) m.hookForEventUserAdd(oGuildScheduledEvent, oUser);
+        if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
+    });
+});
 
 // Listen for GuildScheduledEventUserRemove and forward to all modules
-client.on(
-    Events.GuildScheduledEventUserRemove,
-    async (oGuildScheduledEvent, oUser) => {
-        ronja_modules.forEach((m) => {
-            if (m.hookForEventUserRemove)
-                m.hookForEventUserRemove(oGuildScheduledEvent, oUser);
-            if (m.hookForEventUserUpdate)
-                m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
-        });
-    }
-);
+client.on(Events.GuildScheduledEventUserRemove, async (oGuildScheduledEvent, oUser) => {
+    ronja_modules.forEach((m) => {
+        if (m.hookForEventUserRemove) m.hookForEventUserRemove(oGuildScheduledEvent, oUser);
+        if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
+    });
+});
 
 // Listen for GuildScheduledEventUpdate and forward to all modules
 client.on(
@@ -139,10 +124,7 @@ client.on(
     async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
         ronja_modules.forEach((m) => {
             if (m.hookForEventUpdate)
-                m.hookForEventUpdate(
-                    oldGuildScheduledEvent,
-                    newGuildScheduledEvent
-                );
+                m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent);
         });
 
         if (
@@ -151,10 +133,7 @@ client.on(
         ) {
             ronja_modules.forEach((m) => {
                 if (m.hookForEventStart)
-                    m.hookForEventStart(
-                        oldGuildScheduledEvent,
-                        newGuildScheduledEvent
-                    );
+                    m.hookForEventStart(oldGuildScheduledEvent, newGuildScheduledEvent);
             });
         }
     }
@@ -181,14 +160,13 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
                     where: { name: newActivity.name },
                 });
 
-                let [gamePlayed, gamePlayedCreated] =
-                    await client.db.GameStatus.findOrCreate({
-                        where: {
-                            GameId: game.id,
-                            member: newPresence.member.id,
-                        },
-                        defaults: { lastplayed: newActivity.createdTimestamp },
-                    });
+                let [gamePlayed, gamePlayedCreated] = await client.db.GameStatus.findOrCreate({
+                    where: {
+                        GameId: game.id,
+                        member: newPresence.member.id,
+                    },
+                    defaults: { lastplayed: newActivity.createdTimestamp },
+                });
 
                 if (gamePlayedCreated == false) {
                     await gamePlayed.update({
@@ -198,12 +176,7 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
 
                 ronja_modules.forEach((m) => {
                     if (m.hookForStartedPlaying)
-                        m.hookForStartedPlaying(
-                            oldPresence,
-                            newPresence,
-                            newActivity,
-                            game
-                        );
+                        m.hookForStartedPlaying(oldPresence, newPresence, newActivity, game);
                 });
             }
         }

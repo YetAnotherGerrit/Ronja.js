@@ -61,9 +61,7 @@ const myDynamicVoiceChannels = {
                 await oldState.channel.delete();
             } catch {
                 // TODO: Add some error-protocoll handler.
-                console.error(
-                    `[ERROR] Could not delete voice channel ${oldState.channel.name}.`
-                );
+                console.error(`[ERROR] Could not delete voice channel ${oldState.channel.name}.`);
             }
         }
 
@@ -83,12 +81,7 @@ const myDynamicVoiceChannels = {
             await this.setGameAsChannelName(newState.channel);
     },
 
-    hookForStartedPlaying: async function (
-        oldPresence,
-        newPresence,
-        newActivity,
-        gameCreated
-    ) {
+    hookForStartedPlaying: async function (oldPresence, newPresence, newActivity, gameCreated) {
         if (await newPresence.member.voice.channel)
             this.setGameAsChannelName(await newPresence.member.voice.channel);
     },
