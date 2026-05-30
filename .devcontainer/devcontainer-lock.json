@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/warrenbuckley/codespace-features/sqlite:1": {
+      "version": "1.0.0",
+      "resolved": "ghcr.io/warrenbuckley/codespace-features/sqlite@sha256:4fdf50a6929f918c8208efc7416b6505f5ca085d71e37c3003367ed2855bbf76",
+      "integrity": "sha256:4fdf50a6929f918c8208efc7416b6505f5ca085d71e37c3003367ed2855bbf76"
+    }
+  }
+}
