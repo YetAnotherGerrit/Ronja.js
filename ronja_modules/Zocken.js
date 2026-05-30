@@ -92,7 +92,7 @@ const myZocken = {
                     [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
                     [this.client.db.GameStatus, "lastplayed", "DESC"],
                 ],
-                group: "Games.name",
+                group: "Game.name",
             });
 
             gamesPlayed.forEach((gamePlayed) => {
@@ -148,7 +148,7 @@ const myZocken = {
                         [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
                         ["name", "ASC"],
                     ],
-                    group: "Games.name",
+                    group: "Game.name",
                 });
 
                 g.forEach((gg) => {

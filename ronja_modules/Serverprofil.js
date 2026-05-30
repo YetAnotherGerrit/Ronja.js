@@ -54,7 +54,7 @@ const myServerprofil = {
                         [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
                         ["name", "ASC"],
                     ],
-                    group: "Games.name",
+                    group: "Game.name",
                 });
 
                 g.forEach((gg) => {
