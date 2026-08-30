@@ -17,11 +17,23 @@
 		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
 	},
 
+	// Persist Claude Code's state (auth, settings, and its memory/ directory) in a named
+	// volume, so it survives a devcontainer rebuild instead of living only in the
+	// container's own throwaway filesystem layer.
+	//
+	// A fresh named volume is created owned by root, not by the "node" user this
+	// container runs as — that made /home/node/.claude unwritable (so Claude Code
+	// login failed writing .credentials.json) until the postCreateCommand below
+	// chowns it back to node:node after the mount is in place.
+	"mounts": [
+		"source=ronja-js-claude-home,target=/home/node/.claude,type=volume"
+	],
+
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "yarn install"
+	"postCreateCommand": "sudo chown -R node:node /home/node/.claude && yarn install"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
