@@ -10,6 +10,8 @@ services:
     app:
         build: .
         command: ["npm", "start"]
+        environment:
+            - RONJA_TOKEN=${RONJA_TOKEN}
         volumes:
             - ronja-data:/app/.data
         depends_on:

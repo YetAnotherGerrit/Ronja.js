@@ -78,6 +78,30 @@ to play with your friends and need to decide on what game to play.
     Slash- and context menu-commands are registered with Discord automatically on
     startup and only re-synced when their definition actually changes.
 
+### Install with Docker
+
+1. Setup a bot account and invite it to your guild as described in steps 2 and
+   3 of [Install](#install) above. Node.js itself is not needed if you use
+   Docker.
+
+2. Download the latest version of Ronja.js:
+   https://github.com/YetAnotherGerrit/Ronja.js/releases/latest
+
+3. Extract to whatever folder you want to use.
+
+4. Create a `.env` file next to `docker-compose.yml` containing:
+
+    ```
+    RONJA_TOKEN=your-bot-token-here
+    ```
+
+5. Run `docker compose up`
+
+    This builds the image, runs the database migrations once, then starts the
+    bot. Slash- and context menu-commands are registered with Discord
+    automatically on startup and only re-synced when their definition
+    actually changes.
+
 ## Upgrading from 1.x to 2.0
 
 2.0 is not a drop-in update. It changes how Ronja stores its data and its
@@ -113,7 +137,17 @@ Steps to upgrade an existing installation:
     This carries over your games, play history, and each member's "ping me"
     preference from the old database into the new one. It's safe to re-run.
 
-5. Run `npm start`.
+    If you're using Docker, run both commands through the `migrations`
+    service instead, bind-mounting your old database file in:
+
+    ```bash
+    docker compose run --rm migrations npm run migrate
+    docker compose run --rm \
+      -v /path/to/your/old/database.sqlite:/legacy.sqlite:ro \
+      migrations npm run migrate-legacy -- /legacy.sqlite
+    ```
+
+5. Run `npm start` (or `docker compose up` if you're using Docker).
 
 6. Reconfigure your settings using the `/settings` admin command in Discord:
    `/settings list` shows every available setting, its current value, and a
