@@ -4,11 +4,12 @@ FROM node:latest
 # Set the working directory in the container to /app, which will contain our application files.
 WORKDIR /app
 
-# Copy package metadata and lockfile if present.
-COPY package*.json ./
+# Copy package metadata, lockfile if present, and .npmrc (which omits devDependencies
+# by default).
+COPY package*.json .npmrc ./
 
 # Install only production dependencies with npm.
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy the rest of our application code into the container.
 COPY . .
