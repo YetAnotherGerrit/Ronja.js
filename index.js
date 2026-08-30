@@ -103,6 +103,13 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
     });
 });
 
+// Listen for ChannelDelete and forward to all modules
+client.on(Events.ChannelDelete, async (channel) => {
+    ronja_modules.forEach((m) => {
+        if (m.hookForChannelDelete) m.hookForChannelDelete(channel);
+    });
+});
+
 // Listen for GuildScheduledEventUserAdd and forward to all modules
 client.on(Events.GuildScheduledEventUserAdd, async (oGuildScheduledEvent, oUser) => {
     ronja_modules.forEach((m) => {
