@@ -3,7 +3,7 @@ version: "3"
 services:
     migrations:
         build: .
-        command: ["npm", "run", "migrate"]
+        command: ["npm", "run", "dev:migrate"]
         volumes:
             - ronja-data:/data
 
