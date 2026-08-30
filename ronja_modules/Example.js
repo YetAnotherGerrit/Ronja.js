@@ -14,10 +14,6 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myExample = {
-    defaultConfig: {
-        someSetting: "someValue",
-    },
-
     hookForCron: function () {
         return [
             {
@@ -34,7 +30,9 @@ const myExample = {
         ];
     },
 
-    // Don't forget to also add your slash-commands to the deploy-command.js file and run it once after every change.
+    // Slash-commands and context menu-commands are deployed automatically on startup.
+    // Just declare them in this module's `commands` array (see other modules for examples)
+    // and they'll be created/updated/removed on Discord as needed.
     hookForCommandInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
         if (interaction.commandName == "ping") {
@@ -42,7 +40,6 @@ const myExample = {
         }
     },
 
-    // Don't forget to also add your context menu-commands to the deploy-command.js file and run it once after every change.
     hookForContextMenuInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
         if (interaction.commandName == "ping") {
@@ -62,10 +59,7 @@ const myExample = {
         console.debug("The voice status of a user has updated!");
     },
 
-    hookForEventUpdate: async function (
-        oldGuildScheduledEvent,
-        newGuildScheduledEvent
-    ) {
+    hookForEventUpdate: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
         console.debug("A scheduled guild event has been updated!");
     },
@@ -76,23 +70,15 @@ const myExample = {
     hookForEventUserRemove
     */
 
-    hookForEventStart: async function (
-        oldGuildScheduledEvent,
-        newGuildScheduledEvent
-    ) {
+    hookForEventStart: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
         console.debug("A scheduled guild event has started!");
     },
 
-    hookForStartedPlaying: async function (
-        oldPresence,
-        newPresence,
-        newActivity,
-        game
-    ) {
+    hookForStartedPlaying: async function (oldPresence, newPresence, newActivity, game) {
         // https://discord.js.org/#/docs/discord.js/stable/class/ClientPresence
         // https://discord.js.org/#/docs/discord.js/stable/class/Activity
-        // game = client.myDB.Games-entry
+        // game = client.db.Game-entry
         console.debug("Someone started playing a game!");
     },
 };

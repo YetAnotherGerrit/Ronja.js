@@ -12,21 +12,13 @@
     " active players": [" aktive Spieler"],
     ", %s in the queue": [", %s in der Warteschlange"],
     "Profile of %s": ["Profil von %s"],
-    "%s is on this discord server since %s.": [
-        "%s ist auf diesem Discord-Server seit %s."
-    ],
+    "%s is on this discord server since %s.": ["%s ist auf diesem Discord-Server seit %s."],
     "Common games": ["Gemeinsame Spiele"],
     "Most popular games!": ["Die beliebtesten Spiele!"],
-    "Most played games of the last %d days:": [
-        "Meistgespielte Spiele der letzten %d Tage:"
-    ],
+    "Most played games of the last %d days:": ["Meistgespielte Spiele der letzten %d Tage:"],
     "Top 10 by player count:": ["Top 10 nach Anzahl der Spieler:"],
-    "The most played games of last week:": [
-        "Die meistgespielten Spiele der letzten Woche:"
-    ],
-    "The most played games of last month:": [
-        "Die meistgespielten Spiele des letzten Monats:"
-    ],
+    "The most played games of last week:": ["Die meistgespielten Spiele der letzten Woche:"],
+    "The most played games of last month:": ["Die meistgespielten Spiele des letzten Monats:"],
     "Happy new year! These have been the highlights of last year:": [
         "Frohes neues Jahr! Das waren die Highlights des letzten Jahres:"
     ],
@@ -60,9 +52,7 @@
     "The ical-settings for this server are incomplete.": [
         "Die ical-Einstellungen für diesen Server sind unvollständig."
     ],
-    "%s found %d more to game with.": [
-        "%s hat %d Mitspieler zum zocken gefunden."
-    ],
+    "%s found %d more to game with.": ["%s hat %d Mitspieler zum zocken gefunden."],
     "Unfortunately, nobody was found. Maybe next time.": [
         "Leider hat sich niemand gefunden. Vielleicht beim nächsten Mal."
     ],
@@ -70,9 +60,7 @@
         "%s möchte demnächst zocken, nutze den \"Interessiert\"-Knopf um dich anzuschließen."
     ],
     "Ping me also offline.": ["Erwähne mich auch Offline."],
-    "Ping me only, when I am online.": [
-        "Erwähne mich nur, wenn ich gerade Online bin."
-    ],
+    "Ping me only, when I am online.": ["Erwähne mich nur, wenn ich gerade Online bin."],
     "Please, never ping me.": ["Bitte, erwähne mich nie."],
     "You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
         "Du wirst erwähnt, wenn es mindestens ein Spiel gibt, das ihr beide in den letzten 100 Tagen gezockt habt. Falls du solche Erwähnungen nicht möchtest, kannst du das hier ändern.\n\nDeine aktuelle Einstellung:\n> %s"
@@ -89,9 +77,7 @@
         "Ich bin nicht interessiert an diesen Zockanfragen."
     ],
     "Succesful!": ["Erfolgreich!"],
-    "Your settings have been saved.": [
-        "Deine Einstellung wurde erfolgreich gespeichert."
-    ],
+    "Your settings have been saved.": ["Deine Einstellung wurde erfolgreich gespeichert."],
     "Expired!": ["Abgelaufen!"],
     "No changes have been saved.": ["Keine Änderungen wurden gespeichert."],
     "Why is my name (not) in here?": ["Warum steht da (nicht) mein Name?"],
@@ -106,7 +92,5 @@
     "Could not be safed. Maybe the bot is missing some permissions?": [
         "Could not be safed. Maybe the bot is missing some permissions?"
     ],
-    "Language of the guild was changed to %s.": [
-        "Serversprache wurde auf %s geändert."
-    ]
+    "Language of the guild was changed to %s.": ["Serversprache wurde auf %s geändert."]
 }

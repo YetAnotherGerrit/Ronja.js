@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+    migrations:
+        build: .
+        command: ["npm", "run", "migrate"]
+        volumes:
+            - ronja-data:/app/.data
+
+    app:
+        build: .
+        command: ["npm", "start"]
+        environment:
+            - RONJA_TOKEN=${RONJA_TOKEN}
+        volumes:
+            - ronja-data:/app/.data
+        depends_on:
+            migrations:
+                condition: service_completed_successfully
+
+volumes:
+    ronja-data:
+        driver: local

@@ -1,20 +1,18 @@
-const {
-    EmbedBuilder,
-    ActionRowBuilder,
-    ButtonBuilder,
-    StringSelectMenuBuilder,
-    ButtonStyle,
-    Colors,
-    GuildScheduledEventPrivacyLevel,
-    GuildScheduledEventEntityType,
-    GuildScheduledEventStatus,
-    Embed,
-} = require("discord.js");
-const { DateTime } = require("luxon");
-const Sequelize = require("sequelize");
-const Op = Sequelize.Op;
+const { EmbedBuilder, Colors, SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 
 const myExample = {
+    commands: [
+        new SlashCommandBuilder()
+            .setName("setlang")
+            .setNameLocalizations({ de: "setzesprache" })
+            .setDescription("Set you personal language as preferred server language.")
+            .setDescriptionLocalizations({
+                de: "Setze deine persönliche Sprache als bevorzugte Serversprache.",
+            })
+            .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+            .setDMPermission(false),
+    ],
+
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName == "setlang") {
             await interaction.deferReply({ ephemeral: true });
@@ -26,9 +24,7 @@ const myExample = {
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Green)
-                                .setTitle(
-                                    this.l(interaction.locale, "Succesful!")
-                                )
+                                .setTitle(this.l(interaction.locale, "Succesful!"))
                                 .setDescription(
                                     this.l(
                                         interaction.locale,

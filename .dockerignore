@@ -1,0 +1,9 @@
+.git
+node_modules
+.data
+.devcontainer
+.vscode
+.claude
+.env
+.env.*
+npm-debug.log

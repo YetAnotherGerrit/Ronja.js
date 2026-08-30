@@ -1,0 +1,17 @@
+[Unit]
+Description=Ronja.js Discord bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ronja
+WorkingDirectory=/opt/ronja
+EnvironmentFile=/opt/ronja/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/env node index.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

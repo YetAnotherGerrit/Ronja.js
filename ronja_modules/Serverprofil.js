@@ -1,29 +1,36 @@
-const { EmbedBuilder, Colors } = require("discord.js");
+const {
+    EmbedBuilder,
+    Colors,
+    ContextMenuCommandBuilder,
+    ApplicationCommandType,
+} = require("discord.js");
 const Sequelize = require("sequelize");
 
 const myServerprofil = {
-    defaultConfig: {
-        toLocaleDateStringCountry: "de-DE",
-        toLocaleDateStringFormat: {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-        },
+    commands: [
+        new ContextMenuCommandBuilder()
+            .setName("Serverprofile")
+            .setNameLocalizations({ de: "Serverprofil" })
+            .setType(ApplicationCommandType.User)
+            .setDMPermission(false),
+    ],
+
+    toLocaleDateStringCountry: "de-DE",
+    toLocaleDateStringFormat: {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
     },
 
     hookForContextMenuInteraction: async function (interaction) {
         if (interaction.commandName == "Serverprofile") {
             await interaction.deferReply({ ephemeral: true });
 
-            let m = await interaction.guild.members.fetch(
-                interaction.options.getUser("user").id
-            );
+            let m = await interaction.guild.members.fetch(interaction.options.getUser("user").id);
 
             let e = new EmbedBuilder()
                 .setColor(Colors.Blue)
-                .setTitle(
-                    this.l(interaction.locale, "Profile of %s", m.displayName)
-                )
+                .setTitle(this.l(interaction.locale, "Profile of %s", m.displayName))
                 .setThumbnail(m.displayAvatarURL())
                 .setDescription(
                     this.l(
@@ -31,20 +38,20 @@ const myServerprofil = {
                         `%s is on this discord server since %s.`,
                         m.displayName,
                         m.joinedAt.toLocaleDateString(
-                            this.cfg.toLocaleDateStringCountry,
-                            this.cfg.toLocaleDateStringFormat
+                            this.toLocaleDateStringCountry, // TODO replace config with using the locale of the client/interaction
+                            this.toLocaleDateStringFormat
                         )
                     )
                 );
 
             if (interaction.member != m) {
                 let s = "";
-                let g = await this.client.myDB.Games.findAll({
+                let g = await this.client.db.Game.findAll({
                     raw: true,
                     attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
                     include: [
                         {
-                            model: this.client.myDB.GamesPlayed,
+                            model: this.client.db.GameStatus,
                             where: {
                                 member: [interaction.member.id, m.id],
                             },
@@ -54,7 +61,7 @@ const myServerprofil = {
                         [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
                         ["name", "ASC"],
                     ],
-                    group: "Games.name",
+                    group: "Game.name",
                 });
 
                 g.forEach((gg) => {

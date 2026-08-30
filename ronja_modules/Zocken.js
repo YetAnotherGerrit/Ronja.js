@@ -9,6 +9,7 @@ const {
     GuildScheduledEventEntityType,
     GuildScheduledEventStatus,
     ChannelType,
+    SlashCommandBuilder,
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
@@ -24,18 +25,65 @@ function multiChar(a, c) {
 }
 
 const myZocken = {
-    defaultConfig: {
-        timeZone: "Europe/Berlin",
-        collectorTimeout: 14 * 60 * 1000,
-    },
+    commands: [
+        new SlashCommandBuilder()
+            .setName("lfg")
+            .setNameLocalizations({ de: "zocken" })
+            .setDescription("You want to game and need fellow gamers?")
+            .setDescriptionLocalizations({
+                de: "Du willst was zocken und suchst Mitspieler?",
+            })
+            .addStringOption((option) =>
+                option
+                    .setName("day")
+                    .setNameLocalizations({ de: "tag" })
+                    .setDescription("Select the day you want to play.")
+                    .setDescriptionLocalizations({
+                        de: "Wähle den Tag an dem du zocken möchtest.",
+                    })
+                    .setRequired(false)
+                    .addChoices(
+                        {
+                            name: "Today",
+                            value: "today",
+                            name_localizations: { de: "Heute" },
+                        },
+                        {
+                            name: "Tomorrow",
+                            value: "tomorrow",
+                            name_localizations: { de: "Morgen" },
+                        }
+                    )
+            )
+            .addStringOption((option) =>
+                option
+                    .setName("time")
+                    .setNameLocalizations({ de: "uhrzeit" })
+                    .setDescription(
+                        "Select the time you want to play (HH:MM). Use 24h time format."
+                    )
+                    .setDescriptionLocalizations({
+                        de: "Setze die Uhrzeit zu der du spielen möchtest (SS:MM).",
+                    })
+                    .setRequired(false)
+            )
+            .addStringOption((option) =>
+                option
+                    .setName("title")
+                    .setNameLocalizations({ de: "titel" })
+                    .setDescription("Give your gaming session a name.")
+                    .setDescriptionLocalizations({
+                        de: "Gib deinem /zocken-Aufruf einen Namen.",
+                    })
+                    .setRequired(false)
+            )
+            .setDMPermission(false),
+    ],
 
+    collectorTimeout: 14 * 60 * 1000,
     dbVoiceStatus: {},
 
-    createZockenTextForEvent: async function (
-        lng,
-        guildEvent,
-        guildEventCreatorId
-    ) {
+    createZockenTextForEvent: async function (lng, guildEvent, guildEventCreatorId) {
         let eventMembers = [];
         let regexResult;
 
@@ -56,8 +104,7 @@ const myZocken = {
         }
 
         if (regexResult) {
-            if (!eventMembers.includes(regexResult[1]))
-                eventMembers.push(regexResult[1]);
+            if (!eventMembers.includes(regexResult[1])) eventMembers.push(regexResult[1]);
         }
 
         if (guildEventCreatorId) eventMembers.push(guildEventCreatorId);
@@ -77,12 +124,12 @@ const myZocken = {
         if (zockenMembers.length > 0) {
             let zockenText = "";
 
-            let gamesPlayed = await this.client.myDB.Games.findAll({
+            let gamesPlayed = await this.client.db.Game.findAll({
                 raw: true,
                 attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
                 include: [
                     {
-                        model: this.client.myDB.GamesPlayed,
+                        model: this.client.db.GameStatus,
                         where: {
                             member: zockenMembers,
                         },
@@ -90,9 +137,9 @@ const myZocken = {
                 ],
                 order: [
                     [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
-                    [this.client.myDB.GamesPlayed, "lastplayed", "DESC"],
+                    [this.client.db.GameStatus, "lastplayed", "DESC"],
                 ],
-                group: "Games.name",
+                group: "Game.name",
             });
 
             gamesPlayed.forEach((gamePlayed) => {
@@ -118,26 +165,23 @@ const myZocken = {
 
         await Promise.all(
             interaction.channel.members.map(async (channelMember) => {
-                let result = await this.client.myDB.Member.findOne({
-                    where: { id: channelMember.id },
+                let result = await this.client.db.MemberSetting.findOne({
+                    where: { memberid: channelMember.id, name: "zockenmention" },
                 });
-                let statusChannelMember = result ? result.zockenmention : 1;
+                let statusChannelMember = result ? parseInt(result.value) : 1;
 
                 let commonGames = 0;
-                let g = await this.client.myDB.Games.findAll({
+                let g = await this.client.db.Game.findAll({
                     raw: true,
                     attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
                     include: [
                         {
-                            model: this.client.myDB.GamesPlayed,
+                            model: this.client.db.GameStatus,
                             where: {
-                                member: [
-                                    interaction.member.id,
-                                    channelMember.id,
-                                ],
+                                member: [interaction.member.id, channelMember.id],
                                 lastplayed: {
                                     [Op.gte]: DateTime.now()
-                                        .setZone(this.cfg.timeZone)
+                                        .setZone(this.cfg("timezone"))
                                         .minus({ days: 100 })
                                         .toJSDate(),
                                 },
@@ -148,7 +192,7 @@ const myZocken = {
                         [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
                         ["name", "ASC"],
                     ],
-                    group: "Games.name",
+                    group: "Game.name",
                 });
 
                 g.forEach((gg) => {
@@ -161,17 +205,13 @@ const myZocken = {
                     !channelMember.user.bot &&
                     commonGames > 0 &&
                     ((channelMember.presence &&
-                        ((channelMember.presence.status == "online" &&
-                            statusChannelMember > 0) ||
-                            (channelMember.presence.status == "idle" &&
-                                statusChannelMember > 0) ||
+                        ((channelMember.presence.status == "online" && statusChannelMember > 0) ||
+                            (channelMember.presence.status == "idle" && statusChannelMember > 0) ||
                             (channelMember.presence.status == "offline" &&
                                 statusChannelMember > 1))) ||
                         (!channelMember.presence && statusChannelMember > 1))
                 ) {
-                    channelMemberPing = channelMemberPing.concat(
-                        ` <@${channelMember.id}>`
-                    );
+                    channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
                 }
             })
         );
@@ -181,10 +221,7 @@ const myZocken = {
 
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName == "lfg") {
-            if (
-                interaction.options.getString("day") &&
-                !interaction.options.getString("time")
-            ) {
+            if (interaction.options.getString("day") && !interaction.options.getString("time")) {
                 interaction.reply({
                     content: this.l(
                         interaction.locale,
@@ -195,14 +232,12 @@ const myZocken = {
                 return;
             }
 
-            let startTime = DateTime.now().setZone(this.cfg.timeZone);
+            let startTime = DateTime.now().setZone(this.cfg("timezone"));
 
             if (interaction.options.getString("time")) {
                 let regex = new RegExp(/(\d{2}):(\d{2})/);
 
-                let regexResult = interaction.options
-                    .getString("time")
-                    .match(regex);
+                let regexResult = interaction.options.getString("time").match(regex);
 
                 if (regexResult) {
                     if (regexResult[1] < 0 || regexResult[1] > 23) {
@@ -228,7 +263,7 @@ const myZocken = {
 
                     startTime = DateTime.fromObject(
                         { hour: regexResult[1], minute: regexResult[2] },
-                        { zone: this.cfg.timeZone }
+                        { zone: this.cfg("timezone") }
                     );
                 } else {
                     interaction.reply({
@@ -246,10 +281,7 @@ const myZocken = {
                 startTime = startTime.plus({ days: 1 });
             }
 
-            if (
-                !interaction.options.getString("day") &&
-                !interaction.options.getString("time")
-            ) {
+            if (!interaction.options.getString("day") && !interaction.options.getString("time")) {
                 startTime = startTime.plus({ minutes: 10 });
             }
 
@@ -300,9 +332,7 @@ const myZocken = {
                 }, // Optional, but not for EXTERNAL,
             });
 
-            let channelMemberPing = await this.createChannelMemberPing(
-                interaction
-            );
+            let channelMemberPing = await this.createChannelMemberPing(interaction);
 
             interaction.editReply({
                 content: this.l(
@@ -315,12 +345,7 @@ const myZocken = {
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
                             .setCustomId("zockenSelect")
-                            .setLabel(
-                                this.l(
-                                    interaction.locale,
-                                    "Why is my name (not) in here?"
-                                )
-                            )
+                            .setLabel(this.l(interaction.locale, "Why is my name (not) in here?"))
                             .setStyle(ButtonStyle.Secondary)
                     ),
                 ],
@@ -328,7 +353,7 @@ const myZocken = {
 
             myReply
                 .createMessageComponentCollector({
-                    time: this.cfg.collectorTimeout,
+                    time: this.collectorTimeout,
                 })
                 .on("end", async (collected) => {
                     if (newEvent.isActive()) {
@@ -389,21 +414,18 @@ const myZocken = {
     },
 
     hookForButtonInteraction: async function (interaction) {
-        if ((interaction.customId = "zockenSelect")) {
-            let [mem, memCreated] = await this.client.myDB.Member.findOrCreate({
-                where: { id: interaction.member.id },
-                defaults: { zockenmention: 1 },
+        if (interaction.customId === "zockenSelect") {
+            let [mem, memCreated] = await this.client.db.MemberSetting.findOrCreate({
+                where: { memberid: interaction.member.id, name: "zockenmention" },
+                defaults: { value: "1" },
             });
 
-            let statusZockenSelect = mem.zockenmention;
+            let statusZockenSelect = parseInt(mem.value);
             let statusZockenSelectText = "";
 
             switch (statusZockenSelect) {
                 case 2:
-                    statusZockenSelectText = this.l(
-                        interaction.locale,
-                        "Ping me also offline."
-                    );
+                    statusZockenSelectText = this.l(interaction.locale, "Ping me also offline.");
                     break;
 
                 case 1:
@@ -414,10 +436,7 @@ const myZocken = {
                     break;
 
                 case 0:
-                    statusZockenSelectText = this.l(
-                        interaction.locale,
-                        "Please, never ping me."
-                    );
+                    statusZockenSelectText = this.l(interaction.locale, "Please, never ping me.");
                     break;
             }
 
@@ -425,12 +444,7 @@ const myZocken = {
                 embeds: [
                     new EmbedBuilder()
                         .setColor(Colors.Blue)
-                        .setTitle(
-                            this.l(
-                                interaction.locale,
-                                "Why is my name (not) in here?"
-                            )
-                        )
+                        .setTitle(this.l(interaction.locale, "Why is my name (not) in here?"))
                         .setDescription(
                             this.l(
                                 interaction.locale,
@@ -443,15 +457,10 @@ const myZocken = {
                     new ActionRowBuilder().addComponents(
                         new StringSelectMenuBuilder()
                             .setCustomId("zockenSelected")
-                            .setPlaceholder(
-                                this.l(interaction.locale, "Notifications...")
-                            )
+                            .setPlaceholder(this.l(interaction.locale, "Notifications..."))
                             .addOptions([
                                 {
-                                    label: this.l(
-                                        interaction.locale,
-                                        "Ping me also offline."
-                                    ),
+                                    label: this.l(interaction.locale, "Ping me also offline."),
                                     description: this.l(
                                         interaction.locale,
                                         "Also notify myself that someone wants to game, even when I am offline."
@@ -463,11 +472,7 @@ const myZocken = {
                                         this.l(
                                             interaction.locale,
                                             "Ping me only, when I am online."
-                                        ) +
-                                        this.l(
-                                            interaction.locale,
-                                            " (Default)"
-                                        ),
+                                        ) + this.l(interaction.locale, " (Default)"),
                                     description: this.l(
                                         interaction.locale,
                                         "Notify myself only when I am also online in Discord."
@@ -475,10 +480,7 @@ const myZocken = {
                                     value: "1",
                                 },
                                 {
-                                    label: this.l(
-                                        interaction.locale,
-                                        "Please, never ping me."
-                                    ),
+                                    label: this.l(interaction.locale, "Please, never ping me."),
                                     description: this.l(
                                         interaction.locale,
                                         "I am not interested in this kind of gaming requests."
@@ -492,28 +494,23 @@ const myZocken = {
             });
 
             let collector = myReply.createMessageComponentCollector({
-                time: this.cfg.collectorTimeout,
+                time: this.collectorTimeout,
             });
 
             collector.on("collect", async (i) => {
                 if (i.customId === "zockenSelected") {
-                    await this.client.myDB.Member.update(
-                        { zockenmention: parseInt(i.values[0]) },
-                        { where: { id: i.member.id } }
+                    await this.client.db.MemberSetting.update(
+                        { value: i.values[0] },
+                        { where: { memberid: i.member.id, name: "zockenmention" } }
                     );
 
                     await i.update({
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Green)
-                                .setTitle(
-                                    this.l(interaction.locale, "Succesful!")
-                                )
+                                .setTitle(this.l(interaction.locale, "Succesful!"))
                                 .setDescription(
-                                    this.l(
-                                        interaction.locale,
-                                        "Your settings have been saved."
-                                    )
+                                    this.l(interaction.locale, "Your settings have been saved.")
                                 ),
                         ],
                         components: [],
@@ -527,14 +524,9 @@ const myZocken = {
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Blue)
-                                .setTitle(
-                                    this.l(interaction.locale, "Expired!")
-                                )
+                                .setTitle(this.l(interaction.locale, "Expired!"))
                                 .setDescription(
-                                    this.l(
-                                        interaction.locale,
-                                        "No changes have been saved."
-                                    )
+                                    this.l(interaction.locale, "No changes have been saved.")
                                 ),
                         ],
                         components: [],
@@ -554,13 +546,9 @@ const myZocken = {
         }
     },
 
-    hookForEventStart: async function (
-        oldGuildScheduledEvent,
-        newGuildScheduledEvent
-    ) {
+    hookForEventStart: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         if (newGuildScheduledEvent.entityMetadata.location.includes("/lfg")) {
-            let eventSubcribers =
-                await newGuildScheduledEvent.fetchSubscribers();
+            let eventSubcribers = await newGuildScheduledEvent.fetchSubscribers();
             if (eventSubcribers.size < 2) {
                 newGuildScheduledEvent.setStatus(
                     GuildScheduledEventStatus.Completed,
@@ -574,9 +562,7 @@ const myZocken = {
         if (newState.channel) this.updateChannelVoiceStatus(newState.channel);
         if (
             (oldState.channel && !newState.channel) ||
-            (oldState.channel &&
-                newState.channel &&
-                oldState.channel.id != newState.channel.id)
+            (oldState.channel && newState.channel && oldState.channel.id != newState.channel.id)
         )
             this.updateChannelVoiceStatus(oldState.channel);
     },
