@@ -78,6 +78,30 @@ to play with your friends and need to decide on what game to play.
     Slash- and context menu-commands are registered with Discord automatically on
     startup and only re-synced when their definition actually changes.
 
+#### Run as a systemd service (optional)
+
+`npm start` only stays running for as long as its terminal session does. To
+keep Ronja running in the background and have it restart automatically after
+a crash or reboot, use the example unit file at
+[`systemd/ronja.service`](systemd/ronja.service):
+
+1. Copy the repository to its final location (e.g. `/opt/ronja`) and create a
+   dedicated user to run it as (e.g. `useradd --system --home /opt/ronja ronja`),
+   then make sure that user owns the folder.
+
+2. Create a `.env` file in that folder containing `RONJA_TOKEN=your-bot-token-here`.
+
+3. Copy `systemd/ronja.service` to `/etc/systemd/system/ronja.service`,
+   adjusting `WorkingDirectory`, `EnvironmentFile`, and `User` if you used
+   different values in steps 1 and 2.
+
+4. Run `systemctl daemon-reload`, then `systemctl enable --now ronja`.
+
+Note that the unit's `ExecStart` runs `node index.js` directly rather than
+`npm start`: `npm` wraps the process in its own shell, which can delay or
+swallow the `SIGTERM` systemd sends on stop/restart, so a direct `node` call
+shuts down more reliably.
+
 ### Install with Docker
 
 1. Setup a bot account and invite it to your guild as described in steps 2 and
