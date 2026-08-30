@@ -92,5 +92,14 @@
     "Could not be safed. Maybe the bot is missing some permissions?": [
         "Could not be safed. Maybe the bot is missing some permissions?"
     ],
-    "Language of the guild was changed to %s.": ["Serversprache wurde auf %s geändert."]
+    "Language of the guild was changed to %s.": ["Serversprache wurde auf %s geändert."],
+    "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
+        "Konnte keinen Textkanal für %s erstellen: Die Kategorie #%s hat Discords Limit von 50 Kanälen erreicht."
+    ],
+    "Could not move #%s to the archive category #%s: it has reached Discord's limit of 50 channels.": [
+        "Konnte #%s nicht in die Archiv-Kategorie #%s verschieben: Sie hat Discords Limit von 50 Kanälen erreicht."
+    ],
+    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.": [
+        "Konnte #%s nicht zurück in die aktive Kategorie #%s verschieben: Sie hat Discords Limit von 50 Kanälen erreicht."
+    ]
 }

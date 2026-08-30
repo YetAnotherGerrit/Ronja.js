@@ -1,4 +1,10 @@
-const { ChannelType, PermissionFlagsBits, EmbedBuilder, Colors } = require("discord.js");
+const {
+    ChannelType,
+    PermissionFlagsBits,
+    EmbedBuilder,
+    Colors,
+    RESTJSONErrorCodes,
+} = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
@@ -84,6 +90,16 @@ const myDynamicTextChannels = {
         }
     },
 
+    notifyOwner: async function (guild, message) {
+        console.error(message);
+        try {
+            let owner = await guild.fetchOwner();
+            await owner.send(message);
+        } catch (err) {
+            console.error(`Could not DM the guild owner: ${err}`);
+        }
+    },
+
     notifyChannel: async function (myTitle, myDescription) {
         if (this.cfg("dtcNotificationChannel")) {
             this.client.channels
@@ -103,11 +119,26 @@ const myDynamicTextChannels = {
     createTextChannel: async function (game, newActivity, newPresence) {
         if (this.cfg("dtcGamesCategory")) {
             let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
-            let newChannel = await dtcGamesCategory.children.create({
-                name: newActivity.name,
-                type: ChannelType.GuildText,
-                permissionOverwrites: await this.defaultOverrides(newPresence.guild),
-            });
+            let newChannel;
+            try {
+                newChannel = await dtcGamesCategory.children.create({
+                    name: newActivity.name,
+                    type: ChannelType.GuildText,
+                    permissionOverwrites: await this.defaultOverrides(newPresence.guild),
+                });
+            } catch (err) {
+                if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached) throw err;
+                this.notifyOwner(
+                    newPresence.guild,
+                    this.l(
+                        newPresence.guild.preferredLocale,
+                        "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.",
+                        newActivity.name,
+                        dtcGamesCategory.name
+                    )
+                );
+                return;
+            }
 
             this.assignAllPlayersToChannel(newChannel, game, this.cfg("dtcDaysTarget"));
             game.update({ channel: newChannel.id });
@@ -134,7 +165,22 @@ const myDynamicTextChannels = {
                 let dtcArchivedGamesCategory = await this.client.channels.fetch(
                     this.cfg("dtcArchivedGamesCategory")
                 );
-                channel.setParent(dtcArchivedGamesCategory);
+                try {
+                    await channel.setParent(dtcArchivedGamesCategory);
+                } catch (err) {
+                    if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached)
+                        throw err;
+                    this.notifyOwner(
+                        channel.guild,
+                        this.l(
+                            channel.guild.preferredLocale,
+                            "Could not move #%s to the archive category #%s: it has reached Discord's limit of 50 channels.",
+                            channel.name,
+                            dtcArchivedGamesCategory.name
+                        )
+                    );
+                    return;
+                }
                 channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
 
                 console.log(`Moved #${channel.name} to archive.`);
@@ -154,7 +200,22 @@ const myDynamicTextChannels = {
                         let dtcGamesCategory = await this.client.channels.fetch(
                             this.cfg("dtcGamesCategory")
                         );
-                        gameChannel.setParent(dtcGamesCategory);
+                        try {
+                            await gameChannel.setParent(dtcGamesCategory);
+                        } catch (err) {
+                            if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached)
+                                throw err;
+                            this.notifyOwner(
+                                gameChannel.guild,
+                                this.l(
+                                    gameChannel.guild.preferredLocale,
+                                    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.",
+                                    gameChannel.name,
+                                    dtcGamesCategory.name
+                                )
+                            );
+                            return;
+                        }
                         await gameChannel.permissionOverwrites.set(
                             await this.defaultOverrides(gameChannel.guild)
                         );
