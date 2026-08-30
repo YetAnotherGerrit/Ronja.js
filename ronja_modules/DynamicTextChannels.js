@@ -90,16 +90,6 @@ const myDynamicTextChannels = {
         }
     },
 
-    notifyOwner: async function (guild, message) {
-        console.error(message);
-        try {
-            let owner = await guild.fetchOwner();
-            await owner.send(message);
-        } catch (err) {
-            console.error(`Could not DM the guild owner: ${err}`);
-        }
-    },
-
     notifyChannel: async function (myTitle, myDescription) {
         if (this.cfg("dtcNotificationChannel")) {
             this.client.channels
@@ -128,7 +118,7 @@ const myDynamicTextChannels = {
                 });
             } catch (err) {
                 if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached) throw err;
-                this.notifyOwner(
+                this.client.myNotifyOwner(
                     newPresence.guild,
                     this.l(
                         newPresence.guild.preferredLocale,
@@ -170,7 +160,7 @@ const myDynamicTextChannels = {
                 } catch (err) {
                     if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached)
                         throw err;
-                    this.notifyOwner(
+                    this.client.myNotifyOwner(
                         channel.guild,
                         this.l(
                             channel.guild.preferredLocale,
@@ -205,7 +195,7 @@ const myDynamicTextChannels = {
                         } catch (err) {
                             if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached)
                                 throw err;
-                            this.notifyOwner(
+                            this.client.myNotifyOwner(
                                 gameChannel.guild,
                                 this.l(
                                     gameChannel.guild.preferredLocale,

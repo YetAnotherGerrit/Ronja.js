@@ -69,6 +69,16 @@ class Ronja extends Client {
         });
     }
 
+    async myNotifyOwner(guild, message) {
+        console.error(message);
+        try {
+            let owner = await guild.fetchOwner();
+            await owner.send(message);
+        } catch (err) {
+            console.error(`Could not DM the guild owner: ${err}`);
+        }
+    }
+
     myTranslator() {
         if (this.myLanguage[arguments[0]] && this.myLanguage[arguments[0]][arguments[1]]) {
             arguments[1] =
