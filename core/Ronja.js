@@ -187,6 +187,21 @@ class Ronja extends Client {
                 await row.destroy();
             }
         }
+
+        // Ronja only ever registers global commands. Older versions of the pre-2.0
+        // deploy-commands.js script registered guild-specific commands instead (switched to
+        // global in commit b4c8604), and those were never cleared when that script changed
+        // over — they'd otherwise sit alongside the global ones and show up as duplicates in
+        // Discord's UI. Unconditional and cheap to repeat: a no-op once a guild is already clear.
+        for (const guild of this.guilds.cache.values()) {
+            const guildCommands = await rest.get(Routes.applicationGuildCommands(appId, guild.id));
+            if (guildCommands.length > 0) {
+                await rest.put(Routes.applicationGuildCommands(appId, guild.id), { body: [] });
+                console.log(
+                    `Removed ${guildCommands.length} legacy guild-specific command(s) from ${guild.name}.`
+                );
+            }
+        }
     }
 }
 
