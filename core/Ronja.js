@@ -100,42 +100,106 @@ class Ronja extends Client {
         const rest = new REST({ version: "10" }).setToken(this.token);
         const appId = this.application.id;
 
-        const desired = modules.flatMap((m) => m.commands || []).map((c) => c.toJSON());
-        const existing = await this.db.Command.findAll();
-        const existingByKey = new Map(existing.map((c) => [`${c.name}:${c.type}`, c]));
-        const seen = new Set();
+        // discord.js only sets `type` explicitly for context-menu commands; chat-input
+        // commands come back as `undefined` here but as `1` from Discord's API. Normalize
+        // so keys derived from our own definitions match keys derived from live commands.
+        const desired = modules
+            .flatMap((m) => m.commands || [])
+            .map((c) => c.toJSON())
+            .map((json) => ({ ...json, type: json.type ?? 1 }));
+        const desiredByKey = new Map(desired.map((json) => [`${json.name}:${json.type}`, json]));
 
-        for (const json of desired) {
-            const key = `${json.name}:${json.type}`;
-            seen.add(key);
+        // Discord's actual command list is the source of truth for what's registered and
+        // under which ID(s) — the local Command table is only a hash cache to skip
+        // redundant PATCH calls, so it can never cause commands to be silently duplicated
+        // or leaked if it ever falls out of sync with Discord (e.g. a fresh Command table
+        // deployed against an application that already had commands registered another way).
+        const live = await rest.get(Routes.applicationCommands(appId));
+        const liveByKey = new Map();
+        for (const cmd of live) {
+            const key = `${cmd.name}:${cmd.type}`;
+            if (!liveByKey.has(key)) liveByKey.set(key, []);
+            liveByKey.get(key).push(cmd);
+        }
+
+        const tracked = await this.db.Command.findAll();
+        const trackedByKey = new Map(tracked.map((c) => [`${c.name}:${c.type}`, c]));
+
+        for (const [key, json] of desiredByKey) {
             const hash = crypto.createHash("sha256").update(stableStringify(json)).digest("hex");
-            const row = existingByKey.get(key);
+            const row = trackedByKey.get(key);
+            const matches = (liveByKey.get(key) || []).sort((a, b) =>
+                BigInt(a.id) < BigInt(b.id) ? -1 : 1
+            );
 
-            if (!row) {
+            if (matches.length === 0) {
                 const created = await rest.post(Routes.applicationCommands(appId), {
                     body: json,
                 });
+                if (row) await row.update({ discordId: created.id, hash });
+                else
+                    await this.db.Command.create({
+                        name: json.name,
+                        type: json.type,
+                        discordId: created.id,
+                        hash,
+                    });
+                console.log(`Deployed new command: ${json.name}`);
+                continue;
+            }
+
+            // Keep the oldest registration, drop any duplicates (e.g. leftovers from a
+            // previous deployment method that this table never knew about).
+            const [canonical, ...duplicates] = matches;
+            for (const dupe of duplicates) {
+                await rest.delete(Routes.applicationCommand(appId, dupe.id));
+                console.log(`Removed duplicate command: ${json.name} (${dupe.id})`);
+            }
+
+            if (!row || row.hash !== hash) {
+                await rest.patch(Routes.applicationCommand(appId, canonical.id), {
+                    body: json,
+                });
+                console.log(`Updated command: ${json.name}`);
+            }
+
+            if (row) await row.update({ discordId: canonical.id, hash });
+            else
                 await this.db.Command.create({
                     name: json.name,
                     type: json.type,
-                    discordId: created.id,
+                    discordId: canonical.id,
                     hash,
                 });
-                console.log(`Deployed new command: ${json.name}`);
-            } else if (row.hash !== hash) {
-                await rest.patch(Routes.applicationCommand(appId, row.discordId), {
-                    body: json,
-                });
-                await row.update({ hash });
-                console.log(`Updated command: ${json.name}`);
+        }
+
+        for (const [key, matches] of liveByKey) {
+            if (!desiredByKey.has(key)) {
+                for (const cmd of matches) {
+                    await rest.delete(Routes.applicationCommand(appId, cmd.id));
+                    console.log(`Removed obsolete command: ${cmd.name}`);
+                }
             }
         }
 
-        for (const row of existing) {
-            if (!seen.has(`${row.name}:${row.type}`)) {
-                await rest.delete(Routes.applicationCommand(appId, row.discordId));
+        for (const row of tracked) {
+            if (!desiredByKey.has(`${row.name}:${row.type}`)) {
                 await row.destroy();
-                console.log(`Removed obsolete command: ${row.name}`);
+            }
+        }
+
+        // Ronja only ever registers global commands. Older versions of the pre-2.0
+        // deploy-commands.js script registered guild-specific commands instead (switched to
+        // global in commit b4c8604), and those were never cleared when that script changed
+        // over — they'd otherwise sit alongside the global ones and show up as duplicates in
+        // Discord's UI. Unconditional and cheap to repeat: a no-op once a guild is already clear.
+        for (const guild of this.guilds.cache.values()) {
+            const guildCommands = await rest.get(Routes.applicationGuildCommands(appId, guild.id));
+            if (guildCommands.length > 0) {
+                await rest.put(Routes.applicationGuildCommands(appId, guild.id), { body: [] });
+                console.log(
+                    `Removed ${guildCommands.length} legacy guild-specific command(s) from ${guild.name}.`
+                );
             }
         }
     }
