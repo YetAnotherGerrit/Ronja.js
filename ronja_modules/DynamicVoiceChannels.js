@@ -39,7 +39,7 @@ const myDynamicVoiceChannels = {
             let newChannel = await newState.channel.parent.children.create({
                 name: `Kanal von ${newState.member.displayName}`,
                 type: ChannelType.GuildVoice,
-                bitrate: this.cfg("voiceChannelBitrate"),
+                bitrate: Number(this.cfg("voiceChannelBitrate")),
             });
             newChannel.lockPermissions();
             try {
