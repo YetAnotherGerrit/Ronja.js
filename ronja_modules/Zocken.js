@@ -166,9 +166,9 @@ const myZocken = {
         await Promise.all(
             interaction.channel.members.map(async (channelMember) => {
                 let result = await this.client.db.MemberSetting.findOne({
-                    where: { id: channelMember.id },
+                    where: { memberid: channelMember.id, name: "zockenmention" },
                 });
-                let statusChannelMember = result ? result.zockenmention : 1;
+                let statusChannelMember = result ? parseInt(result.value) : 1;
 
                 let commonGames = 0;
                 let g = await this.client.db.Game.findAll({
@@ -416,11 +416,11 @@ const myZocken = {
     hookForButtonInteraction: async function (interaction) {
         if (interaction.customId === "zockenSelect") {
             let [mem, memCreated] = await this.client.db.MemberSetting.findOrCreate({
-                where: { id: interaction.member.id },
-                defaults: { zockenmention: 1 },
+                where: { memberid: interaction.member.id, name: "zockenmention" },
+                defaults: { value: "1" },
             });
 
-            let statusZockenSelect = mem.zockenmention;
+            let statusZockenSelect = parseInt(mem.value);
             let statusZockenSelectText = "";
 
             switch (statusZockenSelect) {
@@ -500,8 +500,8 @@ const myZocken = {
             collector.on("collect", async (i) => {
                 if (i.customId === "zockenSelected") {
                     await this.client.db.MemberSetting.update(
-                        { zockenmention: parseInt(i.values[0]) },
-                        { where: { id: i.member.id } }
+                        { value: i.values[0] },
+                        { where: { memberid: i.member.id, name: "zockenmention" } }
                     );
 
                     await i.update({
