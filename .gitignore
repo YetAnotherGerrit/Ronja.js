@@ -78,3 +78,7 @@ typings/
 # SECRET
 .data/
 .DS_Store
+
+# Claude Code local settings (per-machine overrides; *.local.json, not shared config
+# like .claude/settings.json, .claude/commands/, or .claude/agents/)
+.claude/*.local.json
