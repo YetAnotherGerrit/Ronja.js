@@ -3,11 +3,6 @@
         "dialect": "sqlite",
         "storage": ".data/dev-database.sqlite"
     },
-    "docker": {
-        "dialect": "sqlite",
-        "storage": "/data/database.sqlite",
-        "logging": false
-    },
     "production": {
         "dialect": "sqlite",
         "storage": ".data/database.sqlite",

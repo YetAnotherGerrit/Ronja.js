@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Ronja.js is a single-guild Discord bot (discord.js v14) for a friend group's gaming community: dynamic voice/text channels, an `/lfg` game-finder, `/top10` game leaderboards, ical event feeds, server profiles, and reoccurring events. It is not designed for multi-guild use. Persistence is SQLite via Sequelize.
+Ronja.js is a single-guild Discord bot (discord.js v14) for a friend group's gaming community: dynamic voice/text channels, an `/lfg` game-finder, `/top10` game leaderboards, ical event feeds, and server profiles. It is not designed for multi-guild use. Persistence is SQLite via Sequelize.
 
 ## Commands
 
@@ -14,8 +14,12 @@ Ronja.js is a single-guild Discord bot (discord.js v14) for a friend group's gam
 npm start
 
 # Database migrations (sequelize-cli)
-npm run dev:migrate          # apply all pending migrations
+npm run migrate                  # what admins and docker-compose run: --env production, always
+npm run dev:migrate              # local dev: NODE_ENV-driven, apply all pending migrations
 npm run dev:migrate:new <name>   # scaffold a new migration file under migrations/
+
+# One-time import of a pre-2.0 (pre-migrations) database, see migrate-legacy-database.js
+npm run migrate-legacy -- /path/to/old/database.sqlite
 
 # Lint / format
 npm run dev:lint
@@ -26,7 +30,7 @@ npm run dev:format:check
 
 There is no test suite in this repo currently.
 
-`NODE_ENV` selects the Sequelize config block in `config/config.json` (`development`, `docker`, `production`), which in turn picks the SQLite file path. Local dev defaults to `.data/dev-database.sqlite`.
+`NODE_ENV` selects the Sequelize config block in `config/config.json` (`development` or `production`), which in turn picks the SQLite file path. It defaults to `production` when unset — only local dev (this devcontainer sets `NODE_ENV=development` via `.devcontainer/devcontainer.json`) uses `.data/dev-database.sqlite`; everything else, including the Docker image, uses `.data/database.sqlite`. `npm run migrate` (`sequelize-cli db:migrate --env production`) is what admins and `docker-compose.yml` both run; `npm run dev:migrate` is the `NODE_ENV`-driven variant for local development.
 
 ## Architecture
 
@@ -66,7 +70,7 @@ Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-
 
 ### Docker / deployment
 
-`Dockerfile` builds a production image (`npm install --omit=dev`, `NODE_ENV=docker`). `docker-compose.yml` runs migrations as a one-shot service before starting the `app` service, sharing a `ronja-data` volume mounted at `/data` (matching the `docker` block's `storage: /data/database.sqlite` in `config/config.json`).
+`Dockerfile` builds a production image (`npm install --omit=dev`, `NODE_ENV=production`). `docker-compose.yml` runs migrations as a one-shot service before starting the `app` service, sharing a `ronja-data` volume mounted at `/app/.data` — the same relative path the `production` config block already uses, so Docker doesn't need a config block of its own.
 
 ### Code style
 

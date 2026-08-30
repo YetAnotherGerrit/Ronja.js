@@ -3,15 +3,15 @@ version: "3"
 services:
     migrations:
         build: .
-        command: ["npm", "run", "dev:migrate"]
+        command: ["npm", "run", "migrate"]
         volumes:
-            - ronja-data:/data
+            - ronja-data:/app/.data
 
     app:
         build: .
         command: ["npm", "start"]
         volumes:
-            - ronja-data:/data
+            - ronja-data:/app/.data
         depends_on:
             migrations:
                 condition: service_completed_successfully

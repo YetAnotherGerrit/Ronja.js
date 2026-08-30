@@ -15,6 +15,7 @@
     "main": "index.js",
     "scripts": {
         "start": "node .",
+        "migrate": "npx sequelize-cli db:migrate --env production",
         "migrate-legacy": "node migrate-legacy-database.js",
         "dev:migrate": "npx sequelize-cli db:migrate",
         "dev:migrate:new": "npx sequelize-cli migration:generate --name",

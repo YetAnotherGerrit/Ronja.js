@@ -13,8 +13,8 @@ RUN npm install --omit=dev
 # Copy the rest of our application code into the container.
 COPY . .
 
-# Set an environment variable named NODE_ENV with value 'docker' to indicate that this is a Docker build.
-ENV NODE_ENV=docker
+# Explicitly pin the environment, even though "production" is also the app's default when unset.
+ENV NODE_ENV=production
 
 # Specify the default command to run when the container starts.
 CMD ["npm", "start"]

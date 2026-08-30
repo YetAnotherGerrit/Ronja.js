@@ -71,7 +71,7 @@ to play with your friends and need to decide on what game to play.
 
 6. Set the `RONJA_TOKEN` environment variable
 
-7. Set `NODE_ENV` to `production`
+7. Run `npm run migrate` to create the database.
 
 8. Run `npm start`
 
@@ -97,15 +97,14 @@ Steps to upgrade an existing installation:
 
 2. Back up your existing database file and keep your old `_SECRET/config.js`
    at hand for reference (you'll re-enter the values that still apply, see
-   step 5).
+   step 6).
 
 3. Update your files to the 2.0 release (`git pull` or a fresh release ZIP,
-   same as before), then redo the `RONJA_TOKEN`/`NODE_ENV` and `npm start`
-   steps from [Install](#install) above. `RONJA_CLIENT_ID` is no longer
-   needed.
+   same as before). Set the `RONJA_TOKEN` environment variable as described in
+   [Install](#install) above. `RONJA_CLIENT_ID` is no longer needed.
 
-4. Run `npm run dev:migrate` once to create the new database and its tables.
-   Then run:
+4. Run `npm run migrate` once to create the new database and its tables. Then
+   run:
 
     ```bash
     npm run migrate-legacy -- /path/to/your/old/database.sqlite
@@ -114,14 +113,11 @@ Steps to upgrade an existing installation:
     This carries over your games, play history, and each member's "ping me"
     preference from the old database into the new one. It's safe to re-run.
 
-5. Re-enter your configuration as `Setting` rows in the new database (there is
-   no admin command for this yet, so it has to be done directly, e.g. with the
-   `sqlite3` CLI):
+5. Run `npm start`.
 
-    ```bash
-    sqlite3 .data/database.sqlite \
-      "UPDATE Settings SET value = '<channel-or-category-id>' WHERE name = 'dtcGamesCategory';"
-    ```
+6. Reconfigure your settings using the `/settings` admin command in Discord:
+   `/settings list` shows every available setting, its current value, and a
+   description; `/settings set <name> <value>` updates one.
 
     Your old `_SECRET/config.js` keys map onto the new `Setting` names like
     this:
@@ -140,10 +136,8 @@ Steps to upgrade an existing installation:
     | `clientId` / `token` / `guildId`                        | removed, see step 3        |
     | `newWorldChannel` / `newWorldServer`                    | removed, feature dropped   |
 
-    See the files under `migrations/` for the full list of settings and their
-    descriptions, including a few new ones that didn't exist in 1.x (they come
-    with sensible defaults, so only change them if you want to).
-
-6. Run `npm start`.
+    `/settings list` is the authoritative source for what's available and
+    what each one does, including a few new settings that didn't exist in 1.x
+    (they come with sensible defaults, so only change them if you want to).
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax -->
