@@ -111,21 +111,21 @@ const myTop10 = {
             {
                 schedule: "0 8 * * 1",
                 action: () => {
-                    if (this.cfg("top10Weekly"))
+                    if (this.cfg("top10Weekly") === "true")
                         this.postTop10ToChannel(7, "The most played games of last week:");
                 },
             },
             {
                 schedule: "0 7 1 * *",
                 action: () => {
-                    if (this.cfg("top10Monthly"))
+                    if (this.cfg("top10Monthly") === "true")
                         this.postTop10ToChannel(30, "The most played games of last month:");
                 },
             },
             {
                 schedule: "0 0 1 1 *",
                 action: () => {
-                    if (this.cfg("top10Yearly"))
+                    if (this.cfg("top10Yearly") === "true")
                         this.postTop10ToChannel(
                             365,
                             "Happy new year! These have been the highlights of last year:"
