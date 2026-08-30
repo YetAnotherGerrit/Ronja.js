@@ -17,23 +17,32 @@
 		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
 	},
 
-	// Persist Claude Code's state (auth, settings, and its memory/ directory) in a named
-	// volume, so it survives a devcontainer rebuild instead of living only in the
-	// container's own throwaway filesystem layer.
+	// Persist Claude Code's state (auth, settings, and its memory/ directory), and the
+	// GitHub CLI's auth config (~/.config/gh/hosts.yml), in named volumes, so both survive
+	// a devcontainer rebuild instead of living only in the container's own throwaway
+	// filesystem layer.
 	//
 	// A fresh named volume is created owned by root, not by the "node" user this
 	// container runs as — that made /home/node/.claude unwritable (so Claude Code
 	// login failed writing .credentials.json) until the postCreateCommand below
-	// chowns it back to node:node after the mount is in place.
+	// chowns it back to node:node after the mount is in place. Same fix applies to the
+	// gh config volume.
 	"mounts": [
-		"source=ronja-js-claude-home,target=/home/node/.claude,type=volume"
+		"source=ronja-js-claude-home,target=/home/node/.claude,type=volume",
+		"source=ronja-js-gh-config,target=/home/node/.config/gh,type=volume"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "sudo chown -R node:node /home/node/.claude && yarn install"
+	//
+	// `gh auth setup-git` only edits ~/.gitconfig's credential.helper line, which isn't
+	// itself persisted, so it's re-applied on every container start; it's a no-op if
+	// already configured, and `|| true` keeps a not-yet-authenticated first run (before
+	// `gh auth login` has ever been run against the volume above) from blocking yarn
+	// install.
+	"postCreateCommand": "sudo chown -R node:node /home/node/.claude /home/node/.config/gh && (gh auth setup-git || true) && yarn install"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
