@@ -183,8 +183,20 @@ const myDynamicTextChannels = {
     hookForStartedPlaying: async function (oldPresence, newPresence, newActivity, game) {
         if (this.cfg("dtcArchivedGamesCategory")) {
             // TODO: Check if member has access right for parent-category dtcGamesCategory
+            let gameChannel = null;
             if (game.channel) {
-                let gameChannel = await this.client.channels.fetch(game.channel);
+                try {
+                    gameChannel = await this.client.channels.fetch(game.channel);
+                } catch (err) {
+                    if (err.code !== RESTJSONErrorCodes.UnknownChannel) throw err;
+                    // Someone deleted the channel manually (e.g. while the bot was offline, so
+                    // hookForChannelDelete never ran for it). Forget it and fall through to the
+                    // same path as a game that never had a channel.
+                    await game.update({ channel: null });
+                }
+            }
+
+            if (gameChannel) {
                 if (gameChannel.parentId == this.cfg("dtcArchivedGamesCategory")) {
                     if ((await this.countPlayersForGame(game, this.cfg("dtcDaysTarget"))) > 1) {
                         let dtcGamesCategory = await this.client.channels.fetch(
@@ -248,6 +260,16 @@ const myDynamicTextChannels = {
             }
         } else {
             console.warn("WARNING: no dtcArchivedGamesCategory set in config file!");
+        }
+    },
+
+    hookForChannelDelete: async function (channel) {
+        let game = await this.client.db.Game.findOne({ where: { channel: channel.id } });
+        if (game) {
+            await game.update({ channel: null });
+            console.log(
+                `Cleared deleted game channel #${channel.name} (${channel.id}) from the database.`
+            );
         }
     },
 

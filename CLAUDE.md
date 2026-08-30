@@ -46,6 +46,7 @@ Discord gateway events in `index.js` are fanned out to _every_ module by checkin
 
 - `hookForCommandInteraction`, `hookForContextMenuInteraction`, `hookForButtonInteraction` — from `Events.InteractionCreate`
 - `hookForVoiceUpdate` — from `Events.VoiceStateUpdate`
+- `hookForChannelDelete` — from `Events.ChannelDelete`
 - `hookForEventUserAdd` / `hookForEventUserRemove` / `hookForEventUserUpdate` — from `Events.GuildScheduledEventUserAdd`/`Remove`
 - `hookForEventUpdate` — from `Events.GuildScheduledEventUpdate`
 - `hookForEventStart` — from `Events.GuildScheduledEventUpdate` when status transitions into `Active`
