@@ -4,11 +4,11 @@
    https://nodejs.org/
 
 2. Set up a bot account:
-   https://discordjs.guide/preparations/setting-up-a-bot-application.html
+   https://discordjs.guide/legacy/preparations/app-setup
     - Enable "Presence Intent"
 
 3. Invite the bot to your guild:
-   https://discordjs.guide/preparations/adding-your-bot-to-servers.html
+   https://discordjs.guide/legacy/preparations/adding-your-app
    Currently Ronja.js has no multi-guild support.
 
     You will need the following permissions:
