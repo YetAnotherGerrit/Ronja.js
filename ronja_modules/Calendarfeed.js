@@ -1,7 +1,18 @@
+const { SlashCommandBuilder } = require("discord.js");
 const iCal = require("ical-generator");
 const sFftpClient = require("ssh2-sftp-client");
 
 const myICalFeed = {
+    commands: [
+        new SlashCommandBuilder()
+            .setName("ical")
+            .setDescription("Get an ical-feed of your events.")
+            .setDescriptionLocalizations({
+                de: "Erstelle einen ical-Feed für deine Events.",
+            })
+            .setDMPermission(false),
+    ],
+
     updateICalFile: async function (guild, user) {
         let scheduledEvents = await guild.scheduledEvents.fetch({
             cache: true,

@@ -71,12 +71,13 @@ to play with your friends and need to decide on what game to play.
 
 5. Extract to whatever folder you want to use.
 
-6. Set `RONJA_CLIENT_ID` and `RONJA_TOKEN` environment variables
+6. Set the `RONJA_TOKEN` environment variable
 
 7. Set `NODE_ENV` to `production`
 
-8. Run `npm deploy-commands`
+8. Run `npm start`
 
-9. Run `npm start`
+    Slash- and context menu-commands are registered with Discord automatically on
+    startup and only re-synced when their definition actually changes.
 
 <!-- https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax -->

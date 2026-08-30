@@ -1,7 +1,20 @@
-const { EmbedBuilder, Colors } = require("discord.js");
+const {
+    EmbedBuilder,
+    Colors,
+    ContextMenuCommandBuilder,
+    ApplicationCommandType,
+} = require("discord.js");
 const Sequelize = require("sequelize");
 
 const myServerprofil = {
+    commands: [
+        new ContextMenuCommandBuilder()
+            .setName("Serverprofile")
+            .setNameLocalizations({ de: "Serverprofil" })
+            .setType(ApplicationCommandType.User)
+            .setDMPermission(false),
+    ],
+
     toLocaleDateStringCountry: "de-DE",
     toLocaleDateStringFormat: {
         year: "numeric",

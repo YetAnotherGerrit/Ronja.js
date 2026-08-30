@@ -43,7 +43,7 @@ client.db = db;
 
 // When the client is ready prepare the modules
 client.once(Events.ClientReady, async () => {
-    await client.myReady();
+    await client.myReady(ronja_modules);
 
     ronja_modules.forEach((m) => {
         m.client = client;

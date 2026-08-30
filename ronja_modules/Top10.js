@@ -1,9 +1,29 @@
-const { EmbedBuilder, Colors } = require("discord.js");
+const { EmbedBuilder, Colors, SlashCommandBuilder } = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myTop10 = {
+    commands: [
+        new SlashCommandBuilder()
+            .setName("top10")
+            .setDescription("List the top 10 games by player count.")
+            .setDescriptionLocalizations({
+                de: "Zeigt die Top 10-Spiele nach Anzahl von Mitspielern.",
+            })
+            .addIntegerOption((option) =>
+                option
+                    .setName("days")
+                    .setNameLocalizations({ de: "tage" })
+                    .setDescription("Top 10 for what period?")
+                    .setDescriptionLocalizations({
+                        de: "Top 10 für welchen Zeitraum?",
+                    })
+                    .setRequired(false)
+            )
+            .setDMPermission(false),
+    ],
+
     createTop10Embed: async function (lng, pDays = 14) {
         let maxgames = 10;
 

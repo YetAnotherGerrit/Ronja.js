@@ -9,12 +9,9 @@ Ronja.js is a single-guild Discord bot (discord.js v14) for a friend group's gam
 ## Commands
 
 ```bash
-# Run the bot (reads RONJA_TOKEN, RONJA_CLIENT_ID from env / .env)
+# Run the bot (reads RONJA_TOKEN from env / .env)
+# Slash/context-menu commands are (re-)deployed to Discord automatically on startup.
 npm start
-
-# Register/update Discord slash commands (must be run after adding/changing any command
-# in deploy-commands.js — this is separate from starting the bot)
-npm run deploy-commands
 
 # Database migrations (sequelize-cli)
 npm run dev:migrate          # apply all pending migrations
@@ -41,7 +38,7 @@ Almost all bot behavior lives in `ronja_modules/*.js`, plain objects (not classe
 - `m.l(...)` — shorthand for `client.myTranslator(...)`
 - `m.cfg(name)` — shorthand for `client.myConfigGet(name)`
 
-Discord gateway events in `index.js` are fanned out to *every* module by checking for the relevant hook and calling it if present:
+Discord gateway events in `index.js` are fanned out to _every_ module by checking for the relevant hook and calling it if present:
 
 - `hookForCommandInteraction`, `hookForContextMenuInteraction`, `hookForButtonInteraction` — from `Events.InteractionCreate`
 - `hookForVoiceUpdate` — from `Events.VoiceStateUpdate`
@@ -51,7 +48,7 @@ Discord gateway events in `index.js` are fanned out to *every* module by checkin
 - `hookForStartedPlaying` — from `Events.PresenceUpdate`, after `index.js` itself upserts `Game`/`GameStatus` rows for the newly-started activity
 - `hookForCron` — not a Discord event; returns an array of `{ schedule, action }` pairs registered with `node-cron` at startup, scheduled in the configured timezone
 
-Modules dispatch on `interaction.commandName` / `customId` themselves (see the pattern in `ronja_modules/Example.js`, which is a documented template — it is excluded from most lint rules and not meant to be treated as production code). Adding a new slash/context-menu/button command requires **both**: implementing the matching `hookFor*` in a module, and adding the command definition to `deploy-commands.js`, then running `npm run deploy-commands` once.
+Modules dispatch on `interaction.commandName` / `customId` themselves (see the pattern in `ronja_modules/Example.js`, which is a documented template — it is excluded from most lint rules and not meant to be treated as production code). Adding a new slash/context-menu command requires **both**: implementing the matching `hookFor*` in a module, and adding a `discord.js` builder instance (`SlashCommandBuilder`/`ContextMenuCommandBuilder`) to that module's `commands` array — deployment then happens automatically (see below).
 
 To register a new module, add it to the `ronja_modules` array in `index.js`.
 
@@ -61,10 +58,11 @@ Extends `discord.js`'s `Client` and adds:
 
 - `myConfig` — an in-memory cache of DB-backed settings, populated from the `Setting` table on ready (`myConfigUpdate`), read via `myConfigGet(name)`/`m.cfg(name)`, written via `myConfigSet(name, value)` (which updates memory and upserts the DB row). Settings are stored and returned as strings; callers that need booleans or numbers must convert.
 - `myLanguage` / `myTranslator` (`m.l`) — loads `core/language_<code>.json` files at startup and picks a random phrase for a given `(languageCode, key)` pair. If a key is missing, it is auto-registered with itself as the only phrase and the language file is rewritten to disk — i.e. new strings must go through `l()` early so they get seeded into the language files rather than being called out separately.
+- `myDeployCommands(modules)` — called from `myReady` with the full `ronja_modules` array. Collects every module's `commands` array, hashes each command's canonical JSON (sha256 over a recursively key-sorted stringify), and compares against the `Command` table (`name`+`type` as key, storing the Discord-assigned command ID and the hash). Only commands whose hash changed (or that are new/removed) trigger an actual Discord REST call (`POST`/`PATCH`/`DELETE` on individual commands, not a bulk overwrite) — so a normal restart with no command changes makes zero REST calls to Discord's command API.
 
 ### Data layer
 
-Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-index `.js` file in that directory). Config per `NODE_ENV` is in `config/config.json`; migrations live in `migrations/` and are the source of truth for schema *and* for seeding default `Setting` rows (recent migrations add default values for module-specific settings rather than hardcoding them in module code — see the `default-values-*` migrations).
+Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-index `.js` file in that directory). Config per `NODE_ENV` is in `config/config.json`; migrations live in `migrations/` and are the source of truth for schema _and_ for seeding default `Setting` rows (recent migrations add default values for module-specific settings rather than hardcoding them in module code — see the `default-values-*` migrations). The `Command` table (`models/command.js`) tracks deployed command hashes/IDs for the deploy system above.
 
 ### Docker / deployment
 

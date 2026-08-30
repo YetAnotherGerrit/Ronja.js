@@ -1,9 +1,21 @@
-const { Client, EmbedBuilder, Colors } = require("discord.js");
+const { Client, EmbedBuilder, Colors, REST, Routes } = require("discord.js");
 const Sequelize = require("sequelize");
 
 const fs = require("node:fs");
 const path = require("node:path");
 const util = require("util");
+const crypto = require("node:crypto");
+
+function stableStringify(value) {
+    if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+    if (value && typeof value === "object") {
+        return `{${Object.keys(value)
+            .sort()
+            .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+            .join(",")}}`;
+    }
+    return JSON.stringify(value);
+}
 
 class Ronja extends Client {
     db = {};
@@ -79,8 +91,53 @@ class Ronja extends Client {
         return util.format(...params);
     }
 
-    async myReady() {
+    async myReady(modules = []) {
         await this.myConfigUpdate();
+        await this.myDeployCommands(modules);
+    }
+
+    async myDeployCommands(modules) {
+        const rest = new REST({ version: "10" }).setToken(this.token);
+        const appId = this.application.id;
+
+        const desired = modules.flatMap((m) => m.commands || []).map((c) => c.toJSON());
+        const existing = await this.db.Command.findAll();
+        const existingByKey = new Map(existing.map((c) => [`${c.name}:${c.type}`, c]));
+        const seen = new Set();
+
+        for (const json of desired) {
+            const key = `${json.name}:${json.type}`;
+            seen.add(key);
+            const hash = crypto.createHash("sha256").update(stableStringify(json)).digest("hex");
+            const row = existingByKey.get(key);
+
+            if (!row) {
+                const created = await rest.post(Routes.applicationCommands(appId), {
+                    body: json,
+                });
+                await this.db.Command.create({
+                    name: json.name,
+                    type: json.type,
+                    discordId: created.id,
+                    hash,
+                });
+                console.log(`Deployed new command: ${json.name}`);
+            } else if (row.hash !== hash) {
+                await rest.patch(Routes.applicationCommand(appId, row.discordId), {
+                    body: json,
+                });
+                await row.update({ hash });
+                console.log(`Updated command: ${json.name}`);
+            }
+        }
+
+        for (const row of existing) {
+            if (!seen.has(`${row.name}:${row.type}`)) {
+                await rest.delete(Routes.applicationCommand(appId, row.discordId));
+                await row.destroy();
+                console.log(`Removed obsolete command: ${row.name}`);
+            }
+        }
     }
 }
 

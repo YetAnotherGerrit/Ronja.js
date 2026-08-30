@@ -30,7 +30,9 @@ const myExample = {
         ];
     },
 
-    // Don't forget to also add your slash-commands to the deploy-command.js file and run it once after every change.
+    // Slash-commands and context menu-commands are deployed automatically on startup.
+    // Just declare them in this module's `commands` array (see other modules for examples)
+    // and they'll be created/updated/removed on Discord as needed.
     hookForCommandInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
         if (interaction.commandName == "ping") {
@@ -38,7 +40,6 @@ const myExample = {
         }
     },
 
-    // Don't forget to also add your context menu-commands to the deploy-command.js file and run it once after every change.
     hookForContextMenuInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
         if (interaction.commandName == "ping") {

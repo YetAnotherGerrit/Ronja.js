@@ -15,7 +15,6 @@
     "main": "index.js",
     "scripts": {
         "start": "node .",
-        "deploy-commands": "node deploy-commands.js",
         "dev:migrate": "npx sequelize-cli db:migrate",
         "dev:migrate:new": "npx sequelize-cli migration:generate --name",
         "dev:lint": "eslint .",
