@@ -181,7 +181,7 @@ const myZocken = {
                                 member: [interaction.member.id, channelMember.id],
                                 lastplayed: {
                                     [Op.gte]: DateTime.now()
-                                        .setZone(this.cfg("timeZone"))
+                                        .setZone(this.cfg("timezone"))
                                         .minus({ days: 100 })
                                         .toJSDate(),
                                 },
@@ -232,7 +232,7 @@ const myZocken = {
                 return;
             }
 
-            let startTime = DateTime.now().setZone(this.cfg("timeZone"));
+            let startTime = DateTime.now().setZone(this.cfg("timezone"));
 
             if (interaction.options.getString("time")) {
                 let regex = new RegExp(/(\d{2}):(\d{2})/);
@@ -263,7 +263,7 @@ const myZocken = {
 
                     startTime = DateTime.fromObject(
                         { hour: regexResult[1], minute: regexResult[2] },
-                        { zone: this.cfg("timeZone") }
+                        { zone: this.cfg("timezone") }
                     );
                 } else {
                     interaction.reply({

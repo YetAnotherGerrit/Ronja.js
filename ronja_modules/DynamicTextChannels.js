@@ -23,7 +23,7 @@ const myDynamicTextChannels = {
                 GameId: game.id,
                 lastplayed: {
                     [Op.gte]: DateTime.now()
-                        .setZone(this.cfg("timeZone"))
+                        .setZone(this.cfg("timezone"))
                         .minus({ days: pDays })
                         .toJSDate(),
                 },
@@ -43,7 +43,7 @@ const myDynamicTextChannels = {
             where: {
                 lastplayed: {
                     [Op.gte]: DateTime.now()
-                        .setZone(this.cfg("timeZone"))
+                        .setZone(this.cfg("timezone"))
                         .minus({ days: pDays })
                         .toJSDate(),
                 },

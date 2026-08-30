@@ -43,7 +43,7 @@ const myTop10 = {
                     where: {
                         lastplayed: {
                             [Op.gte]: DateTime.now()
-                                .setZone(this.cfg("timeZone"))
+                                .setZone(this.cfg("timezone"))
                                 .minus({ days: pDays })
                                 .toJSDate(),
                         },
