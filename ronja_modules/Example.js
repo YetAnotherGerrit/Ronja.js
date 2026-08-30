@@ -59,6 +59,11 @@ const myExample = {
         console.debug("The voice status of a user has updated!");
     },
 
+    hookForChannelDelete: async function (channel) {
+        // https://discord.js.org/#/docs/discord.js/stable/class/GuildChannel
+        console.debug("A channel has been deleted!");
+    },
+
     hookForEventUpdate: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
         console.debug("A scheduled guild event has been updated!");
