@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
-const iCal = require("ical-generator");
+const { default: iCal } = require("ical-generator");
 const sFftpClient = require("ssh2-sftp-client");
 
 const myICalFeed = {
