@@ -1,4 +1,4 @@
-const { EmbedBuilder, Colors, SlashCommandBuilder } = require("discord.js");
+const { EmbedBuilder, Colors, SlashCommandBuilder, MessageFlags } = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
@@ -90,7 +90,7 @@ const myTop10 = {
 
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName == "top10") {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             let e = await this.createTop10Embed(
                 interaction.locale,
