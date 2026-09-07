@@ -3,6 +3,7 @@ const {
     MessageFlags,
     GuildScheduledEventRecurrenceRuleFrequency,
     GuildScheduledEventRecurrenceRuleWeekday,
+    GuildScheduledEventStatus,
 } = require("discord.js");
 const { default: iCal } = require("ical-generator");
 const sFftpClient = require("ssh2-sftp-client");
@@ -122,16 +123,20 @@ const myICalFeed = {
         await myFtp.put(buff, user.id + ".ics");
     },
 
+    isIcalConfigured: function () {
+        return (
+            this.cfg("icalFtpServer") &&
+            this.cfg("icalFtpUsername") &&
+            this.cfg("icalFtpPassword") &&
+            this.cfg("icalUrl")
+        );
+    },
+
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName == "ical") {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            if (
-                this.cfg("icalFtpServer") &&
-                this.cfg("icalFtpUsername") &&
-                this.cfg("icalFtpPassword") &&
-                this.cfg("icalUrl")
-            ) {
+            if (this.isIcalConfigured()) {
                 await this.updateICalFile(interaction.guild, interaction.user);
                 interaction.editReply({
                     content: this.cfg("icalUrl") + interaction.user.id + ".ics",
@@ -148,13 +153,21 @@ const myICalFeed = {
     },
 
     hookForEventUserUpdate: async function (oGuildScheduledEvent, oUser) {
+        if (this.isIcalConfigured()) this.updateICalFile(oGuildScheduledEvent.guild, oUser);
+    },
+
+    hookForEventUpdate: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         if (
-            this.cfg("icalFtpServer") &&
-            this.cfg("icalFtpUsername") &&
-            this.cfg("icalFtpPassword") &&
-            this.cfg("icalUrl")
-        )
-            this.updateICalFile(oGuildScheduledEvent.guild, oUser);
+            newGuildScheduledEvent.status == GuildScheduledEventStatus.Canceled &&
+            this.isIcalConfigured()
+        ) {
+            let eventSubcribers = await newGuildScheduledEvent.fetchSubscribers();
+            await Promise.all(
+                eventSubcribers.map((eventSubcriber) =>
+                    this.updateICalFile(newGuildScheduledEvent.guild, eventSubcriber.user)
+                )
+            );
+        }
     },
 };
 
