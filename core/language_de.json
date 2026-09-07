@@ -101,5 +101,6 @@
     ],
     "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.": [
         "Konnte #%s nicht zurück in die aktive Kategorie #%s verschieben: Sie hat Discords Limit von 50 Kanälen erreicht."
-    ]
+    ],
+    "Settings": ["Einstellungen"]
 }
