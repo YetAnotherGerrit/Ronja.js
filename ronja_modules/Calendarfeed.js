@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const iCal = require("ical-generator");
 const sFftpClient = require("ssh2-sftp-client");
 
@@ -70,7 +70,7 @@ const myICalFeed = {
 
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName == "ical") {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             if (
                 this.cfg("icalFtpServer") &&

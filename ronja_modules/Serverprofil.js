@@ -3,6 +3,7 @@ const {
     Colors,
     ContextMenuCommandBuilder,
     ApplicationCommandType,
+    MessageFlags,
 } = require("discord.js");
 const Sequelize = require("sequelize");
 
@@ -24,7 +25,7 @@ const myServerprofil = {
 
     hookForContextMenuInteraction: async function (interaction) {
         if (interaction.commandName == "Serverprofile") {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             let m = await interaction.guild.members.fetch(interaction.options.getUser("user").id);
 

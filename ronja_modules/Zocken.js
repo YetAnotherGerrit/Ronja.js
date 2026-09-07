@@ -10,6 +10,7 @@ const {
     GuildScheduledEventStatus,
     ChannelType,
     SlashCommandBuilder,
+    MessageFlags,
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
@@ -227,7 +228,7 @@ const myZocken = {
                         interaction.locale,
                         "When you choose a day, you'll also need to specify a time!"
                     ),
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
                 return;
             }
@@ -246,7 +247,7 @@ const myZocken = {
                                 interaction.locale,
                                 "Please choose a valid time: HH:MM. Hour needs to be within 0-23."
                             ),
-                            ephemeral: true,
+                            flags: MessageFlags.Ephemeral,
                         });
                         return;
                     }
@@ -256,7 +257,7 @@ const myZocken = {
                                 interaction.locale,
                                 "Please choose a valid time: HH:MM. Minute needs to be within 0-59."
                             ),
-                            ephemeral: true,
+                            flags: MessageFlags.Ephemeral,
                         });
                         return;
                     }
@@ -271,7 +272,7 @@ const myZocken = {
                             interaction.locale,
                             "Please choose a valid time: HH:MM (24-hour time format)."
                         ),
-                        ephemeral: true,
+                        flags: MessageFlags.Ephemeral,
                     });
                     return;
                 }
@@ -291,7 +292,7 @@ const myZocken = {
                         interaction.locale,
                         "The chosen time and day need to be at least 5 minutes in the future."
                     ),
-                    ephemeral: true,
+                    flags: MessageFlags.Ephemeral,
                 });
                 return;
             }
@@ -490,7 +491,7 @@ const myZocken = {
                             ])
                     ),
                 ],
-                ephemeral: true,
+                flags: MessageFlags.Ephemeral,
             });
 
             let collector = myReply.createMessageComponentCollector({

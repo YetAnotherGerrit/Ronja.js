@@ -1,4 +1,10 @@
-const { EmbedBuilder, Colors, SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
+const {
+    EmbedBuilder,
+    Colors,
+    SlashCommandBuilder,
+    PermissionFlagsBits,
+    MessageFlags,
+} = require("discord.js");
 
 const myExample = {
     commands: [
@@ -15,7 +21,7 @@ const myExample = {
 
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName == "setlang") {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
             interaction.guild
                 .setPreferredLocale(interaction.locale)

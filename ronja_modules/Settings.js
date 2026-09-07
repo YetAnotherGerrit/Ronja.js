@@ -1,4 +1,10 @@
-const { SlashCommandBuilder, EmbedBuilder, Colors, PermissionFlagsBits } = require("discord.js");
+const {
+    SlashCommandBuilder,
+    EmbedBuilder,
+    Colors,
+    PermissionFlagsBits,
+    MessageFlags,
+} = require("discord.js");
 
 const SENSITIVE_NAME = /password|token|secret/i;
 const SNOWFLAKE = /^\d{17,20}$/;
@@ -67,7 +73,7 @@ const mySettings = {
     },
 
     handleList: async function (interaction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         let settings = await this.client.db.Setting.findAll({ order: [["name", "ASC"]] });
 
@@ -92,7 +98,7 @@ const mySettings = {
     },
 
     handleSet: async function (interaction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         let name = interaction.options.getString("name");
         let value = interaction.options.getString("value");
