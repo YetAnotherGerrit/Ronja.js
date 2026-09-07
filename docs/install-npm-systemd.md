@@ -72,3 +72,23 @@ Note that the unit's `ExecStart` runs `node index.js` directly rather than
 `npm start`: `npm` wraps the process in its own shell, which can delay or
 swallow the `SIGTERM` systemd sends on stop/restart, so a direct `node` call
 shuts down more reliably.
+
+## Update
+
+1. Stop Ronja: `systemctl stop ronja` if you're running it as a service,
+   otherwise stop the `npm start` process.
+
+2. Update your files to the new release, the same way you got them initially
+   (`git pull`, or download and extract a new release ZIP over the old
+   files).
+
+3. Run `npm install` to update dependencies.
+
+4. Run `npm run migrate` to apply any new database migrations. This is safe
+   to run even if there are none pending.
+
+5. Start Ronja again: `systemctl start ronja`, or `npm start`.
+
+Check the release notes for breaking changes before updating across major
+versions — e.g. see [Upgrading from 1.x to 2.0](upgrading-1.x-to-2.0.md),
+which needs extra steps beyond the ones above.

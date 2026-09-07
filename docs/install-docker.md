@@ -49,3 +49,18 @@ Intent, are not used by Ronja and don't need to be enabled.
     bot. Slash- and context-menu-commands are registered with Discord
     automatically on startup and only re-synced when their definition
     actually changes.
+
+## Update
+
+1. Update your files to the new release, the same way you got them initially
+   (`git pull`, or download and extract a new release ZIP over the old
+   files).
+
+2. Run `docker compose up --build`
+
+    This rebuilds the image with the new version, re-runs the database
+    migrations, and restarts the bot.
+
+Check the release notes for breaking changes before updating across major
+versions — e.g. see [Upgrading from 1.x to 2.0](upgrading-1.x-to-2.0.md),
+which needs extra steps beyond the ones above.
