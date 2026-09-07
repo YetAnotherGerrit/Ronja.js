@@ -25,14 +25,14 @@
         "dev:format:check": "prettier . --check"
     },
     "dependencies": {
-        "discord.js": "^14.8.0",
-        "dotenv": "^16.5.0",
-        "ical-generator": "^3.6.1",
+        "discord.js": "^14.27.0",
+        "dotenv": "^17.4.2",
+        "ical-generator": "^11.1.1",
         "luxon": "^3.3.0",
-        "node-cron": "^3.0.2",
-        "sequelize": "^6.28.2",
-        "sqlite3": "^5.1.4",
-        "ssh2-sftp-client": "^9.1.0"
+        "node-cron": "^4.6.0",
+        "sequelize": "^6.37.8",
+        "sqlite3": "^6.0.1",
+        "ssh2-sftp-client": "^12.1.1"
     },
     "devDependencies": {
         "@eslint/js": "^10.0.1",
