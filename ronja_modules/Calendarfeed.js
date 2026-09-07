@@ -94,6 +94,7 @@ const myICalFeed = {
                     eventSubcribers.map(async (eventSubcriber) => {
                         if (eventSubcriber.user.id == user.id) {
                             iCalendar.createEvent({
+                                id: guildEvent.id,
                                 start: guildEvent.scheduledStartAt,
                                 end: guildEvent.scheduledEndAt,
                                 summary: "Discord: " + guildEvent.name,
