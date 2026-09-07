@@ -1,6 +1,69 @@
-const { SlashCommandBuilder, MessageFlags } = require("discord.js");
+const {
+    SlashCommandBuilder,
+    MessageFlags,
+    GuildScheduledEventRecurrenceRuleFrequency,
+    GuildScheduledEventRecurrenceRuleWeekday,
+} = require("discord.js");
 const { default: iCal } = require("ical-generator");
 const sFftpClient = require("ssh2-sftp-client");
+
+const RRULE_FREQUENCY_BY_DISCORD_FREQUENCY = {
+    [GuildScheduledEventRecurrenceRuleFrequency.Yearly]: "YEARLY",
+    [GuildScheduledEventRecurrenceRuleFrequency.Monthly]: "MONTHLY",
+    [GuildScheduledEventRecurrenceRuleFrequency.Weekly]: "WEEKLY",
+    [GuildScheduledEventRecurrenceRuleFrequency.Daily]: "DAILY",
+};
+
+const RRULE_WEEKDAY_BY_DISCORD_WEEKDAY = {
+    [GuildScheduledEventRecurrenceRuleWeekday.Monday]: "MO",
+    [GuildScheduledEventRecurrenceRuleWeekday.Tuesday]: "TU",
+    [GuildScheduledEventRecurrenceRuleWeekday.Wednesday]: "WE",
+    [GuildScheduledEventRecurrenceRuleWeekday.Thursday]: "TH",
+    [GuildScheduledEventRecurrenceRuleWeekday.Friday]: "FR",
+    [GuildScheduledEventRecurrenceRuleWeekday.Saturday]: "SA",
+    [GuildScheduledEventRecurrenceRuleWeekday.Sunday]: "SU",
+};
+
+function buildICalRecurrenceRule(discordRecurrenceRule) {
+    if (!discordRecurrenceRule) {
+        return undefined;
+    }
+
+    const ruleParts = [
+        "FREQ=" + RRULE_FREQUENCY_BY_DISCORD_FREQUENCY[discordRecurrenceRule.frequency],
+    ];
+
+    if (discordRecurrenceRule.interval > 1) {
+        ruleParts.push("INTERVAL=" + discordRecurrenceRule.interval);
+    }
+
+    const byDay = [
+        ...(discordRecurrenceRule.byWeekday ?? []).map(
+            (weekday) => RRULE_WEEKDAY_BY_DISCORD_WEEKDAY[weekday]
+        ),
+        ...(discordRecurrenceRule.byNWeekday ?? []).map(
+            (nWeekday) => nWeekday.n + RRULE_WEEKDAY_BY_DISCORD_WEEKDAY[nWeekday.day]
+        ),
+    ];
+    if (byDay.length > 0) {
+        ruleParts.push("BYDAY=" + byDay.join(","));
+    }
+
+    if (discordRecurrenceRule.byMonth?.length > 0) {
+        ruleParts.push("BYMONTH=" + discordRecurrenceRule.byMonth.join(","));
+    }
+    if (discordRecurrenceRule.byMonthDay?.length > 0) {
+        ruleParts.push("BYMONTHDAY=" + discordRecurrenceRule.byMonthDay.join(","));
+    }
+    if (discordRecurrenceRule.byYearDay?.length > 0) {
+        ruleParts.push("BYYEARDAY=" + discordRecurrenceRule.byYearDay.join(","));
+    }
+    if (discordRecurrenceRule.count) {
+        ruleParts.push("COUNT=" + discordRecurrenceRule.count);
+    }
+
+    return ruleParts.join(";");
+}
 
 const myICalFeed = {
     commands: [
@@ -24,16 +87,7 @@ const myICalFeed = {
         await Promise.all(
             scheduledEvents.map(async (guildEvent) => {
                 let eventSubcribers = await guildEvent.fetchSubscribers();
-                let myRepeating;
-                let myReg = /\[w(\d+)\]/;
-                let myRegResult = myReg.exec(guildEvent.description);
-
-                if (myRegResult) {
-                    myRepeating = {
-                        freq: "WEEKLY",
-                        interval: myRegResult[1],
-                    };
-                }
+                let myRepeating = buildICalRecurrenceRule(guildEvent.recurrenceRule);
 
                 await Promise.all(
                     eventSubcribers.map(async (eventSubcriber) => {
