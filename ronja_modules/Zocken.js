@@ -305,6 +305,10 @@ const myZocken = {
                 ),
             });
 
+            let channelGame = await this.client.db.Game.findOne({
+                where: { channel: interaction.channel.id },
+            });
+
             let newEvent = await interaction.guild.scheduledEvents.create({
                 name:
                     interaction.options.getString("title") ||
@@ -317,19 +321,35 @@ const myZocken = {
                 scheduledEndTime: startTime.plus({ hours: 1 }).toJSDate(), // Optional, but not for EXTERNAL
                 privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
                 entityType: GuildScheduledEventEntityType.External,
-                description: await this.createZockenTextForEvent(
-                    interaction.locale,
-                    null,
-                    interaction.member.id
-                ), // Optional
+                description: channelGame
+                    ? this.l(
+                          interaction.locale,
+                          "%s wants to play %s. Who wants to join?",
+                          interaction.member.displayName,
+                          channelGame.name
+                      )
+                    : await this.createZockenTextForEvent(
+                          interaction.locale,
+                          null,
+                          interaction.member.id
+                      ), // Optional
                 entityMetadata: {
-                    location: this.l(
-                        interaction.locale,
-                        "#%s via /lfg by %s (%s)",
-                        interaction.channel.name,
-                        interaction.member.displayName,
-                        interaction.member.id
-                    ),
+                    location: channelGame
+                        ? this.l(
+                              interaction.locale,
+                              "#%s via /lfg for %s by %s (%s)",
+                              interaction.channel.name,
+                              channelGame.name,
+                              interaction.member.displayName,
+                              interaction.member.id
+                          )
+                        : this.l(
+                              interaction.locale,
+                              "#%s via /lfg by %s (%s)",
+                              interaction.channel.name,
+                              interaction.member.displayName,
+                              interaction.member.id
+                          ),
                 }, // Optional, but not for EXTERNAL,
             });
 
@@ -538,6 +558,9 @@ const myZocken = {
     },
 
     hookForEventUserUpdate: async function (guildScheduledEvent, user) {
+        if (guildScheduledEvent.entityMetadata.location.includes("/lfg for ")) {
+            return;
+        }
         if (guildScheduledEvent.entityMetadata.location.includes("/lfg")) {
             let guildDescription = await this.createZockenTextForEvent(
                 guildScheduledEvent.guild.preferredLocale,

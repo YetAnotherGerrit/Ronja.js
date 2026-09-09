@@ -48,6 +48,8 @@
         "Vergiss nicht, auf den \"Interessiert\"-Button zu klicken!"
     ],
     "#%s via /lfg by %s (%s)": ["#%s mit /lfg von %s (%s)"],
+    "#%s via /lfg for %s by %s (%s)": ["#%s mit /lfg für %s von %s (%s)"],
+    "%s wants to play %s. Who wants to join?": ["%s möchte %s spielen. Wer will mitmachen?"],
     "Hey%s and everyone else! (%s)": ["Hey%s und alle anderen! (%s)"],
     "The ical-settings for this server are incomplete.": [
         "Die ical-Einstellungen für diesen Server sind unvollständig."
