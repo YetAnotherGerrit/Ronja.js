@@ -24,6 +24,9 @@ want to play with your friends and need to decide on what game to play.
   configuration for your guild.
 - Available in English, German, Spanish, French, Italian, Portuguese, and
   Esperanto.
+- /setlang command to set the guild's preferred language via Discord's API.
+  Useful since Discord's own UI for this setting is only available to
+  Community servers.
 
 ### Not-Features
 
