@@ -23,7 +23,7 @@ want to play with your friends and need to decide on what game to play.
 - /settings command with an interactive menu to view and change Ronja's
   configuration for your guild.
 - Available in English, German, Spanish, French, Italian, Portuguese, and
-  Esperanto (set via /setlang).
+  Esperanto.
 
 ### Not-Features
 
