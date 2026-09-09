@@ -105,11 +105,17 @@
         "Impossible de ramener #%s dans la catégorie active #%s : elle a atteint la limite de 50 salons de Discord."
     ],
     "Settings": ["Paramètres"],
-    "Unknown setting %s. Use /settings list to see all available settings.": [
-        "Paramètre inconnu %s. Utilise /settings list pour voir tous les paramètres disponibles."
-    ],
-    "%s expects either true or false.": ["%s attend true ou false."],
     "%s expects a whole number.": ["%s attend un nombre entier."],
-    "%s expects a channel/category ID.": ["%s attend un ID de salon/catégorie."],
-    "Updated %s to %s.": ["%s a été mis à jour vers %s."]
+    "Current value": ["Valeur actuelle"],
+    "Choose a channel...": ["Choisis un salon..."],
+    "Back": ["Retour"],
+    "Update a setting...": ["Mettre à jour un paramètre..."],
+    "True": ["Vrai"],
+    "False": ["Faux"],
+    "Edit": ["Modifier"],
+    "New value": ["Nouvelle valeur"],
+    "Update %s": ["Mettre à jour %s"],
+    "Choose a category to view its settings.": [
+        "Choisis une catégorie pour voir ses paramètres."
+    ]
 }

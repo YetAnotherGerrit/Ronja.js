@@ -105,11 +105,17 @@
         "Konnte #%s nicht zurück in die aktive Kategorie #%s verschieben: Sie hat Discords Limit von 50 Kanälen erreicht."
     ],
     "Settings": ["Einstellungen"],
-    "Unknown setting %s. Use /settings list to see all available settings.": [
-        "Unbekannte Einstellung %s. Nutze /settings list, um alle verfügbaren Einstellungen zu sehen."
-    ],
-    "%s expects either true or false.": ["%s erwartet entweder true oder false."],
     "%s expects a whole number.": ["%s erwartet eine ganze Zahl."],
-    "%s expects a channel/category ID.": ["%s erwartet eine Kanal-/Kategorie-ID."],
-    "Updated %s to %s.": ["%s wurde auf %s aktualisiert."]
+    "Current value": ["Aktueller Wert"],
+    "Choose a channel...": ["Kanal auswählen..."],
+    "Back": ["Zurück"],
+    "Update a setting...": ["Einstellung ändern..."],
+    "True": ["Wahr"],
+    "False": ["Falsch"],
+    "Edit": ["Bearbeiten"],
+    "New value": ["Neuer Wert"],
+    "Update %s": ["%s aktualisieren"],
+    "Choose a category to view its settings.": [
+        "Wähle eine Kategorie, um ihre Einstellungen zu sehen."
+    ]
 }

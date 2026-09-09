@@ -4,23 +4,68 @@ const {
     Colors,
     PermissionFlagsBits,
     MessageFlags,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    StringSelectMenuBuilder,
+    ChannelSelectMenuBuilder,
+    ChannelType,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
 } = require("discord.js");
 
 const SENSITIVE_NAME = /password|token|secret/i;
-const SNOWFLAKE = /^\d{17,20}$/;
+const MAX_PICKER_OPTIONS = 25;
 
 function isSensitive(name) {
     return SENSITIVE_NAME.test(name);
 }
 
-function formatValue(setting) {
+async function resolveChannelName(guild, id) {
+    if (!id) return null;
+    let channel =
+        guild.channels.cache.get(id) ?? (await guild.channels.fetch(id).catch(() => null));
+    return channel ? channel.name : null;
+}
+
+// Plain text (no markdown) — safe for select menu option descriptions, which render literally.
+async function plainValue(guild, setting) {
     if (setting.value === null || setting.value === undefined || setting.value === "") {
-        return "*(not set)*";
+        return "(not set)";
     }
-    return isSensitive(setting.name) ? "||••••••••||" : `\`${setting.value}\``;
+    if (isSensitive(setting.name)) {
+        return "••••••••";
+    }
+    if (setting.type === "discordChannel" || setting.type === "discordCategory") {
+        let name = await resolveChannelName(guild, setting.value);
+        return name ? `#${name}` : `${setting.value} (not found)`;
+    }
+    return setting.value;
+}
+
+function embedValue(plain, setting) {
+    if (plain === "(not set)") return "*(not set)*";
+    if (isSensitive(setting.name)) return "||••••••••||";
+    return `\`${plain}\``;
+}
+
+function groupByCategory(settings) {
+    let categories = new Map();
+    for (let setting of settings) {
+        let category = setting.category || "General";
+        if (!categories.has(category)) categories.set(category, []);
+        categories.get(category).push(setting);
+    }
+    for (let group of categories.values()) {
+        group.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return categories;
 }
 
 const mySettings = {
+    collectorTimeout: 14 * 60 * 1000,
+
     commands: [
         new SlashCommandBuilder()
             .setName("settings")
@@ -29,127 +74,281 @@ const mySettings = {
                 de: "Zeige oder ändere Ronjas Server-Konfiguration.",
             })
             .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-            .setDMPermission(false)
-            .addSubcommand((sub) =>
-                sub
-                    .setName("list")
-                    .setDescription("List all available settings and their current values.")
-                    .setDescriptionLocalizations({
-                        de: "Liste alle verfügbaren Einstellungen und ihre aktuellen Werte auf.",
-                    })
-            )
-            .addSubcommand((sub) =>
-                sub
-                    .setName("set")
-                    .setDescription("Update a setting.")
-                    .setDescriptionLocalizations({ de: "Ändere eine Einstellung." })
-                    .addStringOption((option) =>
-                        option
-                            .setName("name")
-                            .setDescription("The setting to update (see /settings list).")
-                            .setDescriptionLocalizations({
-                                de: "Die zu ändernde Einstellung (siehe /settings list).",
-                            })
-                            .setRequired(true)
-                    )
-                    .addStringOption((option) =>
-                        option
-                            .setName("value")
-                            .setDescription("The new value.")
-                            .setDescriptionLocalizations({ de: "Der neue Wert." })
-                            .setRequired(true)
-                    )
-            ),
+            .setDMPermission(false),
     ],
 
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName !== "settings") return;
-
-        if (interaction.options.getSubcommand() === "list") {
-            await this.handleList(interaction);
-        } else if (interaction.options.getSubcommand() === "set") {
-            await this.handleSet(interaction);
-        }
+        await this.handleSettings(interaction);
     },
 
-    handleList: async function (interaction) {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    handleSettings: async function (interaction) {
+        let settings = await this.client.db.Setting.findAll({
+            order: [
+                ["category", "ASC"],
+                ["name", "ASC"],
+            ],
+        });
+        let settingsByName = new Map(settings.map((s) => [s.name, s]));
+        let categories = groupByCategory(settings);
 
-        let settings = await this.client.db.Setting.findAll({ order: [["name", "ASC"]] });
+        let view = this.renderHome(categories, interaction.locale);
+        let message = await interaction.reply({ ...view, flags: MessageFlags.Ephemeral });
 
+        let collector = message.createMessageComponentCollector({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: this.collectorTimeout,
+        });
+
+        collector.on("collect", async (i) => {
+            try {
+                let [action, category, name, value] = i.customId.split(":");
+
+                switch (action) {
+                    case "settingsHome":
+                        await i.update(this.renderHome(categories, i.locale));
+                        break;
+
+                    case "settingsCategory":
+                        await i.update(
+                            await this.renderList(
+                                i.guild,
+                                category,
+                                categories.get(category),
+                                i.locale
+                            )
+                        );
+                        break;
+
+                    case "settingsPick": {
+                        let setting = settingsByName.get(i.values[0]);
+                        await i.update(
+                            await this.renderDetail(i.guild, category, setting, i.locale)
+                        );
+                        break;
+                    }
+
+                    case "settingsBool": {
+                        let setting = settingsByName.get(name);
+                        this.client.myConfigSet(name, value);
+                        setting.value = value;
+                        await i.update(
+                            await this.renderDetail(i.guild, category, setting, i.locale)
+                        );
+                        break;
+                    }
+
+                    case "settingsChannel": {
+                        let setting = settingsByName.get(name);
+                        this.client.myConfigSet(name, i.values[0]);
+                        setting.value = i.values[0];
+                        await i.update(
+                            await this.renderDetail(i.guild, category, setting, i.locale)
+                        );
+                        break;
+                    }
+
+                    case "settingsEdit":
+                        await this.handleEdit(i, category, settingsByName.get(name));
+                        break;
+                }
+            } catch (err) {
+                console.error("Error handling /settings interaction:", err);
+            }
+        });
+
+        collector.on("end", async () => {
+            try {
+                await interaction.editReply({ components: [] });
+            } catch {
+                // The ephemeral message may already be gone (e.g. dismissed by the admin).
+            }
+        });
+    },
+
+    handleEdit: async function (interaction, category, setting) {
+        let modalId = `settingsModal:${category}:${setting.name}`;
+
+        let input = new TextInputBuilder()
+            .setCustomId("settingsValue")
+            .setLabel(this.l(interaction.locale, "New value"))
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
+
+        if (!isSensitive(setting.name) && setting.value) {
+            input.setValue(setting.value);
+        }
+
+        await interaction.showModal(
+            new ModalBuilder()
+                .setCustomId(modalId)
+                .setTitle(this.l(interaction.locale, "Update %s", setting.name).slice(0, 45))
+                .addComponents(new ActionRowBuilder().addComponents(input))
+        );
+
+        let submitted;
+        try {
+            submitted = await interaction.awaitModalSubmit({
+                time: this.collectorTimeout,
+                filter: (m) => m.customId === modalId && m.user.id === interaction.user.id,
+            });
+        } catch {
+            return;
+        }
+
+        let value = submitted.fields.getTextInputValue("settingsValue");
+
+        if (setting.type === "integer" && !/^-?\d+$/.test(value)) {
+            await submitted.reply({
+                content: this.l(interaction.locale, "%s expects a whole number.", setting.name),
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
+
+        this.client.myConfigSet(setting.name, value);
+        setting.value = value;
+
+        await submitted.update(
+            await this.renderDetail(submitted.guild, category, setting, submitted.locale)
+        );
+    },
+
+    renderHome: function (categories, locale) {
+        let buttons = [...categories.keys()]
+            .sort((a, b) => a.localeCompare(b))
+            .map((category) =>
+                new ButtonBuilder()
+                    .setCustomId(`settingsCategory:${category}`)
+                    .setLabel(category)
+                    .setStyle(ButtonStyle.Primary)
+            );
+
+        let rows = [];
+        for (let i = 0; i < buttons.length; i += 5) {
+            rows.push(new ActionRowBuilder().addComponents(buttons.slice(i, i + 5)));
+        }
+
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setTitle(this.l(locale, "Settings"))
+                    .setDescription(this.l(locale, "Choose a category to view its settings.")),
+            ],
+            components: rows,
+        };
+    },
+
+    renderList: async function (guild, category, settings, locale) {
         let embeds = [];
         for (let i = 0; i < settings.length; i += 25) {
-            let e = new EmbedBuilder().setColor(Colors.Blue);
-            if (i === 0) e.setTitle(this.l(interaction.locale, "Settings"));
+            let fields = [];
+            for (let setting of settings.slice(i, i + 25)) {
+                let plain = await plainValue(guild, setting);
+                let value = embedValue(plain, setting);
+                fields.push({
+                    name: setting.name,
+                    value: setting.description ? `${value} — ${setting.description}` : value,
+                });
+            }
 
-            settings.slice(i, i + 25).forEach((setting) => {
-                e.addFields([
-                    {
-                        name: setting.name,
-                        value: `${formatValue(setting)} — ${setting.description || ""}`,
-                    },
-                ]);
-            });
-
+            let e = new EmbedBuilder().setColor(Colors.Blue).addFields(fields);
+            if (i === 0) e.setTitle(category);
             embeds.push(e);
         }
 
-        interaction.editReply({ embeds });
+        let picked = settings.slice(0, MAX_PICKER_OPTIONS);
+        if (settings.length > MAX_PICKER_OPTIONS) {
+            console.warn(
+                `/settings category "${category}" has ${settings.length} settings; only the first ${MAX_PICKER_OPTIONS} fit in the picker.`
+            );
+        }
+
+        let options = picked.map((setting) => ({
+            label: setting.name,
+            description: (setting.description || "").slice(0, 100),
+            value: setting.name,
+        }));
+
+        return {
+            embeds,
+            components: [
+                new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId(`settingsPick:${category}`)
+                        .setPlaceholder(this.l(locale, "Update a setting..."))
+                        .addOptions(options)
+                ),
+                new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId("settingsHome")
+                        .setLabel(this.l(locale, "Back"))
+                        .setStyle(ButtonStyle.Secondary)
+                ),
+            ],
+        };
     },
 
-    handleSet: async function (interaction) {
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    renderDetail: async function (guild, category, setting, locale) {
+        let plain = await plainValue(guild, setting);
 
-        let name = interaction.options.getString("name");
-        let value = interaction.options.getString("value");
+        let embed = new EmbedBuilder()
+            .setColor(Colors.Blue)
+            .setTitle(setting.name)
+            .setDescription(setting.description || "")
+            .addFields([
+                { name: this.l(locale, "Current value"), value: embedValue(plain, setting) },
+            ]);
 
-        let setting = await this.client.db.Setting.findOne({ where: { name } });
+        let backButton = new ButtonBuilder()
+            .setCustomId(`settingsCategory:${category}`)
+            .setLabel(this.l(locale, "Back"))
+            .setStyle(ButtonStyle.Secondary);
 
-        if (!setting) {
-            interaction.editReply({
-                content: this.l(
-                    interaction.locale,
-                    "Unknown setting %s. Use /settings list to see all available settings.",
-                    name
+        let rows;
+
+        if (setting.type === "boolean") {
+            rows = [
+                new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`settingsBool:${category}:${setting.name}:true`)
+                        .setLabel(this.l(locale, "True"))
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId(`settingsBool:${category}:${setting.name}:false`)
+                        .setLabel(this.l(locale, "False"))
+                        .setStyle(ButtonStyle.Danger),
+                    backButton
                 ),
-            });
-            return;
+            ];
+        } else if (setting.type === "discordChannel" || setting.type === "discordCategory") {
+            rows = [
+                new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId(`settingsChannel:${category}:${setting.name}`)
+                        .setPlaceholder(this.l(locale, "Choose a channel..."))
+                        .setChannelTypes(
+                            setting.type === "discordCategory"
+                                ? [ChannelType.GuildCategory]
+                                : [ChannelType.GuildText]
+                        )
+                ),
+                new ActionRowBuilder().addComponents(backButton),
+            ];
+        } else {
+            rows = [
+                new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`settingsEdit:${category}:${setting.name}`)
+                        .setLabel(this.l(locale, "Edit"))
+                        .setStyle(ButtonStyle.Primary),
+                    backButton
+                ),
+            ];
         }
 
-        if (setting.type === "boolean" && value !== "true" && value !== "false") {
-            interaction.editReply({
-                content: this.l(interaction.locale, "%s expects either true or false.", name),
-            });
-            return;
-        }
-
-        if (setting.type === "integer" && !/^-?\d+$/.test(value)) {
-            interaction.editReply({
-                content: this.l(interaction.locale, "%s expects a whole number.", name),
-            });
-            return;
-        }
-
-        if (
-            (setting.type === "discordChannel" || setting.type === "discordCategory") &&
-            !SNOWFLAKE.test(value)
-        ) {
-            interaction.editReply({
-                content: this.l(interaction.locale, "%s expects a channel/category ID.", name),
-            });
-            return;
-        }
-
-        this.client.myConfigSet(name, value);
-
-        interaction.editReply({
-            content: this.l(
-                interaction.locale,
-                "Updated %s to %s.",
-                name,
-                isSensitive(name) ? "||••••••••||" : value
-            ),
-        });
+        return { embeds: [embed], components: rows };
     },
 };
 

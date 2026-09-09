@@ -105,11 +105,17 @@
         "Impossibile riportare #%s nella categoria attiva #%s: ha raggiunto il limite di 50 canali di Discord."
     ],
     "Settings": ["Impostazioni"],
-    "Unknown setting %s. Use /settings list to see all available settings.": [
-        "Impostazione sconosciuta %s. Usa /settings list per vedere tutte le impostazioni disponibili."
-    ],
-    "%s expects either true or false.": ["%s si aspetta true o false."],
     "%s expects a whole number.": ["%s si aspetta un numero intero."],
-    "%s expects a channel/category ID.": ["%s si aspetta un ID di canale/categoria."],
-    "Updated %s to %s.": ["%s è stato aggiornato a %s."]
+    "Current value": ["Valore attuale"],
+    "Choose a channel...": ["Scegli un canale..."],
+    "Back": ["Indietro"],
+    "Update a setting...": ["Aggiorna un'impostazione..."],
+    "True": ["Vero"],
+    "False": ["Falso"],
+    "Edit": ["Modifica"],
+    "New value": ["Nuovo valore"],
+    "Update %s": ["Aggiorna %s"],
+    "Choose a category to view its settings.": [
+        "Scegli una categoria per vedere le sue impostazioni."
+    ]
 }
