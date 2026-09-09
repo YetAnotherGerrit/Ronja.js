@@ -20,6 +20,13 @@ want to play with your friends and need to decide on what game to play.
     - Also weekly, monthly and yearly top 10.
 - /ical command to get an ical-feed for the events you attend.
 - Serverprofile command to show common games for a specific member.
+- /settings command with an interactive menu to view and change Ronja's
+  configuration for your guild.
+- Available in English, German, Spanish, French, Italian, Portuguese, and
+  Esperanto.
+- /setlang command to set the guild's preferred language via Discord's API.
+  Useful since Discord's own UI for this setting is only available to
+  Community servers.
 
 ### Not-Features
 
