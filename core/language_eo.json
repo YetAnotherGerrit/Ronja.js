@@ -101,11 +101,15 @@
         "Ne eblis removi #%s al la aktiva kategorio #%s: ĝi atingis la limon de 50 kanaloj de Discord."
     ],
     "Settings": ["Agordoj"],
-    "Unknown setting %s. Use /settings list to see all available settings.": [
-        "Nekonata agordo %s. Uzu /settings list por vidi ĉiujn disponeblajn agordojn."
-    ],
-    "%s expects either true or false.": ["%s atendas true aŭ false."],
     "%s expects a whole number.": ["%s atendas entjeron."],
-    "%s expects a channel/category ID.": ["%s atendas kanalan/kategorian ID-on."],
-    "Updated %s to %s.": ["%s estis ĝisdatigita al %s."]
+    "Current value": ["Nuna valoro"],
+    "Choose a channel...": ["Elektu kanalon..."],
+    "Back": ["Reen"],
+    "Update a setting...": ["Ĝisdatigi agordon..."],
+    "True": ["Vera"],
+    "False": ["Malvera"],
+    "Edit": ["Redakti"],
+    "New value": ["Nova valoro"],
+    "Update %s": ["Ĝisdatigi %s"],
+    "Choose a category to view its settings.": ["Elektu kategorion por vidi ĝiajn agordojn."]
 }
