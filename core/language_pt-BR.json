@@ -1,0 +1,115 @@
+{
+    "Loading...": ["Carregando..."],
+    "Please be patient.": ["Só mais um pouco de paciência."],
+    "A new text channel was created": ["Um novo canal de texto foi criado"],
+    "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
+        "Alguns de vocês jogaram um jogo novo recentemente. Para te dar um canal para conversar sobre isso, #%s foi criado.\n\nOs outros serão adicionados a esse canal assim que eu os vir jogando o mesmo jogo."
+    ],
+    "A text channel was re-activated": ["Um canal de texto foi reativado"],
+    "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
+        "Alguns de vocês redescobriram %s recentemente. #%s foi reativado a partir do arquivo.\n\nOs outros serão adicionados a esse canal assim que eu os vir jogando."
+    ],
+    " active players": [" jogadores ativos"],
+    ", %s in the queue": [", %s na fila"],
+    "Profile of %s": ["Perfil de %s"],
+    "%s is on this discord server since %s.": ["%s está neste servidor do discord desde %s."],
+    "Common games": ["Jogos em comum"],
+    "Most popular games!": ["Os jogos mais populares!"],
+    "Most played games of the last %d days:": ["Os jogos mais jogados nos últimos %d dias:"],
+    "Top 10 by player count:": ["Top 10 por número de jogadores:"],
+    "The most played games of last week:": ["Os jogos mais jogados da semana passada:"],
+    "The most played games of last month:": ["Os jogos mais jogados do mês passado:"],
+    "Happy new year! These have been the highlights of last year:": [
+        "Feliz ano novo! Estes foram os destaques do ano passado:"
+    ],
+    "Nobody is participating yet. Don't forget to click that \"Interested\"-Button!": [
+        "Ainda ninguém está participando. Não esqueça de clicar no botão \"Interessado\"!"
+    ],
+    "When you choose a day, you'll also need to specify a time!": [
+        "Se você escolher um dia, também vai precisar informar um horário!"
+    ],
+    "Please choose a valid time: HH:MM. Hour needs to be within 0-23.": [
+        "Escolha um horário válido: HH:MM. A hora precisa estar entre 0 e 23."
+    ],
+    "Please choose a valid time: HH:MM. Minute needs to be within 0-59.": [
+        "Escolha um horário válido: HH:MM. Os minutos precisam estar entre 0 e 59."
+    ],
+    "Please choose a valid time: HH:MM (24-hour time format).": [
+        "Escolha um horário válido: HH:MM (formato 24 horas)."
+    ],
+    "The chosen time and day need to be at least 5 minutes in the future.": [
+        "O horário e o dia escolhidos precisam estar pelo menos 5 minutos no futuro."
+    ],
+    "%s would like to game! An event will be created...": [
+        "%s quer jogar! Um evento será criado..."
+    ],
+    "%s's gaming session": ["Sessão de jogo de %s"],
+    "Don't forget to click that \"Interested\"-Button!": [
+        "Não esqueça de clicar no botão \"Interessado\"!"
+    ],
+    "#%s via /lfg by %s (%s)": ["#%s via /lfg de %s (%s)"],
+    "#%s via /lfg for %s by %s (%s)": ["#%s via /lfg para %s de %s (%s)"],
+    "%s wants to play %s. Who wants to join?": ["%s quer jogar %s. Quem quer participar?"],
+    "Hey%s and everyone else! (%s)": ["Ei%s e todo mundo! (%s)"],
+    "The ical-settings for this server are incomplete.": [
+        "As configurações de ical deste servidor estão incompletas."
+    ],
+    "%s found %d more to game with.": ["%s encontrou mais %d pessoas para jogar."],
+    "Unfortunately, nobody was found. Maybe next time.": [
+        "Infelizmente, ninguém foi encontrado. Talvez da próxima vez."
+    ],
+    "%s wants hang out later, click \"Interested\" to join.": [
+        "%s quer se encontrar mais tarde, clique em \"Interessado\" para participar."
+    ],
+    "Ping me also offline.": ["Me marque mesmo offline."],
+    "Ping me only, when I am online.": ["Me marque só quando eu estiver online."],
+    "Please, never ping me.": ["Por favor, nunca me marque."],
+    "You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
+        "Você é notificado se ambos jogaram pelo menos um jogo em comum nos últimos 100 dias. Se você não quiser receber essas notificações, pode mudar isso agora.\n\nSua configuração atual:\n> %s"
+    ],
+    "Notifications...": ["Notificações..."],
+    "Also notify myself that someone wants to game, even when I am offline.": [
+        "Me notifique também quando alguém quiser jogar, mesmo se eu estiver offline."
+    ],
+    " (Default)": [" (Padrão)"],
+    "Notify myself only when I am also online in Discord.": [
+        "Me notifique só quando eu também estiver online no Discord."
+    ],
+    "I am not interested in this kind of gaming requests.": [
+        "Não tenho interesse nesse tipo de convite para jogar."
+    ],
+    "Succesful!": ["Sucesso!"],
+    "Your settings have been saved.": ["Suas configurações foram salvas."],
+    "Expired!": ["Expirado!"],
+    "No changes have been saved.": ["Nenhuma alteração foi salva."],
+    "Why is my name (not) in here?": ["Por que meu nome (não) está aqui?"],
+    "Open the voice channel's text channel to see what games the members can play...": [
+        "Abra o canal de texto do canal de voz para ver quais jogos os membros podem jogar..."
+    ],
+    "This games are played by the channel members:\n": [
+        "Estes são os jogos que os membros do canal jogam:\n"
+    ],
+    "No games have been played.": ["Nenhum jogo foi jogado."],
+    "Failed!": ["Falhou!"],
+    "Could not be safed. Maybe the bot is missing some permissions?": [
+        "Não foi possível salvar. Talvez faltem algumas permissões ao bot?"
+    ],
+    "Language of the guild was changed to %s.": ["O idioma do servidor foi alterado para %s."],
+    "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
+        "Não foi possível criar um canal de texto para %s: a categoria #%s atingiu o limite de 50 canais do Discord."
+    ],
+    "Could not move #%s to the archive category #%s: it has reached Discord's limit of 50 channels.": [
+        "Não foi possível mover #%s para a categoria de arquivo #%s: ela atingiu o limite de 50 canais do Discord."
+    ],
+    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.": [
+        "Não foi possível mover #%s de volta para a categoria ativa #%s: ela atingiu o limite de 50 canais do Discord."
+    ],
+    "Settings": ["Configurações"],
+    "Unknown setting %s. Use /settings list to see all available settings.": [
+        "Configuração desconhecida %s. Use /settings list para ver todas as configurações disponíveis."
+    ],
+    "%s expects either true or false.": ["%s espera true ou false."],
+    "%s expects a whole number.": ["%s espera um número inteiro."],
+    "%s expects a channel/category ID.": ["%s espera um ID de canal/categoria."],
+    "Updated %s to %s.": ["%s foi atualizado para %s."]
+}

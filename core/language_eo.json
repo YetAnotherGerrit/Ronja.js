@@ -1,0 +1,111 @@
+{
+    "Loading...": ["Ŝargante..."],
+    "Please be patient.": ["Bonvolu esti pacienca."],
+    "A new text channel was created": ["Nova teksta kanalo estis kreita"],
+    "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
+        "Kelkaj el vi ludis novan ludon lastatempe. Por doni al vi kanalon por paroli pri ĝi, #%s estis kreita.\n\nAliaj estos aldonitaj al tiu kanalo tuj kiam mi vidos ilin ludantajn la saman ludon."
+    ],
+    "A text channel was re-activated": ["Teksta kanalo estis reaktivigita"],
+    "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
+        "Kelkaj el vi remalkovris %s lastatempe. #%s estis reaktivigita el la arkivo.\n\nAliaj estos aldonitaj al tiu kanalo tuj kiam mi vidos ilin ludantajn ĝin."
+    ],
+    " active players": [" aktivaj ludantoj"],
+    ", %s in the queue": [", %s en atendovico"],
+    "Profile of %s": ["Profilo de %s"],
+    "%s is on this discord server since %s.": ["%s estas sur ĉi tiu discord-servilo ekde %s."],
+    "Common games": ["Komunaj ludoj"],
+    "Most popular games!": ["La plej popularaj ludoj!"],
+    "Most played games of the last %d days:": ["La plej ludataj ludoj de la lastaj %d tagoj:"],
+    "Top 10 by player count:": ["Supraj 10 laŭ nombro de ludantoj:"],
+    "The most played games of last week:": ["La plej ludataj ludoj de la pasinta semajno:"],
+    "The most played games of last month:": ["La plej ludataj ludoj de la pasinta monato:"],
+    "Happy new year! These have been the highlights of last year:": [
+        "Feliĉan novan jaron! Jen la elstaraĵoj de la pasinta jaro:"
+    ],
+    "Nobody is participating yet. Don't forget to click that \"Interested\"-Button!": [
+        "Neniu ankoraŭ partoprenas. Ne forgesu alklaki la butonon \"Interesita\"!"
+    ],
+    "When you choose a day, you'll also need to specify a time!": [
+        "Se vi elektas tagon, vi ankaŭ devas specifi horon!"
+    ],
+    "Please choose a valid time: HH:MM. Hour needs to be within 0-23.": [
+        "Bonvolu elekti validan horon: HH:MM. La horo devas esti inter 0 kaj 23."
+    ],
+    "Please choose a valid time: HH:MM. Minute needs to be within 0-59.": [
+        "Bonvolu elekti validan horon: HH:MM. La minuto devas esti inter 0 kaj 59."
+    ],
+    "Please choose a valid time: HH:MM (24-hour time format).": [
+        "Bonvolu elekti validan horon: HH:MM (24-hora formato)."
+    ],
+    "The chosen time and day need to be at least 5 minutes in the future.": [
+        "La elektita horo kaj tago devas esti almenaŭ 5 minutojn en la estonteco."
+    ],
+    "%s would like to game! An event will be created...": ["%s volas ludi! Evento estos kreita..."],
+    "%s's gaming session": ["Ludsesio de %s"],
+    "Don't forget to click that \"Interested\"-Button!": [
+        "Ne forgesu alklaki la butonon \"Interesita\"!"
+    ],
+    "#%s via /lfg by %s (%s)": ["#%s per /lfg de %s (%s)"],
+    "#%s via /lfg for %s by %s (%s)": ["#%s per /lfg por %s de %s (%s)"],
+    "%s wants to play %s. Who wants to join?": ["%s volas ludi %s. Kiu volas aliĝi?"],
+    "Hey%s and everyone else! (%s)": ["Hej%s kaj ĉiuj aliaj! (%s)"],
+    "The ical-settings for this server are incomplete.": [
+        "La ical-agordoj por ĉi tiu servilo estas nekompletaj."
+    ],
+    "%s found %d more to game with.": ["%s trovis %d pliajn kunludantojn."],
+    "Unfortunately, nobody was found. Maybe next time.": [
+        "Bedaŭrinde, neniu estis trovita. Eble la venontan fojon."
+    ],
+    "%s wants hang out later, click \"Interested\" to join.": [
+        "%s volas kuniĝi poste, alklaku \"Interesita\" por aliĝi."
+    ],
+    "Ping me also offline.": ["Menciu min ankaŭ eksterrete."],
+    "Ping me only, when I am online.": ["Menciu min nur kiam mi estas enrete."],
+    "Please, never ping me.": ["Bonvolu neniam mencii min."],
+    "You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
+        "Vi estas sciigata, se vi ambaŭ ludis almenaŭ unu komunan ludon dum la lastaj 100 tagoj. Se vi ne volas ricevi tiujn sciigojn, vi povas ŝanĝi tion nun.\n\nVia nuna agordo:\n> %s"
+    ],
+    "Notifications...": ["Sciigoj..."],
+    "Also notify myself that someone wants to game, even when I am offline.": [
+        "Sciigu min ankaŭ kiam iu volas ludi, eĉ kiam mi estas eksterreta."
+    ],
+    " (Default)": [" (Defaŭlta)"],
+    "Notify myself only when I am also online in Discord.": [
+        "Sciigu min nur kiam mi ankaŭ estas enreta en Discord."
+    ],
+    "I am not interested in this kind of gaming requests.": ["Mi ne interesiĝas pri tia ludpeto."],
+    "Succesful!": ["Sukcese!"],
+    "Your settings have been saved.": ["Viaj agordoj estis konservitaj."],
+    "Expired!": ["Eksvalidiĝis!"],
+    "No changes have been saved.": ["Neniu ŝanĝo estis konservita."],
+    "Why is my name (not) in here?": ["Kial mia nomo (ne) estas ĉi tie?"],
+    "Open the voice channel's text channel to see what games the members can play...": [
+        "Malfermu la tekstan kanalon de la voĉa kanalo por vidi kiujn ludojn la membroj povas ludi..."
+    ],
+    "This games are played by the channel members:\n": [
+        "Ĉi tiuj ludoj estas ludataj de la kanalaj membroj:\n"
+    ],
+    "No games have been played.": ["Neniu ludo estis ludita."],
+    "Failed!": ["Malsukcesis!"],
+    "Could not be safed. Maybe the bot is missing some permissions?": [
+        "Ne eblis konservi. Eble la roboto malhavas kelkajn permesojn?"
+    ],
+    "Language of the guild was changed to %s.": ["La lingvo de la servilo estis ŝanĝita al %s."],
+    "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
+        "Ne eblis krei tekstan kanalon por %s: la kategorio #%s atingis la limon de 50 kanaloj de Discord."
+    ],
+    "Could not move #%s to the archive category #%s: it has reached Discord's limit of 50 channels.": [
+        "Ne eblis movi #%s al la arkiva kategorio #%s: ĝi atingis la limon de 50 kanaloj de Discord."
+    ],
+    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.": [
+        "Ne eblis removi #%s al la aktiva kategorio #%s: ĝi atingis la limon de 50 kanaloj de Discord."
+    ],
+    "Settings": ["Agordoj"],
+    "Unknown setting %s. Use /settings list to see all available settings.": [
+        "Nekonata agordo %s. Uzu /settings list por vidi ĉiujn disponeblajn agordojn."
+    ],
+    "%s expects either true or false.": ["%s atendas true aŭ false."],
+    "%s expects a whole number.": ["%s atendas entjeron."],
+    "%s expects a channel/category ID.": ["%s atendas kanalan/kategorian ID-on."],
+    "Updated %s to %s.": ["%s estis ĝisdatigita al %s."]
+}
