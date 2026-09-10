@@ -152,6 +152,12 @@ const myDynamicTextChannels = {
     checkActiveTextChannel: async function (channel) {
         if (this.cfg("dtcArchivedGamesCategory")) {
             if (!(await this.hasGameBeenPlayedForChannel(channel, this.cfg("dtcDaysToArchive")))) {
+                if (!channel.lastMessageId) {
+                    console.log(`Deleted empty #${channel.name} instead of archiving it.`);
+                    await channel.delete();
+                    return;
+                }
+
                 let dtcArchivedGamesCategory = await this.client.channels.fetch(
                     this.cfg("dtcArchivedGamesCategory")
                 );
@@ -264,9 +270,11 @@ const myDynamicTextChannels = {
     },
 
     hookForChannelDelete: async function (channel) {
-        let game = await this.client.db.Game.findOne({ where: { channel: channel.id } });
-        if (game) {
-            await game.update({ channel: null });
+        let [affectedRows] = await this.client.db.Game.update(
+            { channel: null },
+            { where: { channel: channel.id } }
+        );
+        if (affectedRows > 0) {
             console.log(
                 `Cleared deleted game channel #${channel.name} (${channel.id}) from the database.`
             );
