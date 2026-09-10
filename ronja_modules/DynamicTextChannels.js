@@ -270,9 +270,11 @@ const myDynamicTextChannels = {
     },
 
     hookForChannelDelete: async function (channel) {
-        let game = await this.client.db.Game.findOne({ where: { channel: channel.id } });
-        if (game) {
-            await game.update({ channel: null });
+        let [affectedRows] = await this.client.db.Game.update(
+            { channel: null },
+            { where: { channel: channel.id } }
+        );
+        if (affectedRows > 0) {
             console.log(
                 `Cleared deleted game channel #${channel.name} (${channel.id}) from the database.`
             );
