@@ -40,9 +40,9 @@
 	// `gh auth setup-git` only edits ~/.gitconfig's credential.helper line, which isn't
 	// itself persisted, so it's re-applied on every container start; it's a no-op if
 	// already configured, and `|| true` keeps a not-yet-authenticated first run (before
-	// `gh auth login` has ever been run against the volume above) from blocking yarn
+	// `gh auth login` has ever been run against the volume above) from blocking npm
 	// install.
-	"postCreateCommand": "sudo chown -R node:node /home/node/.claude /home/node/.config/gh && (gh auth setup-git || true) && yarn install"
+	"postCreateCommand": "sudo chown -R node:node /home/node/.claude /home/node/.config/gh && (gh auth setup-git || true) && npm install"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
