@@ -152,6 +152,12 @@ const myDynamicTextChannels = {
     checkActiveTextChannel: async function (channel) {
         if (this.cfg("dtcArchivedGamesCategory")) {
             if (!(await this.hasGameBeenPlayedForChannel(channel, this.cfg("dtcDaysToArchive")))) {
+                if (!channel.lastMessageId) {
+                    console.log(`Deleted empty #${channel.name} instead of archiving it.`);
+                    await channel.delete();
+                    return;
+                }
+
                 let dtcArchivedGamesCategory = await this.client.channels.fetch(
                     this.cfg("dtcArchivedGamesCategory")
                 );
