@@ -461,7 +461,7 @@ const myZocken = {
                     break;
             }
 
-            let myReply = await interaction.reply({
+            await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
                         .setColor(Colors.Blue)
@@ -513,6 +513,8 @@ const myZocken = {
                 ],
                 flags: MessageFlags.Ephemeral,
             });
+
+            let myReply = await interaction.fetchReply();
 
             let collector = myReply.createMessageComponentCollector({
                 time: this.collectorTimeout,
