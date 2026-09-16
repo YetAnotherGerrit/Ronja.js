@@ -69,6 +69,14 @@ class Ronja extends Client {
         });
     }
 
+    // GeForce NOW reports every streamed game under the fixed activity name
+    // "GeForce NOW", with the actual game title in `details` instead. Resolve
+    // that back to the real game name, or null if it can't be determined.
+    myResolveGameName(activity) {
+        if (activity.name === "GeForce NOW") return activity.details || null;
+        return activity.name;
+    }
+
     async myNotifyOwner(guild, message) {
         console.error(message);
         try {

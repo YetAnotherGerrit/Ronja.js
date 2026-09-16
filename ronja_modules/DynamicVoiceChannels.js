@@ -16,8 +16,10 @@ const myDynamicVoiceChannels = {
                 ch.members.map(async (m) => {
                     if (m.presence)
                         m.presence.activities.forEach((a) => {
-                            if (a.type === ActivityType.Playing)
-                                Spiele[a.name] = (Spiele[a.name] || 0) + 1;
+                            if (a.type === ActivityType.Playing) {
+                                const gameName = this.client.myResolveGameName(a);
+                                if (gameName) Spiele[gameName] = (Spiele[gameName] || 0) + 1;
+                            }
                         });
                 })
             );
