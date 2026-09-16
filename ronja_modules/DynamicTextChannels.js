@@ -106,13 +106,13 @@ const myDynamicTextChannels = {
         }
     },
 
-    createTextChannel: async function (game, newActivity, newPresence) {
+    createTextChannel: async function (game, newPresence) {
         if (this.cfg("dtcGamesCategory")) {
             let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
             let newChannel;
             try {
                 newChannel = await dtcGamesCategory.children.create({
-                    name: newActivity.name,
+                    name: game.name,
                     type: ChannelType.GuildText,
                     permissionOverwrites: await this.defaultOverrides(newPresence.guild),
                 });
@@ -123,7 +123,7 @@ const myDynamicTextChannels = {
                     this.l(
                         newPresence.guild.preferredLocale,
                         "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.",
-                        newActivity.name,
+                        game.name,
                         dtcGamesCategory.name
                     )
                 );
@@ -261,7 +261,7 @@ const myDynamicTextChannels = {
                         this.cfg("dtcDaysRelevantForCreation")
                     )) >= this.cfg("dtcMinimumPlayersForCreation")
                 ) {
-                    this.createTextChannel(game, newActivity, newPresence);
+                    this.createTextChannel(game, newPresence);
                 }
             }
         } else {

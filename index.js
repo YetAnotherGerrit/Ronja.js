@@ -174,19 +174,22 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
 
     newPresence.activities.forEach(async (newActivity) => {
         if (newActivity.type === ActivityType.Playing) {
+            const gameName = client.myResolveGameName(newActivity);
+            // Activity can't be attributed to a real game (e.g. a GeForce NOW
+            // session without a discoverable game title) - ignore it entirely.
+            if (!gameName) return;
+
             // Check if user started playing....
             let justStarted = true;
             // If the activity is already in the old state, they did not start.
             oldPresence?.activities.forEach((oldActivity) => {
-                if (oldActivity.name === newActivity.name) justStarted = false;
+                if (client.myResolveGameName(oldActivity) === gameName) justStarted = false;
             });
 
             if (justStarted) {
-                console.log(
-                    `${newPresence.member.displayName} starts playing ${newActivity.name}.`
-                );
+                console.log(`${newPresence.member.displayName} starts playing ${gameName}.`);
                 let [game, gameCreated] = await client.db.Game.findOrCreate({
-                    where: { name: newActivity.name },
+                    where: { name: gameName },
                 });
 
                 let [gamePlayed, gamePlayedCreated] = await client.db.GameStatus.findOrCreate({
