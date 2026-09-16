@@ -43,6 +43,9 @@
     "%s would like to game! An event will be created...": [
         "%s quer jogar! Um evento vai ser criado..."
     ],
+    "Something went wrong while creating the event. Please try again.": [
+        "Algo correu mal ao criar o evento. Por favor, tenta novamente."
+    ],
     "%s's gaming session": ["Sessão de jogo de %s"],
     "Don't forget to click that \"Interested\"-Button!": [
         "Não te esqueças de clicar no botão \"Interessado\"!"

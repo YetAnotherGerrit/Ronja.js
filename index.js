@@ -42,6 +42,16 @@ const client = new Ronja({
 // Add database to bot client
 client.db = db;
 
+// Invoke a module hook without letting it crash the whole bot: a throw or a
+// rejected promise from one hook must not take down every other module/guild.
+function invokeHook(hookCall) {
+    try {
+        Promise.resolve(hookCall()).catch((err) => console.error(err));
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 // When the client is ready prepare the modules
 client.once(Events.ClientReady, async () => {
     await client.myReady(ronja_modules);
@@ -61,7 +71,7 @@ client.once(Events.ClientReady, async () => {
             m.hookForCron().forEach((mc) => {
                 if (!cron.validate(mc.schedule))
                     console.error(`ERROR: ${mc.schedule} is not a valid cron pattern.`);
-                cron.schedule(mc.schedule, mc.action, {
+                cron.schedule(mc.schedule, () => invokeHook(mc.action), {
                     timezone: client.myConfig.timezone,
                 });
             });
@@ -79,19 +89,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (interaction.isCommand()) {
         ronja_modules.forEach((m) => {
-            if (m.hookForCommandInteraction) m.hookForCommandInteraction(interaction);
+            if (m.hookForCommandInteraction)
+                invokeHook(() => m.hookForCommandInteraction(interaction));
         });
     }
 
     if (interaction.isContextMenuCommand()) {
         ronja_modules.forEach((m) => {
-            if (m.hookForContextMenuInteraction) m.hookForContextMenuInteraction(interaction);
+            if (m.hookForContextMenuInteraction)
+                invokeHook(() => m.hookForContextMenuInteraction(interaction));
         });
     }
 
     if (interaction.isButton()) {
         ronja_modules.forEach((m) => {
-            if (m.hookForButtonInteraction) m.hookForButtonInteraction(interaction);
+            if (m.hookForButtonInteraction)
+                invokeHook(() => m.hookForButtonInteraction(interaction));
         });
     }
 });
@@ -99,30 +112,34 @@ client.on(Events.InteractionCreate, async (interaction) => {
 // Listen for VoiceStateUpdate and forward to all modules
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
     ronja_modules.forEach((m) => {
-        if (m.hookForVoiceUpdate) m.hookForVoiceUpdate(oldState, newState);
+        if (m.hookForVoiceUpdate) invokeHook(() => m.hookForVoiceUpdate(oldState, newState));
     });
 });
 
 // Listen for ChannelDelete and forward to all modules
 client.on(Events.ChannelDelete, async (channel) => {
     ronja_modules.forEach((m) => {
-        if (m.hookForChannelDelete) m.hookForChannelDelete(channel);
+        if (m.hookForChannelDelete) invokeHook(() => m.hookForChannelDelete(channel));
     });
 });
 
 // Listen for GuildScheduledEventUserAdd and forward to all modules
 client.on(Events.GuildScheduledEventUserAdd, async (oGuildScheduledEvent, oUser) => {
     ronja_modules.forEach((m) => {
-        if (m.hookForEventUserAdd) m.hookForEventUserAdd(oGuildScheduledEvent, oUser);
-        if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
+        if (m.hookForEventUserAdd)
+            invokeHook(() => m.hookForEventUserAdd(oGuildScheduledEvent, oUser));
+        if (m.hookForEventUserUpdate)
+            invokeHook(() => m.hookForEventUserUpdate(oGuildScheduledEvent, oUser));
     });
 });
 
 // Listen for GuildScheduledEventUserRemove and forward to all modules
 client.on(Events.GuildScheduledEventUserRemove, async (oGuildScheduledEvent, oUser) => {
     ronja_modules.forEach((m) => {
-        if (m.hookForEventUserRemove) m.hookForEventUserRemove(oGuildScheduledEvent, oUser);
-        if (m.hookForEventUserUpdate) m.hookForEventUserUpdate(oGuildScheduledEvent, oUser);
+        if (m.hookForEventUserRemove)
+            invokeHook(() => m.hookForEventUserRemove(oGuildScheduledEvent, oUser));
+        if (m.hookForEventUserUpdate)
+            invokeHook(() => m.hookForEventUserUpdate(oGuildScheduledEvent, oUser));
     });
 });
 
@@ -132,7 +149,9 @@ client.on(
     async (oldGuildScheduledEvent, newGuildScheduledEvent) => {
         ronja_modules.forEach((m) => {
             if (m.hookForEventUpdate)
-                m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent);
+                invokeHook(() =>
+                    m.hookForEventUpdate(oldGuildScheduledEvent, newGuildScheduledEvent)
+                );
         });
 
         if (
@@ -141,7 +160,9 @@ client.on(
         ) {
             ronja_modules.forEach((m) => {
                 if (m.hookForEventStart)
-                    m.hookForEventStart(oldGuildScheduledEvent, newGuildScheduledEvent);
+                    invokeHook(() =>
+                        m.hookForEventStart(oldGuildScheduledEvent, newGuildScheduledEvent)
+                    );
             });
         }
     }
@@ -184,7 +205,9 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
 
                 ronja_modules.forEach((m) => {
                     if (m.hookForStartedPlaying)
-                        m.hookForStartedPlaying(oldPresence, newPresence, newActivity, game);
+                        invokeHook(() =>
+                            m.hookForStartedPlaying(oldPresence, newPresence, newActivity, game)
+                        );
                 });
             }
         }

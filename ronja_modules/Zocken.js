@@ -83,6 +83,10 @@ const myZocken = {
 
     collectorTimeout: 14 * 60 * 1000,
     dbVoiceStatus: {},
+    // A zero-width marker appended to the location of game-specific /lfg events, so they can be
+    // told apart later regardless of guild locale: the translated location text (e.g. "for"/"für"/
+    // "para"/...) isn't a reliable signal, since every language translates it differently.
+    gameSpecificMarker: "​",
 
     createZockenTextForEvent: async function (lng, guildEvent, guildEventCreatorId) {
         let eventMembers = [];
@@ -224,10 +228,16 @@ const myZocken = {
         if (interaction.commandName == "lfg") {
             if (interaction.options.getString("day") && !interaction.options.getString("time")) {
                 interaction.reply({
-                    content: this.l(
-                        interaction.locale,
-                        "When you choose a day, you'll also need to specify a time!"
-                    ),
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(
+                                this.l(
+                                    interaction.locale,
+                                    "When you choose a day, you'll also need to specify a time!"
+                                )
+                            ),
+                    ],
                     flags: MessageFlags.Ephemeral,
                 });
                 return;
@@ -243,20 +253,32 @@ const myZocken = {
                 if (regexResult) {
                     if (regexResult[1] < 0 || regexResult[1] > 23) {
                         interaction.reply({
-                            content: this.l(
-                                interaction.locale,
-                                "Please choose a valid time: HH:MM. Hour needs to be within 0-23."
-                            ),
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Red)
+                                    .setDescription(
+                                        this.l(
+                                            interaction.locale,
+                                            "Please choose a valid time: HH:MM. Hour needs to be within 0-23."
+                                        )
+                                    ),
+                            ],
                             flags: MessageFlags.Ephemeral,
                         });
                         return;
                     }
                     if (regexResult[2] < 0 || regexResult[2] > 59) {
                         interaction.reply({
-                            content: this.l(
-                                interaction.locale,
-                                "Please choose a valid time: HH:MM. Minute needs to be within 0-59."
-                            ),
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Red)
+                                    .setDescription(
+                                        this.l(
+                                            interaction.locale,
+                                            "Please choose a valid time: HH:MM. Minute needs to be within 0-59."
+                                        )
+                                    ),
+                            ],
                             flags: MessageFlags.Ephemeral,
                         });
                         return;
@@ -268,10 +290,16 @@ const myZocken = {
                     );
                 } else {
                     interaction.reply({
-                        content: this.l(
-                            interaction.locale,
-                            "Please choose a valid time: HH:MM (24-hour time format)."
-                        ),
+                        embeds: [
+                            new EmbedBuilder()
+                                .setColor(Colors.Red)
+                                .setDescription(
+                                    this.l(
+                                        interaction.locale,
+                                        "Please choose a valid time: HH:MM (24-hour time format)."
+                                    )
+                                ),
+                        ],
                         flags: MessageFlags.Ephemeral,
                     });
                     return;
@@ -288,80 +316,113 @@ const myZocken = {
 
             if (startTime.diff(DateTime.now(), "minutes").minutes < 5) {
                 interaction.reply({
-                    content: this.l(
-                        interaction.locale,
-                        "The chosen time and day need to be at least 5 minutes in the future."
-                    ),
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(
+                                this.l(
+                                    interaction.locale,
+                                    "The chosen time and day need to be at least 5 minutes in the future."
+                                )
+                            ),
+                    ],
                     flags: MessageFlags.Ephemeral,
                 });
                 return;
             }
 
             let myReply = await interaction.reply({
-                content: this.l(
-                    interaction.locale,
-                    "%s would like to game! An event will be created...",
-                    interaction.member.displayName
-                ),
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Blue)
+                        .setDescription(
+                            this.l(
+                                interaction.locale,
+                                "%s would like to game! An event will be created...",
+                                interaction.member.displayName
+                            )
+                        ),
+                ],
             });
 
             let channelGame = await this.client.db.Game.findOne({
                 where: { channel: interaction.channel.id },
             });
 
-            let newEvent = await interaction.guild.scheduledEvents.create({
-                name:
-                    interaction.options.getString("title") ||
-                    this.l(
-                        interaction.locale,
-                        "%s's gaming session",
-                        interaction.member.displayName
-                    ),
-                scheduledStartTime: startTime.toJSDate(),
-                scheduledEndTime: startTime.plus({ hours: 1 }).toJSDate(), // Optional, but not for EXTERNAL
-                privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
-                entityType: GuildScheduledEventEntityType.External,
-                description: channelGame
-                    ? this.l(
-                          interaction.locale,
-                          "%s wants to play %s. Who wants to join?",
-                          interaction.member.displayName,
-                          channelGame.name
-                      )
-                    : await this.createZockenTextForEvent(
-                          interaction.locale,
-                          null,
-                          interaction.member.id
-                      ), // Optional
-                entityMetadata: {
-                    location: channelGame
+            let newEvent;
+            try {
+                newEvent = await interaction.guild.scheduledEvents.create({
+                    name:
+                        interaction.options.getString("title") ||
+                        this.l(
+                            interaction.locale,
+                            "%s's gaming session",
+                            interaction.member.displayName
+                        ),
+                    scheduledStartTime: startTime.toJSDate(),
+                    scheduledEndTime: startTime.plus({ hours: 1 }).toJSDate(), // Optional, but not for EXTERNAL
+                    privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+                    entityType: GuildScheduledEventEntityType.External,
+                    description: channelGame
                         ? this.l(
                               interaction.locale,
-                              "#%s via /lfg for %s by %s (%s)",
-                              interaction.channel.name,
-                              channelGame.name,
+                              "%s wants to play %s. Who wants to join?",
                               interaction.member.displayName,
-                              interaction.member.id
+                              channelGame.name
                           )
-                        : this.l(
+                        : await this.createZockenTextForEvent(
                               interaction.locale,
-                              "#%s via /lfg by %s (%s)",
-                              interaction.channel.name,
-                              interaction.member.displayName,
+                              null,
                               interaction.member.id
-                          ),
-                }, // Optional, but not for EXTERNAL,
-            });
+                          ), // Optional
+                    entityMetadata: {
+                        location: channelGame
+                            ? this.l(
+                                  interaction.locale,
+                                  "#%s via /lfg for %s by %s (%s)",
+                                  interaction.channel.name,
+                                  channelGame.name,
+                                  interaction.member.displayName,
+                                  interaction.member.id
+                              ) + this.gameSpecificMarker
+                            : this.l(
+                                  interaction.locale,
+                                  "#%s via /lfg by %s (%s)",
+                                  interaction.channel.name,
+                                  interaction.member.displayName,
+                                  interaction.member.id
+                              ),
+                    }, // Optional, but not for EXTERNAL,
+                });
+            } catch (err) {
+                console.error(err);
+                interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(
+                                this.l(
+                                    interaction.locale,
+                                    "Something went wrong while creating the event. Please try again."
+                                )
+                            ),
+                    ],
+                });
+                return;
+            }
 
             let channelMemberPing = await this.createChannelMemberPing(interaction);
 
             interaction.editReply({
+                // The event URL must stay in a plain message, not an embed: Discord does not
+                // render the event link preview correctly when it's inside embed content.
                 content: this.l(
                     interaction.locale,
                     "Hey%s and everyone else! (%s)",
                     channelMemberPing,
                     newEvent.url
                 ),
+                embeds: [],
                 components: [
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
@@ -560,7 +621,7 @@ const myZocken = {
     },
 
     hookForEventUserUpdate: async function (guildScheduledEvent, user) {
-        if (guildScheduledEvent.entityMetadata.location.includes("/lfg for ")) {
+        if (guildScheduledEvent.entityMetadata.location.includes(this.gameSpecificMarker)) {
             return;
         }
         if (guildScheduledEvent.entityMetadata.location.includes("/lfg")) {

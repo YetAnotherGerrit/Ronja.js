@@ -43,6 +43,9 @@
     "%s would like to game! An event will be created...": [
         "%s veut jouer ! Un événement va être créé..."
     ],
+    "Something went wrong while creating the event. Please try again.": [
+        "Un problème est survenu lors de la création de l'événement. Merci de réessayer."
+    ],
     "%s's gaming session": ["Session de jeu de %s"],
     "Don't forget to click that \"Interested\"-Button!": [
         "N'oublie pas de cliquer sur le bouton \"Intéressé(e)\" !"
@@ -115,7 +118,5 @@
     "Edit": ["Modifier"],
     "New value": ["Nouvelle valeur"],
     "Update %s": ["Mettre à jour %s"],
-    "Choose a category to view its settings.": [
-        "Choisis une catégorie pour voir ses paramètres."
-    ]
+    "Choose a category to view its settings.": ["Choisis une catégorie pour voir ses paramètres."]
 }
