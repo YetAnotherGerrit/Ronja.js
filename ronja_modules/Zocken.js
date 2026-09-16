@@ -422,6 +422,7 @@ const myZocken = {
                     channelMemberPing,
                     newEvent.url
                 ),
+                embeds: [],
                 components: [
                     new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
