@@ -120,5 +120,13 @@
     "Update %s": ["Atualizar %s"],
     "Choose a category to view its settings.": [
         "Escolhe uma categoria para veres as suas configurações."
-    ]
+    ],
+    "Release date": ["Data de lançamento"],
+    "Platforms": ["Plataformas"],
+    "Rating": ["Classificação"],
+    "IGDB is not configured on this server.": ["O IGDB não está configurado neste servidor."],
+    "Could not reach IGDB right now, please try again later.": [
+        "Não foi possível contactar o IGDB neste momento, tenta novamente mais tarde."
+    ],
+    "No game found on IGDB for \"%s\".": ["Nenhum jogo encontrado no IGDB para \"%s\"."]
 }

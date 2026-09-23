@@ -114,5 +114,13 @@
     "Edit": ["Redakti"],
     "New value": ["Nova valoro"],
     "Update %s": ["Ĝisdatigi %s"],
-    "Choose a category to view its settings.": ["Elektu kategorion por vidi ĝiajn agordojn."]
+    "Choose a category to view its settings.": ["Elektu kategorion por vidi ĝiajn agordojn."],
+    "Release date": ["Eldondato"],
+    "Platforms": ["Platformoj"],
+    "Rating": ["Takso"],
+    "IGDB is not configured on this server.": ["IGDB ne estas agordita sur ĉi tiu servilo."],
+    "Could not reach IGDB right now, please try again later.": [
+        "IGDB ne estis atingebla nun, bonvolu reprovi poste."
+    ],
+    "No game found on IGDB for \"%s\".": ["Neniu ludo trovita sur IGDB por \"%s\"."]
 }

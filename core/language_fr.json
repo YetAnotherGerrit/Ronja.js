@@ -118,5 +118,13 @@
     "Edit": ["Modifier"],
     "New value": ["Nouvelle valeur"],
     "Update %s": ["Mettre à jour %s"],
-    "Choose a category to view its settings.": ["Choisis une catégorie pour voir ses paramètres."]
+    "Choose a category to view its settings.": ["Choisis une catégorie pour voir ses paramètres."],
+    "Release date": ["Date de sortie"],
+    "Platforms": ["Plateformes"],
+    "Rating": ["Note"],
+    "IGDB is not configured on this server.": ["IGDB n'est pas configuré sur ce serveur."],
+    "Could not reach IGDB right now, please try again later.": [
+        "Impossible de contacter IGDB pour le moment, veuillez réessayer plus tard."
+    ],
+    "No game found on IGDB for \"%s\".": ["Aucun jeu trouvé sur IGDB pour « %s »."]
 }

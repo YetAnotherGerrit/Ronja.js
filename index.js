@@ -23,6 +23,7 @@ const ronja_modules = [];
 ronja_modules.push(require("./ronja_modules/Calendarfeed.js"));
 ronja_modules.push(require("./ronja_modules/DynamicTextChannels.js"));
 ronja_modules.push(require("./ronja_modules/DynamicVoiceChannels.js"));
+ronja_modules.push(require("./ronja_modules/IGDB.js"));
 ronja_modules.push(require("./ronja_modules/Serverprofil.js"));
 ronja_modules.push(require("./ronja_modules/SetLanguage.js"));
 ronja_modules.push(require("./ronja_modules/Settings.js"));
@@ -187,10 +188,23 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
             });
 
             if (justStarted) {
-                console.log(`${newPresence.member.displayName} starts playing ${gameName}.`);
-                let [game, gameCreated] = await client.db.Game.findOrCreate({
-                    where: { name: gameName },
-                });
+                // At most one module is expected to implement hookForResolveGame (IGDB
+                // today): it can gatekeep untracked activities (returning null) or hand
+                // back an already-resolved/deduped Game row. undefined means "not
+                // handled" (module absent, or not configured) - fall back to a plain
+                // exact-name match, same as before this hook existed.
+                let resolver = ronja_modules.find((m) => m.hookForResolveGame);
+                let resolvedGame = resolver
+                    ? await resolver.hookForResolveGame(gameName)
+                    : undefined;
+
+                if (resolvedGame === null) return;
+
+                let game =
+                    resolvedGame ??
+                    (await client.db.Game.findOrCreate({ where: { name: gameName } }))[0];
+
+                console.log(`${newPresence.member.displayName} starts playing ${game.name}.`);
 
                 let [gamePlayed, gamePlayedCreated] = await client.db.GameStatus.findOrCreate({
                     where: {
