@@ -86,6 +86,15 @@ const myExample = {
         // game = client.db.Game-entry
         console.debug("Someone started playing a game!");
     },
+
+    // At most one module should implement this - index.js uses the first one it
+    // finds. Called with the raw activity name before a Game row is looked up.
+    // Return undefined to leave the default exact-name findOrCreate behavior in
+    // place, null to gatekeep the activity (don't track it as a Game at all), or
+    // a Game instance to use directly (see ronja_modules/IGDB.js).
+    hookForResolveGame: async function (gameName) {
+        console.debug("A game name needs resolving to a Game row!");
+    },
 };
 
 module.exports = myExample;

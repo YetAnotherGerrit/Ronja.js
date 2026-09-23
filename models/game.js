@@ -17,6 +17,12 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 unique: true,
             },
+            igdbId: {
+                type: DataTypes.STRING,
+                unique: true,
+                allowNull: true,
+                defaultValue: null,
+            },
             channel: {
                 type: DataTypes.STRING,
                 defaultValue: null,

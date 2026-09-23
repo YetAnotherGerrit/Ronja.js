@@ -120,5 +120,18 @@
     "Update %s": ["%s aktualisieren"],
     "Choose a category to view its settings.": [
         "Wähle eine Kategorie, um ihre Einstellungen zu sehen."
-    ]
+    ],
+    "Release date": ["Veröffentlichungsdatum"],
+    "Platforms": ["Plattformen"],
+    "Rating": ["Bewertung"],
+    "IGDB is not configured on this server.": ["IGDB ist auf diesem Server nicht konfiguriert."],
+    "Could not reach IGDB right now, please try again later.": [
+        "IGDB konnte gerade nicht erreicht werden, bitte versuche es später erneut."
+    ],
+    "No game found on IGDB for \"%s\".": ["Kein Spiel auf IGDB für \"%s\" gefunden."],
+    "Multiple games matched - which one did you mean?": [
+        "Mehrere Spiele wurden gefunden - welches meintest du?"
+    ],
+    "Choose a game...": ["Wähle ein Spiel..."],
+    "That game is no longer available on IGDB.": ["Dieses Spiel ist auf IGDB nicht mehr verfügbar."]
 }
