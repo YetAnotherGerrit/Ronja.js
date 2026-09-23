@@ -1,10 +1,20 @@
-const { SlashCommandBuilder, EmbedBuilder, Colors } = require("discord.js");
+const {
+    SlashCommandBuilder,
+    EmbedBuilder,
+    Colors,
+    ActionRowBuilder,
+    StringSelectMenuBuilder,
+    MessageFlags,
+} = require("discord.js");
 const { DateTime } = require("luxon");
 
 const IGDB_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h - IGDB data barely changes day to day.
 const TOKEN_REFRESH_SLACK_MS = 60 * 1000;
+const GAMEINFO_CANDIDATE_LIMIT = 5;
 
 const myIgdb = {
+    collectorTimeout: 60 * 1000,
+
     // gameName -> { result: {id, name} | null, expiresAt }
     igdbCache: new Map(),
     igdbToken: null, // { accessToken, expiresAt }
@@ -69,19 +79,7 @@ const myIgdb = {
         return this.igdbToken.accessToken;
     },
 
-    // IGDB's own relevance ranking doesn't guarantee an exact title match
-    // beats e.g. a numbered sequel (searching "Slay the Spire" can rank
-    // "Slay the Spire II" first) - prefer an exact (case-insensitive) name
-    // match among the candidates before falling back to IGDB's top result.
-    pickBestMatch: function (results, name) {
-        if (!results.length) return null;
-        let exact = results.find((r) => r.name.toLowerCase() === name.toLowerCase());
-        return exact || results[0];
-    },
-
-    // Runs an IGDB "search" query for `name`, returning the best match (with
-    // the requested `fields`) or null if IGDB has nothing.
-    igdbSearch: async function (name, fields) {
+    igdbRequest: async function (body) {
         let token = await this.getIgdbToken();
         let res = await fetch("https://api.igdb.com/v4/games", {
             method: "POST",
@@ -90,20 +88,34 @@ const myIgdb = {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "text/plain",
             },
-            body: `search "${name.replace(/"/g, '\\"')}"; fields ${fields}; limit 10;`,
+            body,
         });
-        if (!res.ok) throw new Error(`IGDB search failed: ${res.status} ${res.statusText}`);
-        let results = await res.json();
-        return this.pickBestMatch(results, name);
+        if (!res.ok) throw new Error(`IGDB request failed: ${res.status} ${res.statusText}`);
+        return await res.json();
     },
 
-    fetchGameDetails: async function (name) {
-        let g = await this.igdbSearch(
-            name,
-            "name,summary,first_release_date,cover.image_id,platforms.name,total_rating"
+    // Runs an IGDB "search" query for `name` and returns the raw results,
+    // ranked by IGDB's own relevance scoring - unfiltered, since that ranking
+    // doesn't reliably put an exact title match first (e.g. "Slay the Spire"
+    // can rank "Slay the Spire II" above the base game), and short/partial
+    // queries can rank almost anything first. Good enough to let a human
+    // pick from (see presentGameChoices); not good enough to trust blindly.
+    igdbSearchTop: async function (name, fields, limit) {
+        return await this.igdbRequest(
+            `search "${name.replace(/"/g, '\\"')}"; fields ${fields}; limit ${limit};`
         );
-        if (!g) return null;
+    },
 
+    // IGDB's relevance ranking is unreliable for automatic (non-interactive)
+    // resolution - prefer an exact (case-insensitive) name match among the
+    // candidates before falling back to IGDB's top-ranked result.
+    pickBestMatch: function (results, name) {
+        if (!results.length) return null;
+        let exact = results.find((r) => r.name.toLowerCase() === name.toLowerCase());
+        return exact || results[0];
+    },
+
+    mapGameDetails: function (g) {
         return {
             id: g.id,
             name: g.name,
@@ -117,6 +129,13 @@ const myIgdb = {
                 ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.cover.image_id}.jpg`
                 : null,
         };
+    },
+
+    fetchGameDetailsById: async function (id) {
+        let results = await this.igdbRequest(
+            `fields name,summary,first_release_date,cover.image_id,platforms.name,total_rating; where id = ${Number(id)}; limit 1;`
+        );
+        return results[0] ? this.mapGameDetails(results[0]) : null;
     },
 
     // Moves `source`'s GameStatus history onto `target` and drops `source`.
@@ -206,7 +225,8 @@ const myIgdb = {
         let match = this.getCached(gameName);
         if (match === undefined) {
             try {
-                let raw = await this.igdbSearch(gameName, "name");
+                let results = await this.igdbSearchTop(gameName, "name", 10);
+                let raw = this.pickBestMatch(results, gameName);
                 match = raw ? { id: raw.id, name: raw.name } : null;
             } catch (err) {
                 console.error(
@@ -258,60 +278,136 @@ const myIgdb = {
         return e;
     },
 
+    replyError: async function (interaction, message) {
+        await interaction.editReply({
+            embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(message)],
+            components: [],
+        });
+    },
+
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName !== "gameinfo") return;
 
-        await interaction.deferReply();
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         if (!this.isConfigured()) {
-            await interaction.editReply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Red)
-                        .setDescription(
-                            this.l(interaction.locale, "IGDB is not configured on this server.")
-                        ),
-                ],
-            });
+            await this.replyError(
+                interaction,
+                this.l(interaction.locale, "IGDB is not configured on this server.")
+            );
             return;
         }
 
         let name = interaction.options.getString("name");
-        let details;
+        let candidates;
         try {
-            details = await this.fetchGameDetails(name);
+            candidates = await this.igdbSearchTop(
+                name,
+                "name,first_release_date",
+                GAMEINFO_CANDIDATE_LIMIT
+            );
         } catch (err) {
-            console.error("IGDB: /gameinfo lookup failed:", err);
-            await interaction.editReply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Red)
-                        .setDescription(
-                            this.l(
-                                interaction.locale,
-                                "Could not reach IGDB right now, please try again later."
-                            )
-                        ),
-                ],
-            });
+            console.error("IGDB: /gameinfo search failed:", err);
+            await this.replyError(
+                interaction,
+                this.l(
+                    interaction.locale,
+                    "Could not reach IGDB right now, please try again later."
+                )
+            );
             return;
         }
 
-        if (!details) {
-            await interaction.editReply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Red)
-                        .setDescription(
-                            this.l(interaction.locale, 'No game found on IGDB for "%s".', name)
-                        ),
-                ],
-            });
+        if (!candidates.length) {
+            await this.replyError(
+                interaction,
+                this.l(interaction.locale, 'No game found on IGDB for "%s".', name)
+            );
             return;
         }
 
-        await interaction.editReply({
-            embeds: [this.buildGameInfoEmbed(details, interaction.locale)],
+        await this.presentGameChoices(interaction, candidates);
+    },
+
+    // Shows the (ephemeral, invoker-only) candidate list and swaps in the
+    // detail embed once the invoking user picks one.
+    presentGameChoices: async function (interaction, candidates) {
+        let options = candidates.map((c) => ({
+            label: c.name.slice(0, 100),
+            description: c.first_release_date
+                ? DateTime.fromSeconds(c.first_release_date).toFormat("yyyy")
+                : undefined,
+            value: String(c.id),
+        }));
+
+        let menu = new StringSelectMenuBuilder()
+            .setCustomId("gameinfoPick")
+            .setPlaceholder(this.l(interaction.locale, "Choose a game..."))
+            .addOptions(options);
+
+        let message = await interaction.editReply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setDescription(
+                        this.l(
+                            interaction.locale,
+                            "Multiple games matched - which one did you mean?"
+                        )
+                    ),
+            ],
+            components: [new ActionRowBuilder().addComponents(menu)],
+        });
+
+        let collector = message.createMessageComponentCollector({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: this.collectorTimeout,
+            max: 1,
+        });
+
+        collector.on("collect", async (i) => {
+            try {
+                await i.deferUpdate();
+
+                let details;
+                try {
+                    details = await this.fetchGameDetailsById(i.values[0]);
+                } catch (err) {
+                    console.error("IGDB: /gameinfo detail lookup failed:", err);
+                    await this.replyError(
+                        interaction,
+                        this.l(
+                            interaction.locale,
+                            "Could not reach IGDB right now, please try again later."
+                        )
+                    );
+                    return;
+                }
+
+                if (!details) {
+                    await this.replyError(
+                        interaction,
+                        this.l(interaction.locale, "That game is no longer available on IGDB.")
+                    );
+                    return;
+                }
+
+                await interaction.editReply({
+                    embeds: [this.buildGameInfoEmbed(details, interaction.locale)],
+                    components: [],
+                });
+            } catch (err) {
+                console.error("IGDB: /gameinfo selection failed:", err);
+            }
+        });
+
+        collector.on("end", async (collected) => {
+            if (collected.size > 0) return;
+            try {
+                await interaction.editReply({ components: [] });
+            } catch {
+                // The ephemeral message may already be gone.
+            }
         });
     },
 };

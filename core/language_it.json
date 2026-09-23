@@ -128,5 +128,10 @@
     "Could not reach IGDB right now, please try again later.": [
         "Impossibile raggiungere IGDB in questo momento, riprova più tardi."
     ],
-    "No game found on IGDB for \"%s\".": ["Nessun gioco trovato su IGDB per \"%s\"."]
+    "No game found on IGDB for \"%s\".": ["Nessun gioco trovato su IGDB per \"%s\"."],
+    "Multiple games matched - which one did you mean?": [
+        "Sono stati trovati più giochi - quale intendevi?"
+    ],
+    "Choose a game...": ["Scegli un gioco..."],
+    "That game is no longer available on IGDB.": ["Quel gioco non è più disponibile su IGDB."]
 }

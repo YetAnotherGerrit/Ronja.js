@@ -122,5 +122,8 @@
     "Could not reach IGDB right now, please try again later.": [
         "IGDB ne estis atingebla nun, bonvolu reprovi poste."
     ],
-    "No game found on IGDB for \"%s\".": ["Neniu ludo trovita sur IGDB por \"%s\"."]
+    "No game found on IGDB for \"%s\".": ["Neniu ludo trovita sur IGDB por \"%s\"."],
+    "Multiple games matched - which one did you mean?": ["Pluraj ludoj kongruis - kiun vi celis?"],
+    "Choose a game...": ["Elektu ludon..."],
+    "That game is no longer available on IGDB.": ["Tiu ludo ne plu haveblas sur IGDB."]
 }
