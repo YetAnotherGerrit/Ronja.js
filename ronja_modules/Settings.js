@@ -69,6 +69,7 @@ const mySettings = {
     commands: [
         new SlashCommandBuilder()
             .setName("settings")
+            .setNameLocalizations({ de: "einstellungen" })
             .setDescription("View or change Ronja's server configuration.")
             .setDescriptionLocalizations({
                 de: "Zeige oder ändere Ronjas Server-Konfiguration.",

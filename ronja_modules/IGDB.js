@@ -22,6 +22,7 @@ const myIgdb = {
     commands: [
         new SlashCommandBuilder()
             .setName("gameinfo")
+            .setNameLocalizations({ de: "spielinfo" })
             .setDescription("Look up information about a game on IGDB.")
             .setDescriptionLocalizations({
                 de: "Zeigt Informationen zu einem Spiel von IGDB.",
