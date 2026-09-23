@@ -326,7 +326,45 @@ const myIgdb = {
             return;
         }
 
+        // Only one candidate at all - nothing to disambiguate, skip the picker.
+        if (candidates.length === 1) {
+            await this.showGameDetails(interaction, candidates[0].id);
+            return;
+        }
+
         await this.presentGameChoices(interaction, candidates);
+    },
+
+    // Fetches and shows the detail embed for a single IGDB id, replacing
+    // whatever the (ephemeral) reply currently shows.
+    showGameDetails: async function (interaction, id) {
+        let details;
+        try {
+            details = await this.fetchGameDetailsById(id);
+        } catch (err) {
+            console.error("IGDB: /gameinfo detail lookup failed:", err);
+            await this.replyError(
+                interaction,
+                this.l(
+                    interaction.locale,
+                    "Could not reach IGDB right now, please try again later."
+                )
+            );
+            return;
+        }
+
+        if (!details) {
+            await this.replyError(
+                interaction,
+                this.l(interaction.locale, "That game is no longer available on IGDB.")
+            );
+            return;
+        }
+
+        await interaction.editReply({
+            embeds: [this.buildGameInfoEmbed(details, interaction.locale)],
+            components: [],
+        });
     },
 
     // Shows the (ephemeral, invoker-only) candidate list and swaps in the
@@ -368,34 +406,7 @@ const myIgdb = {
         collector.on("collect", async (i) => {
             try {
                 await i.deferUpdate();
-
-                let details;
-                try {
-                    details = await this.fetchGameDetailsById(i.values[0]);
-                } catch (err) {
-                    console.error("IGDB: /gameinfo detail lookup failed:", err);
-                    await this.replyError(
-                        interaction,
-                        this.l(
-                            interaction.locale,
-                            "Could not reach IGDB right now, please try again later."
-                        )
-                    );
-                    return;
-                }
-
-                if (!details) {
-                    await this.replyError(
-                        interaction,
-                        this.l(interaction.locale, "That game is no longer available on IGDB.")
-                    );
-                    return;
-                }
-
-                await interaction.editReply({
-                    embeds: [this.buildGameInfoEmbed(details, interaction.locale)],
-                    components: [],
-                });
+                await this.showGameDetails(interaction, i.values[0]);
             } catch (err) {
                 console.error("IGDB: /gameinfo selection failed:", err);
             }
