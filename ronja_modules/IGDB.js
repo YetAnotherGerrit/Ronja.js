@@ -69,8 +69,18 @@ const myIgdb = {
         return this.igdbToken.accessToken;
     },
 
-    // Runs a single-result IGDB "search" query for `name`, returning the raw
-    // top match (with the requested `fields`) or null if IGDB has nothing.
+    // IGDB's own relevance ranking doesn't guarantee an exact title match
+    // beats e.g. a numbered sequel (searching "Slay the Spire" can rank
+    // "Slay the Spire II" first) - prefer an exact (case-insensitive) name
+    // match among the candidates before falling back to IGDB's top result.
+    pickBestMatch: function (results, name) {
+        if (!results.length) return null;
+        let exact = results.find((r) => r.name.toLowerCase() === name.toLowerCase());
+        return exact || results[0];
+    },
+
+    // Runs an IGDB "search" query for `name`, returning the best match (with
+    // the requested `fields`) or null if IGDB has nothing.
     igdbSearch: async function (name, fields) {
         let token = await this.getIgdbToken();
         let res = await fetch("https://api.igdb.com/v4/games", {
@@ -80,11 +90,11 @@ const myIgdb = {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "text/plain",
             },
-            body: `search "${name.replace(/"/g, '\\"')}"; fields ${fields}; limit 1;`,
+            body: `search "${name.replace(/"/g, '\\"')}"; fields ${fields}; limit 10;`,
         });
         if (!res.ok) throw new Error(`IGDB search failed: ${res.status} ${res.statusText}`);
         let results = await res.json();
-        return results[0] || null;
+        return this.pickBestMatch(results, name);
     },
 
     fetchGameDetails: async function (name) {
