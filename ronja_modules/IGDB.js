@@ -28,6 +28,28 @@ const SYNC_PICK_PREFIX = "igdbSyncPick:";
 const SYNC_PICK_NONE = "none";
 const SUMMARY_MAX_LENGTH = 2000; // Discord's message limit.
 
+// IGDB fields every game lookup needs, on top of syncFields: alternative names
+// for matching, what's needed to collapse editions etc. onto the base game, and
+// the release year shown in pick menus.
+const IGDB_LOOKUP_FIELDS =
+    "name,alternative_names.name,version_parent,parent_game,game_type,first_release_date";
+// IGDB game_types that are the same game as their `parent_game` as far as
+// Ronja is concerned (https://api-docs.igdb.com/#game-type). Remakes,
+// remasters, standalone expansions, bundles and forks stay separate games;
+// editions are linked via `version_parent` and always collapse.
+const COLLAPSED_GAME_TYPES = [
+    1, // DLC
+    2, // Expansion
+    5, // Mod
+    6, // Episode
+    7, // Season
+    10, // Expanded Game (e.g. Director's Cut, Enhanced Edition)
+    11, // Port
+    13, // Pack / Addon
+    14, // Update
+];
+const COLLAPSE_MAX_HOPS = 3; // e.g. an edition of an expanded game of the base game
+
 const myIgdb = {
     collectorTimeout: 60 * 1000,
 
@@ -144,31 +166,89 @@ const myIgdb = {
         );
     },
 
-    // IGDB's relevance ranking is unreliable for automatic (non-interactive)
-    // resolution - prefer an exact (case-insensitive) name match among the
-    // candidates before falling back to IGDB's top-ranked result.
-    pickBestMatch: function (results, name) {
-        if (!results.length) return null;
-        return this.findExactMatch(results, name) || results[0];
+    // The IGDB id of the game `raw` should count as instead (an edition's base
+    // game, a DLC's main game, ...), or null if `raw` is a game of its own.
+    collapsedParentId: function (raw) {
+        if (raw.version_parent) return raw.version_parent;
+        if (raw.parent_game && COLLAPSED_GAME_TYPES.includes(raw.game_type)) {
+            return raw.parent_game;
+        }
+        return null;
     },
 
-    findExactMatch: function (results, name) {
-        return results.find((r) => r.name.toLowerCase() === name.toLowerCase()) || null;
+    // Maps each raw IGDB game (fetched with syncFieldList) onto the base game
+    // it collapses into, fetching parents in one batched request per hop.
+    // Returns an array parallel to `raws`.
+    collapseToBase: async function (raws) {
+        let bases = raws.slice();
+        for (let hop = 0; hop < COLLAPSE_MAX_HOPS; hop++) {
+            let parentIds = [...new Set(bases.map((b) => this.collapsedParentId(b)))].filter(
+                Boolean
+            );
+            if (!parentIds.length) break;
+
+            let parents = await this.igdbRequest(
+                `fields ${this.syncFieldList()}; where id = (${parentIds.join(",")}); limit ${parentIds.length};`
+            );
+            let byId = new Map(parents.map((p) => [p.id, p]));
+            bases = bases.map((b) => byId.get(this.collapsedParentId(b)) ?? b);
+        }
+        return bases;
     },
 
-    // The IGDB fields to request for everything in syncFields.
+    // Game names compare equal regardless of case, punctuation and spacing, so
+    // e.g. "Death Stranding Director's Cut" matches "Death Stranding: Director's Cut".
+    normalizeName: function (name) {
+        return name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+    },
+
+    // Collapses search results onto their base games and looks for an exact
+    // match on `name`: an official name before an alternative one, and within
+    // each, a result that is a game of its own before one that collapses (e.g.
+    // an edition's own name) before a base game that only showed up through
+    // what collapses into it (e.g. a base game found via its seasons).
+    // Returns { exact: base game | null, bases: unique base games, in order }.
+    resolveSearchResults: async function (results, name) {
+        let bases = await this.collapseToBase(results);
+        let wanted = this.normalizeName(name);
+        let same = (other) => Boolean(wanted) && this.normalizeName(other) === wanted;
+        let finders = [
+            (r) => same(r.name),
+            (r) => (r.alternative_names || []).some((a) => same(a.name)),
+        ];
+        let pairs = results.map((raw, i) => ({ candidate: raw, base: bases[i] }));
+        let pools = [
+            pairs.filter((p) => p.base.id === p.candidate.id),
+            pairs.filter((p) => p.base.id !== p.candidate.id),
+            bases.map((b) => ({ candidate: b, base: b })),
+        ];
+
+        let exact = null;
+        for (let find of finders) {
+            for (let pool of pools) {
+                exact ??= pool.find((p) => find(p.candidate))?.base ?? null;
+            }
+        }
+
+        let unique = [...new Map(bases.map((b) => [b.id, b])).values()];
+        return { exact, bases: unique };
+    },
+
+    // The IGDB fields to request for any game lookup: IGDB_LOOKUP_FIELDS plus
+    // everything in syncFields.
     syncFieldList: function () {
-        let fields = this.syncFields.flatMap((f) => f.fields.split(",").map((s) => s.trim()));
+        let fields = [IGDB_LOOKUP_FIELDS, ...this.syncFields.map((f) => f.fields)]
+            .flatMap((f) => f.split(","))
+            .map((s) => s.trim());
         return [...new Set(fields)].join(",");
     },
 
     // Stored in Game.igdbSyncedFields once a row is synced, so changing the
-    // list of synced columns marks every matched game as having gaps to fill.
+    // synced columns or the IGDB fields they're based on marks every matched
+    // game as having gaps to fill (and re-checks it).
     syncSignature: function () {
-        return this.syncFields
-            .map((f) => f.column)
-            .sort()
-            .join(",");
+        let columns = this.syncFields.map((f) => f.column).sort();
+        return `${columns.join(",")}|${this.syncFieldList()}`;
     },
 
     // A raw IGDB game (fetched with at least syncFieldList) as an IGDB match:
@@ -363,8 +443,11 @@ const myIgdb = {
         let match = this.getCached(gameName);
         if (match === undefined) {
             try {
+                // IGDB's relevance ranking is unreliable for automatic resolution -
+                // prefer an exact match before falling back to its top-ranked result.
                 let results = await this.igdbSearchTop(gameName, this.syncFieldList(), 10);
-                let raw = this.pickBestMatch(results, gameName);
+                let { exact, bases } = await this.resolveSearchResults(results, gameName);
+                let raw = exact ?? bases[0];
                 match = raw ? this.toMatch(raw) : null;
             } catch (err) {
                 console.error(
@@ -430,13 +513,13 @@ const myIgdb = {
                         `IGDB sync: ${lookupIds.length} game(s) to look up, ${gapIds.length} to fill in.`
                     );
                     await this.syncLookups(lookupIds, guild, report);
-                    await this.syncMatched(gapIds, report);
+                    await this.syncMatched(gapIds, guild, report);
                 } else {
                     let refreshIds = await this.findRefreshesDue();
                     console.log(
                         `IGDB sync: nothing to do, refreshing ${refreshIds.length} game(s).`
                     );
-                    await this.syncMatched(refreshIds, report);
+                    await this.syncMatched(refreshIds, guild, report);
                 }
             } catch (err) {
                 console.error("IGDB sync: pass failed:", err);
@@ -516,13 +599,10 @@ const myIgdb = {
             if (!game || game.igdbId) continue;
 
             await sleep(SYNC_REQUEST_INTERVAL_MS);
-            let results;
+            let resolved;
             try {
-                results = await this.igdbSearchTop(
-                    game.name,
-                    `${this.syncFieldList()},first_release_date`,
-                    10
-                );
+                let results = await this.igdbSearchTop(game.name, this.syncFieldList(), 10);
+                resolved = await this.resolveSearchResults(results, game.name);
             } catch (err) {
                 console.error(`IGDB sync: lookup for "${game.name}" failed, retrying later:`, err);
                 if (++failures >= SYNC_MAX_CONSECUTIVE_FAILURES) {
@@ -534,7 +614,7 @@ const myIgdb = {
             failures = 0;
 
             try {
-                await this.applyLookup(game, results, guild, report);
+                await this.applyLookup(game, resolved, guild, report);
             } catch (err) {
                 // Not IGDB's fault (e.g. a name collision while merging) - retrying
                 // on every pass wouldn't help, so treat it like a not-found game.
@@ -546,14 +626,13 @@ const myIgdb = {
 
     // Only exact matches are merged automatically - anything less certain
     // would silently rename/merge a game's whole history, so ask the owner.
-    applyLookup: async function (game, results, guild, report) {
-        let exact = this.findExactMatch(results, game.name);
+    applyLookup: async function (game, { exact, bases }, guild, report) {
         if (exact) {
             await this.resolveCanonicalGame(game.name, this.toMatch(exact), guild, report);
-        } else if (results.length) {
+        } else if (bases.length) {
             await this.askOwnerToPick(
                 game,
-                results.slice(0, GAMEINFO_CANDIDATE_LIMIT),
+                bases.slice(0, GAMEINFO_CANDIDATE_LIMIT),
                 guild,
                 report
             );
@@ -606,7 +685,7 @@ const myIgdb = {
     },
 
     // Re-fetches matched games from IGDB in batches and stores what changed.
-    syncMatched: async function (ids, report) {
+    syncMatched: async function (ids, guild, report) {
         let failures = 0;
         for (let i = 0; i < ids.length; i += SYNC_BATCH_SIZE) {
             let games = await this.client.db.Game.findAll({
@@ -615,11 +694,12 @@ const myIgdb = {
             if (!games.length) continue;
 
             await sleep(SYNC_REQUEST_INTERVAL_MS);
-            let results;
+            let results, bases;
             try {
                 results = await this.igdbRequest(
                     `fields ${this.syncFieldList()}; where id = (${games.map((g) => Number(g.igdbId)).join(",")}); limit ${games.length};`
                 );
+                bases = await this.collapseToBase(results);
             } catch (err) {
                 console.error("IGDB sync: refreshing games failed, retrying later:", err);
                 if (++failures >= SYNC_MAX_CONSECUTIVE_FAILURES) {
@@ -630,10 +710,11 @@ const myIgdb = {
             }
             failures = 0;
 
-            let byId = new Map(results.map((r) => [String(r.id), r]));
+            let byId = new Map(results.map((r, i) => [String(r.id), { raw: r, base: bases[i] }]));
             for (let game of games) {
+                let { raw, base } = byId.get(game.igdbId) ?? {};
                 try {
-                    await this.applySync(game, byId.get(game.igdbId), report);
+                    await this.applySync(game, raw, base, guild, report);
                 } catch (err) {
                     console.error(`IGDB sync: could not update "${game.name}":`, err);
                 }
@@ -641,7 +722,7 @@ const myIgdb = {
         }
     },
 
-    applySync: async function (game, raw, report) {
+    applySync: async function (game, raw, base, guild, report) {
         let checked = { igdbCheckedAt: new Date(), igdbSyncedFields: this.syncSignature() };
 
         if (!raw) {
@@ -649,6 +730,16 @@ const myIgdb = {
             // is, but tell the owner once.
             if (game.igdbStatus !== "gone") report.gone.push(game.name);
             await game.update({ ...checked, igdbStatus: "gone" });
+            return;
+        }
+
+        if (base.id !== raw.id) {
+            // Matched to an edition, DLC etc. (e.g. by a live lookup before those
+            // were collapsed) - move it onto the base game instead. Unmatching it
+            // first lets resolveCanonicalGame adopt or merge it like a legacy row;
+            // should that fail midway, the next pass just looks it up again.
+            await game.update({ igdbId: null, igdbStatus: null });
+            await this.resolveCanonicalGame(game.name, this.toMatch(base), guild, report);
             return;
         }
 
@@ -758,6 +849,7 @@ const myIgdb = {
             [raw] = await this.igdbRequest(
                 `fields ${this.syncFieldList()}; where id = ${Number(choice)}; limit 1;`
             );
+            if (raw) [raw] = await this.collapseToBase([raw]);
         } catch (err) {
             console.error("IGDB sync: fetching the owner's pick failed:", err);
             await reply(
