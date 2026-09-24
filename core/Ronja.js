@@ -21,6 +21,7 @@ class Ronja extends Client {
     db = {};
     myConfig = {};
     myLanguage = {};
+    myModules = [];
 
     constructor(options) {
         super(options);
@@ -77,6 +78,21 @@ class Ronja extends Client {
         return activity.name;
     }
 
+    // Asks the first module implementing hookForGameDetails (IGDB today) for
+    // extra details about a Game row, e.g. a cover image. Always resolves to a
+    // details object or null - never throws, since callers only use it to
+    // decorate messages that should go out either way.
+    async myGameDetails(game) {
+        let provider = this.myModules.find((m) => m.hookForGameDetails);
+        if (!provider) return null;
+        try {
+            return (await provider.hookForGameDetails(game)) ?? null;
+        } catch (err) {
+            console.error(`Could not fetch game details for "${game.name}":`, err);
+            return null;
+        }
+    }
+
     async myNotifyOwner(guild, message) {
         console.error(message);
         try {
@@ -110,6 +126,7 @@ class Ronja extends Client {
     }
 
     async myReady(modules = []) {
+        this.myModules = modules;
         await this.myConfigUpdate();
         await this.myDeployCommands(modules);
     }

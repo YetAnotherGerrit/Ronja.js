@@ -96,6 +96,17 @@ const myExample = {
     hookForResolveGame: async function (gameName, guild) {
         console.debug("A game name needs resolving to a Game row!");
     },
+
+    // At most one module should implement this - client.myGameDetails(game)
+    // uses the first one it finds. Other modules call client.myGameDetails(game)
+    // (never this hook directly) to decorate their output with extra details
+    // about a Game row. Return null if there's nothing to offer, or an object
+    // like { id, name, summary, releaseDate, platforms, rating, coverUrl } -
+    // callers must treat every field as optional (see ronja_modules/IGDB.js).
+    // A throw is caught and logged by myGameDetails, which then returns null.
+    hookForGameDetails: async function (game) {
+        console.debug("Someone wants to know more about a Game row!");
+    },
 };
 
 module.exports = myExample;

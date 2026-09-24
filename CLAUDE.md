@@ -55,6 +55,8 @@ Discord gateway events in `index.js` are fanned out to _every_ module by checkin
 
 `hookForResolveGame` is the one exception to fan-out-to-every-module: `index.js` calls it on the first module that implements it (in practice just `ronja_modules/IGDB.js`, when IGDB credentials are configured) before the default `Game.findOrCreate`-by-exact-name lookup in the `Events.PresenceUpdate` handler, passing the raw activity name and the guild. It can return `undefined` (not handled, fall back to the default lookup), `null` (gatekeep — don't track this activity as a `Game` at all), or an already-resolved/deduped `Game` instance to use.
 
+`hookForGameDetails(game)` is similar: it's not fanned out from a Discord event, but exposed to other modules via `client.myGameDetails(game)` (`core/Ronja.js`), which calls the first module implementing it (again just `ronja_modules/IGDB.js`, returning its mapped IGDB details incl. `coverUrl` for games with an `igdbId`). It always resolves to a details object or `null` and never throws, so callers (e.g. `DynamicTextChannels`' notification thumbnails, `Top10`'s #1 cover) can use it purely as optional decoration.
+
 Modules dispatch on `interaction.commandName` / `customId` themselves (see the pattern in `ronja_modules/Example.js`, which is a documented template — it is excluded from most lint rules and not meant to be treated as production code). Adding a new slash/context-menu command requires **both**: implementing the matching `hookFor*` in a module, and adding a `discord.js` builder instance (`SlashCommandBuilder`/`ContextMenuCommandBuilder`) to that module's `commands` array — deployment then happens automatically (see below).
 
 To register a new module, add it to the `ronja_modules` array in `index.js`.
