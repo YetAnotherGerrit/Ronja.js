@@ -54,6 +54,21 @@ const myExample = {
         }
     },
 
+    // String select menus, including ones in DMs (where interaction.member and
+    // interaction.guild are null). Menus handled by a message component
+    // collector reach this hook too, so always dispatch on customId.
+    hookForSelectMenuInteraction: async function (interaction) {
+        // https://discord.js.org/#/docs/discord.js/stable/class/StringSelectMenuInteraction
+        if (interaction.customId == "examplePick") {
+            interaction.reply(`You picked ${interaction.values[0]}!`);
+        }
+    },
+
+    // Called once after startup, when every module has its client, l() and cfg().
+    hookForReady: function () {
+        console.debug("Ronja is ready!");
+    },
+
     hookForVoiceUpdate: async function (oldState, newState) {
         // https://discord.js.org/#/docs/discord.js/stable/class/VoiceState
         console.debug("The voice status of a user has updated!");

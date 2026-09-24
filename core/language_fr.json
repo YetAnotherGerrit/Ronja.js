@@ -134,5 +134,29 @@
     "That game is no longer available on IGDB.": ["Ce jeu n'est plus disponible sur IGDB."],
     "IGDB merged the duplicate game \"%s\" into \"%s\", but they had different text channels - %s is now orphaned (no game is linked to it anymore). You may want to archive, delete, or repurpose it manually.": [
         "IGDB a fusionné le jeu en double \"%s\" avec \"%s\", mais ils avaient des salons textuels différents - %s est maintenant orphelin (aucun jeu n'y est plus lié). Tu voudras peut-être l'archiver, le supprimer ou le réutiliser manuellement."
-    ]
+    ],
+    "None of these, keep as is": ["Aucun de ceux-ci, garder tel quel"],
+    "I found \"%s\" in the game history, but IGDB has no game with exactly that name. Which game is it?": [
+        "J'ai trouvé \"%s\" dans l'historique des jeux, mais IGDB n'a aucun jeu portant exactement ce nom. De quel jeu s'agit-il ?"
+    ],
+    "Matched to IGDB": ["Associés à IGDB"],
+    "Merged duplicates": ["Doublons fusionnés"],
+    "Updated from IGDB": ["Mis à jour depuis IGDB"],
+    "No longer on IGDB, please check": ["Plus sur IGDB, à vérifier"],
+    "Not found on IGDB": ["Introuvables sur IGDB"],
+    "Waiting for your answer": ["En attente de ta réponse"],
+    "Orphaned text channels (no game is linked to them anymore, you may want to archive, delete, or repurpose them manually)": [
+        "Salons textuels orphelins (aucun jeu n'y est plus lié, tu voudras peut-être les archiver, les supprimer ou les réutiliser manuellement)"
+    ],
+    "The IGDB sync is done, here's what changed:": [
+        "La synchronisation IGDB est terminée, voici ce qui a changé :"
+    ],
+    "...and %d more": ["...et %d de plus"],
+    "This question is outdated: the game has been matched or merged in the meantime, so nothing was changed.": [
+        "Cette question est obsolète : le jeu a été associé ou fusionné entre-temps, rien n'a donc été modifié."
+    ],
+    "Okay, \"%s\" stays as it is. I'll ask again in 100 days.": [
+        "D'accord, \"%s\" reste tel quel. Je redemanderai dans 100 jours."
+    ],
+    "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" a été associé à \"%s\" sur IGDB."]
 }

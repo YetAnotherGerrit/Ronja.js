@@ -44,18 +44,21 @@ Almost all bot behavior lives in `ronja_modules/*.js`, plain objects (not classe
 
 Discord gateway events in `index.js` are fanned out to _every_ module by checking for the relevant hook and calling it if present:
 
-- `hookForCommandInteraction`, `hookForContextMenuInteraction`, `hookForButtonInteraction` — from `Events.InteractionCreate`
+- `hookForCommandInteraction`, `hookForContextMenuInteraction`, `hookForButtonInteraction`, `hookForSelectMenuInteraction` — from `Events.InteractionCreate` (also for interactions in DMs, where `interaction.member`/`interaction.guild` are null)
 - `hookForVoiceUpdate` — from `Events.VoiceStateUpdate`
 - `hookForChannelDelete` — from `Events.ChannelDelete`
 - `hookForEventUserAdd` / `hookForEventUserRemove` / `hookForEventUserUpdate` — from `Events.GuildScheduledEventUserAdd`/`Remove`
 - `hookForEventUpdate` — from `Events.GuildScheduledEventUpdate`
 - `hookForEventStart` — from `Events.GuildScheduledEventUpdate` when status transitions into `Active`
 - `hookForStartedPlaying` — from `Events.PresenceUpdate`, after `index.js` itself upserts `Game`/`GameStatus` rows for the newly-started activity
+- `hookForReady` — once at the end of `Events.ClientReady`, after every module got `client`/`l`/`cfg` and its cron jobs
 - `hookForCron` — not a Discord event; returns an array of `{ schedule, action }` pairs registered with `node-cron` at startup, scheduled in the configured timezone
 
 `hookForResolveGame` is the one exception to fan-out-to-every-module: `index.js` calls it on the first module that implements it (in practice just `ronja_modules/IGDB.js`, when IGDB credentials are configured) before the default `Game.findOrCreate`-by-exact-name lookup in the `Events.PresenceUpdate` handler, passing the raw activity name and the guild. It can return `undefined` (not handled, fall back to the default lookup), `null` (gatekeep — don't track this activity as a `Game` at all), or an already-resolved/deduped `Game` instance to use.
 
 `hookForGameDetails(game)` is similar: it's not fanned out from a Discord event, but exposed to other modules via `client.myGameDetails(game)` (`core/Ronja.js`), which calls the first module implementing it (again just `ronja_modules/IGDB.js`, returning its mapped IGDB details incl. `coverUrl` for games with an `igdbId`). It always resolves to a details object or `null` and never throws, so callers (e.g. `DynamicTextChannels`' notification thumbnails, `Top10`'s #1 cover) can use it purely as optional decoration.
+
+`IGDB.js` also runs a background sync (`runSyncPass`, a few minutes after startup and nightly via `hookForCron`): it looks up games without an `igdbId` (only exact name matches are merged automatically; anything less certain is DMed to the guild owner as a pick menu, answered via `hookForSelectMenuInteraction`), fills gaps in the per-game IGDB data listed in its `syncFields`, and otherwise refreshes the 1% of matched games checked longest ago. Its state lives on the `Game` row (`igdbStatus`, `igdbCheckedAt`, `igdbSyncedFields`). To store a new per-game IGDB field, add its migration/model column and a `syncFields` entry — the sync then fills it in for every matched game, and live lookups store it right away.
 
 Modules dispatch on `interaction.commandName` / `customId` themselves (see the pattern in `ronja_modules/Example.js`, which is a documented template — it is excluded from most lint rules and not meant to be treated as production code). Adding a new slash/context-menu command requires **both**: implementing the matching `hookFor*` in a module, and adding a `discord.js` builder instance (`SlashCommandBuilder`/`ContextMenuCommandBuilder`) to that module's `commands` array — deployment then happens automatically (see below).
 

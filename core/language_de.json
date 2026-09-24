@@ -138,5 +138,29 @@
     ],
     "IGDB merged the duplicate game \"%s\" into \"%s\", but they had different text channels - %s is now orphaned (no game is linked to it anymore). You may want to archive, delete, or repurpose it manually.": [
         "IGDB hat das doppelte Spiel \"%s\" mit \"%s\" zusammengeführt, aber sie hatten unterschiedliche Textkanäle - %s ist jetzt verwaist (kein Spiel ist mehr damit verknüpft). Du solltest ihn eventuell manuell archivieren, löschen oder anderweitig nutzen."
-    ]
+    ],
+    "None of these, keep as is": ["Keins davon, so lassen"],
+    "I found \"%s\" in the game history, but IGDB has no game with exactly that name. Which game is it?": [
+        "Ich habe \"%s\" im Spieleverlauf gefunden, aber IGDB hat kein Spiel mit genau diesem Namen. Welches Spiel ist es?"
+    ],
+    "Matched to IGDB": ["Mit IGDB abgeglichen"],
+    "Merged duplicates": ["Zusammengeführte Duplikate"],
+    "Updated from IGDB": ["Von IGDB aktualisiert"],
+    "No longer on IGDB, please check": ["Nicht mehr auf IGDB, bitte prüfen"],
+    "Not found on IGDB": ["Nicht auf IGDB gefunden"],
+    "Waiting for your answer": ["Warten auf deine Antwort"],
+    "Orphaned text channels (no game is linked to them anymore, you may want to archive, delete, or repurpose them manually)": [
+        "Verwaiste Textkanäle (kein Spiel ist mehr damit verknüpft, du solltest sie eventuell manuell archivieren, löschen oder anderweitig nutzen)"
+    ],
+    "The IGDB sync is done, here's what changed:": [
+        "Der IGDB-Abgleich ist fertig, das hat sich geändert:"
+    ],
+    "...and %d more": ["...und %d weitere"],
+    "This question is outdated: the game has been matched or merged in the meantime, so nothing was changed.": [
+        "Diese Frage ist veraltet: Das Spiel wurde inzwischen abgeglichen oder zusammengeführt, daher wurde nichts geändert."
+    ],
+    "Okay, \"%s\" stays as it is. I'll ask again in 100 days.": [
+        "Okay, \"%s\" bleibt, wie es ist. Ich frage in 100 Tagen noch einmal."
+    ],
+    "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" wurde mit \"%s\" auf IGDB abgeglichen."]
 }

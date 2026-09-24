@@ -79,13 +79,19 @@ client.once(Events.ClientReady, async () => {
         }
     });
 
+    ronja_modules.forEach((m) => {
+        if (m.hookForReady) invokeHook(() => m.hookForReady());
+    });
+
     console.log("Ready!");
 });
 
 // Listen for Interactions and forward to all modules
 client.on(Events.InteractionCreate, async (interaction) => {
+    // interaction.member is null for interactions in DMs (e.g. the IGDB sync's
+    // questions to the guild owner), so fall back to the user.
     console.log(
-        `${interaction.member.displayName} used commandName ${interaction.commandName} (${interaction.customId}).`
+        `${(interaction.member ?? interaction.user).displayName} used commandName ${interaction.commandName} (${interaction.customId}).`
     );
 
     if (interaction.isCommand()) {
@@ -106,6 +112,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ronja_modules.forEach((m) => {
             if (m.hookForButtonInteraction)
                 invokeHook(() => m.hookForButtonInteraction(interaction));
+        });
+    }
+
+    if (interaction.isStringSelectMenu()) {
+        ronja_modules.forEach((m) => {
+            if (m.hookForSelectMenuInteraction)
+                invokeHook(() => m.hookForSelectMenuInteraction(interaction));
         });
     }
 });

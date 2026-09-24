@@ -23,6 +23,21 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
                 defaultValue: null,
             },
+            igdbStatus: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                defaultValue: null,
+            },
+            igdbCheckedAt: {
+                type: DataTypes.DATE,
+                allowNull: true,
+                defaultValue: null,
+            },
+            igdbSyncedFields: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                defaultValue: null,
+            },
             channel: {
                 type: DataTypes.STRING,
                 defaultValue: null,
