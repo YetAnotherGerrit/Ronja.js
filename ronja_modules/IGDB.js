@@ -17,6 +17,8 @@ const myIgdb = {
 
     // gameName -> { result: {id, name} | null, expiresAt }
     igdbCache: new Map(),
+    // igdbId -> { result: details | null, expiresAt }
+    igdbDetailsCache: new Map(),
     igdbToken: null, // { accessToken, expiresAt }
 
     commands: [
@@ -44,18 +46,18 @@ const myIgdb = {
         return Boolean(this.cfg("igdbClientId") && this.cfg("igdbClientSecret"));
     },
 
-    getCached: function (name) {
-        let entry = this.igdbCache.get(name);
+    getCached: function (key, cache = this.igdbCache) {
+        let entry = cache.get(key);
         if (!entry) return undefined;
         if (entry.expiresAt < Date.now()) {
-            this.igdbCache.delete(name);
+            cache.delete(key);
             return undefined;
         }
         return entry.result;
     },
 
-    setCached: function (name, result) {
-        this.igdbCache.set(name, { result, expiresAt: Date.now() + IGDB_CACHE_TTL_MS });
+    setCached: function (key, result, cache = this.igdbCache) {
+        cache.set(key, { result, expiresAt: Date.now() + IGDB_CACHE_TTL_MS });
     },
 
     getIgdbToken: async function () {
@@ -257,6 +259,21 @@ const myIgdb = {
 
         if (!match) return null;
         return await this.resolveCanonicalGame(gameName, match, guild);
+    },
+
+    // Returns the mapped IGDB details (see mapGameDetails) for a Game row that
+    // has been matched to IGDB, or null if IGDB is unconfigured or the game
+    // was never matched. Reached via client.myGameDetails(game) by other
+    // modules; a transient IGDB error propagates to (and is logged by) that.
+    hookForGameDetails: async function (game) {
+        if (!this.isConfigured() || !game.igdbId) return null;
+
+        let details = this.getCached(game.igdbId, this.igdbDetailsCache);
+        if (details === undefined) {
+            details = await this.fetchGameDetailsById(game.igdbId);
+            this.setCached(game.igdbId, details, this.igdbDetailsCache);
+        }
+        return details;
     },
 
     buildGameInfoEmbed: function (details, locale) {
