@@ -363,7 +363,13 @@ const myIgdb = {
             }
         }
 
+        // Keep `source`'s names findable: its own aliases and its name move to `target`.
+        await this.client.db.GameAlias.update(
+            { GameId: target.id },
+            { where: { GameId: source.id } }
+        );
         await source.destroy();
+        await this.addAlias(source.name, target);
         report?.merged.push({ from: source.name, to: target });
         console.log(`IGDB: merged duplicate game "${source.name}" into "${target.name}".`);
     },
@@ -393,7 +399,9 @@ const myIgdb = {
 
         if (!canonical) {
             if (legacyRows.length === 0) {
-                return await db.Game.create({ ...synced, igdbCheckedAt: new Date() });
+                let created = await db.Game.create({ ...synced, igdbCheckedAt: new Date() });
+                await this.addAlias(rawName, created);
+                return created;
             }
 
             // Prefer adopting whichever legacy row already carries the canonical
@@ -413,6 +421,7 @@ const myIgdb = {
 
             let originalName = canonical.name;
             await canonical.update({ ...synced, igdbCheckedAt: new Date() });
+            await this.addAlias(originalName, canonical);
             report?.matched.push(
                 originalName === match.name ? match.name : `${originalName} → ${match.name}`
             );
@@ -420,7 +429,9 @@ const myIgdb = {
             // IGDB's data (e.g. its canonical name) can change over time; keep it in sync.
             let changes = this.syncChanges(canonical, synced);
             if (Object.keys(changes).length) {
+                let previousName = canonical.name;
                 await canonical.update({ ...changes, igdbCheckedAt: new Date() });
+                await this.addAlias(previousName, canonical);
             }
         }
 
@@ -429,24 +440,55 @@ const myIgdb = {
             await this.mergeGameInto(dupe, canonical, guild, report);
         }
 
+        await this.addAlias(rawName, canonical);
         return canonical;
     },
 
-    // Resolves an activity name against IGDB and returns:
-    // - undefined: not handled here (IGDB unconfigured, or a transient IGDB
-    //   error) - the caller should fall back to its default behavior.
+    // Records `name` as another name of `game`, so a renamed or merged game is
+    // still found by its old activity name (see findKnownGame). Skipped for a
+    // name some game actually carries - that game always wins anyway.
+    addAlias: async function (name, game) {
+        let db = this.client.db;
+        if (!name || (await db.Game.findOne({ where: { name } }))) return;
+
+        let [alias, created] = await db.GameAlias.findOrCreate({
+            where: { name },
+            defaults: { GameId: game.id },
+        });
+        if (!created && alias.GameId !== game.id) await alias.update({ GameId: game.id });
+    },
+
+    // A game Ronja already knows under this exact activity name: one matched to
+    // IGDB, one the guild owner kept as it is or hasn't answered the sync's
+    // question about yet (so IGDB's top-ranked guess can't override that), or
+    // one known by this alias. Returns null for anything else.
+    findKnownGame: async function (name) {
+        let db = this.client.db;
+        let game = await db.Game.findOne({
+            where: {
+                name,
+                [Op.or]: [{ igdbId: { [Op.ne]: null } }, { igdbStatus: ["declined", "pending"] }],
+            },
+        });
+        if (game) return game;
+
+        let alias = await db.GameAlias.findOne({ where: { name }, include: db.Game });
+        return alias?.Game ?? null;
+    },
+
+    // Resolves an activity name (known names first, then IGDB) and returns:
+    // - undefined: not handled here (an unknown name while IGDB is unconfigured,
+    //   or a transient IGDB error) - the caller should fall back to its default
+    //   behavior.
     // - null: IGDB has no such game - gatekept, do not track.
     // - a Game instance: the canonical, already-created/merged row to use.
     hookForResolveGame: async function (gameName, guild) {
-        if (!this.isConfigured()) return undefined;
+        // Known names need no IGDB request - the background sync keeps their data
+        // current - and keep working while IGDB is unreachable or unconfigured.
+        let known = await this.findKnownGame(gameName);
+        if (known) return known;
 
-        // The guild owner decided to keep this game as it is, or hasn't answered
-        // the sync's question about it yet - don't let IGDB's top-ranked guess
-        // override that.
-        let kept = await this.client.db.Game.findOne({
-            where: { name: gameName, igdbId: null, igdbStatus: ["declined", "pending"] },
-        });
-        if (kept) return kept;
+        if (!this.isConfigured()) return undefined;
 
         let match = this.getCached(gameName);
         if (match === undefined) {
@@ -765,6 +807,7 @@ const myIgdb = {
             return;
         }
 
+        if (changes.name) await this.addAlias(previousName, game);
         if (Object.keys(changes).some((key) => key !== "igdbStatus")) {
             report.updated.push(game.name);
         }

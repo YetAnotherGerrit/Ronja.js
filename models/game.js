@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             Game.hasMany(models.GameStatus);
+            Game.hasMany(models.GameAlias, { onDelete: "CASCADE" });
         }
     }
     Game.init(
