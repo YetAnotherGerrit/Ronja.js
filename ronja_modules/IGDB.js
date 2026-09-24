@@ -17,11 +17,10 @@ const GAMEINFO_CANDIDATE_LIMIT = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Background sync (see runSyncPass).
-const SYNC_STARTUP_DELAY_MS = 5 * 60 * 1000;
 const SYNC_REQUEST_INTERVAL_MS = 2 * 1000; // The sync's own pace, leaving IGDB's budget to live use.
 const SYNC_BATCH_SIZE = 10;
 const SYNC_MAX_CONSECUTIVE_FAILURES = 3;
-const SYNC_REFRESH_SHARE = 0.01; // With one pass a night, every game is re-checked about every 100 days.
+const SYNC_REFRESH_SHARE = 0.01; // With one pass a day, every game is re-checked about every 100 days.
 const SYNC_NOT_FOUND_RETRY_MS = 30 * DAY_MS;
 const SYNC_DECLINED_RETRY_MS = 100 * DAY_MS;
 const SYNC_PICK_PREFIX = "igdbSyncPick:";
@@ -528,17 +527,26 @@ const myIgdb = {
         return details;
     },
 
-    hookForReady: function () {
-        setTimeout(() => this.runSyncPass(), SYNC_STARTUP_DELAY_MS);
-    },
-
     hookForCron: function () {
         return [
             {
-                schedule: "0 4 * * *", // https://crontab.guru/
-                action: () => this.runSyncPass(),
+                // Checked every minute rather than scheduled once, so a changed
+                // igdbSyncTime applies without a restart.
+                schedule: "* * * * *", // https://crontab.guru/
+                action: () => {
+                    if (this.isSyncDue(DateTime.now())) return this.runSyncPass();
+                },
             },
         ];
+    },
+
+    // Whether `now` is the admin-configured igdbSyncTime (HH:MM in the server's
+    // timezone). No (valid) time configured means no background sync at all.
+    isSyncDue: function (now) {
+        let time = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(this.cfg("igdbSyncTime")?.trim() ?? "");
+        if (!time) return false;
+        let local = now.setZone(this.cfg("timezone") || "system");
+        return local.hour === Number(time[1]) && local.minute === Number(time[2]);
     },
 
     // One background sync pass: looks up games never matched to IGDB (plus

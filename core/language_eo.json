@@ -152,5 +152,8 @@
     "Okay, \"%s\" stays as it is. I'll ask again in 100 days.": [
         "Bone, \"%s\" restas kiel ĝi estas. Mi demandos denove post 100 tagoj."
     ],
-    "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" estis kongruigita kun \"%s\" sur IGDB."]
+    "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" estis kongruigita kun \"%s\" sur IGDB."],
+    "%s expects a time like 04:00, or nothing to turn it off.": [
+        "%s atendas horon kiel 04:00, aŭ nenion por malŝalti ĝin."
+    ]
 }

@@ -162,5 +162,8 @@
     "Okay, \"%s\" stays as it is. I'll ask again in 100 days.": [
         "Okay, \"%s\" bleibt, wie es ist. Ich frage in 100 Tagen noch einmal."
     ],
-    "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" wurde mit \"%s\" auf IGDB abgeglichen."]
+    "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" wurde mit \"%s\" auf IGDB abgeglichen."],
+    "%s expects a time like 04:00, or nothing to turn it off.": [
+        "%s erwartet eine Uhrzeit wie 04:00, oder nichts, um es auszuschalten."
+    ]
 }

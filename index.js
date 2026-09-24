@@ -79,10 +79,6 @@ client.once(Events.ClientReady, async () => {
         }
     });
 
-    ronja_modules.forEach((m) => {
-        if (m.hookForReady) invokeHook(() => m.hookForReady());
-    });
-
     console.log("Ready!");
 });
 

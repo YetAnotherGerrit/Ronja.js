@@ -64,11 +64,6 @@ const myExample = {
         }
     },
 
-    // Called once after startup, when every module has its client, l() and cfg().
-    hookForReady: function () {
-        console.debug("Ronja is ready!");
-    },
-
     hookForVoiceUpdate: async function (oldState, newState) {
         // https://discord.js.org/#/docs/discord.js/stable/class/VoiceState
         console.debug("The voice status of a user has updated!");
