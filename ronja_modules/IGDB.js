@@ -440,6 +440,14 @@ const myIgdb = {
     hookForResolveGame: async function (gameName, guild) {
         if (!this.isConfigured()) return undefined;
 
+        // The guild owner decided to keep this game as it is, or hasn't answered
+        // the sync's question about it yet - don't let IGDB's top-ranked guess
+        // override that.
+        let kept = await this.client.db.Game.findOne({
+            where: { name: gameName, igdbId: null, igdbStatus: ["declined", "pending"] },
+        });
+        if (kept) return kept;
+
         let match = this.getCached(gameName);
         if (match === undefined) {
             try {
