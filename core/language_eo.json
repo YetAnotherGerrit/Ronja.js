@@ -125,5 +125,8 @@
     "No game found on IGDB for \"%s\".": ["Neniu ludo trovita sur IGDB por \"%s\"."],
     "Multiple games matched - which one did you mean?": ["Pluraj ludoj kongruis - kiun vi celis?"],
     "Choose a game...": ["Elektu ludon..."],
-    "That game is no longer available on IGDB.": ["Tiu ludo ne plu haveblas sur IGDB."]
+    "That game is no longer available on IGDB.": ["Tiu ludo ne plu haveblas sur IGDB."],
+    "IGDB merged the duplicate game \"%s\" into \"%s\", but they had different text channels - %s is now orphaned (no game is linked to it anymore). You may want to archive, delete, or repurpose it manually.": [
+        "IGDB kunfandis la duoblan ludon \"%s\" en \"%s\", sed ili havis malsamajn tekstkanalojn - %s nun estas orfa (neniu ludo plu ligiĝas al ĝi). Vi eble volas mane arkivigi, forigi aŭ reuzi ĝin."
+    ]
 }

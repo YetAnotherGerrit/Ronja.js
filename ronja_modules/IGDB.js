@@ -142,7 +142,7 @@ const myIgdb = {
     // Moves `source`'s GameStatus history onto `target` and drops `source`.
     // Where both already have a status for the same member, the more recent
     // lastplayed wins.
-    mergeGameInto: async function (source, target) {
+    mergeGameInto: async function (source, target, guild) {
         let statuses = await this.client.db.GameStatus.findAll({ where: { GameId: source.id } });
 
         for (let status of statuses) {
@@ -160,6 +160,22 @@ const myIgdb = {
             }
         }
 
+        // `source.channel` (a dynamic text channel) has no home on `target` if
+        // the two differ - deleting/reassigning it automatically is out of
+        // scope here, so just leave it as an orphan and let an admin decide.
+        if (source.channel && source.channel !== target.channel && guild) {
+            this.client.myNotifyOwner(
+                guild,
+                this.l(
+                    guild.preferredLocale,
+                    'IGDB merged the duplicate game "%s" into "%s", but they had different text channels - %s is now orphaned (no game is linked to it anymore). You may want to archive, delete, or repurpose it manually.',
+                    source.name,
+                    target.name,
+                    `<#${source.channel}>`
+                )
+            );
+        }
+
         await source.destroy();
         console.log(`IGDB: merged duplicate game "${source.name}" into "${target.name}".`);
     },
@@ -168,7 +184,7 @@ const myIgdb = {
     // and/or merging any pre-existing untagged row(s) for the same game - the
     // self-healing step that lets the table converge onto official names as
     // variant activity names get played again.
-    resolveCanonicalGame: async function (rawName, match) {
+    resolveCanonicalGame: async function (rawName, match, guild) {
         let db = this.client.db;
         let igdbId = String(match.id);
 
@@ -195,7 +211,7 @@ const myIgdb = {
             // Merge away any other duplicate(s) first, while they still hold
             // their own distinct name, then rename/tag the survivor.
             for (let dupe of legacyRows) {
-                await this.mergeGameInto(dupe, canonical);
+                await this.mergeGameInto(dupe, canonical, guild);
             }
             legacyRows = [];
 
@@ -209,7 +225,7 @@ const myIgdb = {
 
         for (let dupe of legacyRows) {
             if (dupe.id === canonical.id) continue;
-            await this.mergeGameInto(dupe, canonical);
+            await this.mergeGameInto(dupe, canonical, guild);
         }
 
         return canonical;
@@ -220,7 +236,7 @@ const myIgdb = {
     //   error) - the caller should fall back to its default behavior.
     // - null: IGDB has no such game - gatekept, do not track.
     // - a Game instance: the canonical, already-created/merged row to use.
-    hookForResolveGame: async function (gameName) {
+    hookForResolveGame: async function (gameName, guild) {
         if (!this.isConfigured()) return undefined;
 
         let match = this.getCached(gameName);
@@ -240,7 +256,7 @@ const myIgdb = {
         }
 
         if (!match) return null;
-        return await this.resolveCanonicalGame(gameName, match);
+        return await this.resolveCanonicalGame(gameName, match, guild);
     },
 
     buildGameInfoEmbed: function (details, locale) {
