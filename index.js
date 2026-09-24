@@ -195,7 +195,7 @@ client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
                 // exact-name match, same as before this hook existed.
                 let resolver = ronja_modules.find((m) => m.hookForResolveGame);
                 let resolvedGame = resolver
-                    ? await resolver.hookForResolveGame(gameName)
+                    ? await resolver.hookForResolveGame(gameName, newPresence.guild)
                     : undefined;
 
                 if (resolvedGame === null) return;

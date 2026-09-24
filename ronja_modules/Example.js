@@ -88,11 +88,12 @@ const myExample = {
     },
 
     // At most one module should implement this - index.js uses the first one it
-    // finds. Called with the raw activity name before a Game row is looked up.
+    // finds. Called with the raw activity name before a Game row is looked up,
+    // plus the guild (for admin DMs via client.myNotifyOwner, if needed).
     // Return undefined to leave the default exact-name findOrCreate behavior in
     // place, null to gatekeep the activity (don't track it as a Game at all), or
     // a Game instance to use directly (see ronja_modules/IGDB.js).
-    hookForResolveGame: async function (gameName) {
+    hookForResolveGame: async function (gameName, guild) {
         console.debug("A game name needs resolving to a Game row!");
     },
 };

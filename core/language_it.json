@@ -133,5 +133,8 @@
         "Sono stati trovati più giochi - quale intendevi?"
     ],
     "Choose a game...": ["Scegli un gioco..."],
-    "That game is no longer available on IGDB.": ["Quel gioco non è più disponibile su IGDB."]
+    "That game is no longer available on IGDB.": ["Quel gioco non è più disponibile su IGDB."],
+    "IGDB merged the duplicate game \"%s\" into \"%s\", but they had different text channels - %s is now orphaned (no game is linked to it anymore). You may want to archive, delete, or repurpose it manually.": [
+        "IGDB ha unito il gioco duplicato \"%s\" con \"%s\", ma avevano canali di testo diversi - %s è ora orfano (nessun gioco è più collegato ad esso). Potresti volerlo archiviare, eliminare o riutilizzare manualmente."
+    ]
 }
