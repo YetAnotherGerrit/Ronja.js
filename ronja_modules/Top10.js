@@ -36,7 +36,7 @@ const myTop10 = {
 
         let g = await this.client.db.Game.findAll({
             raw: true,
-            attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
+            attributes: ["name", "igdbId", [Sequelize.fn("COUNT", "*"), "cName"]],
             include: [
                 {
                     model: this.client.db.GameStatus,
@@ -63,6 +63,11 @@ const myTop10 = {
                 maxgames = maxgames - 1;
             }
         });
+
+        if (g.length) {
+            let details = await this.client.myGameDetails(g[0]);
+            if (details?.coverUrl) e.setThumbnail(details.coverUrl);
+        }
 
         e.addFields([
             {
