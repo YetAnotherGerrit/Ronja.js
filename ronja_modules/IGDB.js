@@ -52,13 +52,14 @@ const COLLAPSE_MAX_HOPS = 3; // e.g. an edition of an expanded game of the base 
 const myIgdb = {
     collectorTimeout: 60 * 1000,
 
-    // gameName -> { result: match (see toMatch) | null, expiresAt }
+    // gameName -> { result: resolveSearchResults() result, expiresAt }
     igdbCache: new Map(),
     // igdbId -> { result: details | null, expiresAt }
     igdbDetailsCache: new Map(),
     igdbToken: null, // { accessToken, expiresAt }
     igdbNextRequestAt: 0,
     syncRunning: false,
+    liveLookups: new Map(), // gameName -> in-flight resolveLiveGame() promise
 
     // Per-game IGDB data stored on Game rows and kept up to date by the
     // background sync. Each entry names the IGDB `fields` it needs and maps a
@@ -466,7 +467,10 @@ const myIgdb = {
         let game = await db.Game.findOne({
             where: {
                 name,
-                [Op.or]: [{ igdbId: { [Op.ne]: null } }, { igdbStatus: ["declined", "pending"] }],
+                [Op.or]: [
+                    { igdbId: { [Op.ne]: null } },
+                    { igdbStatus: ["declined", "pending", "notFound"] },
+                ],
             },
         });
         if (game) return game;
@@ -479,9 +483,24 @@ const myIgdb = {
     // - undefined: not handled here (an unknown name while IGDB is unconfigured,
     //   or a transient IGDB error) - the caller should fall back to its default
     //   behavior.
-    // - null: IGDB has no such game - gatekept, do not track.
-    // - a Game instance: the canonical, already-created/merged row to use.
+    // - a Game instance: the row to use. For an exact IGDB match, that's the
+    //   canonical, already-created/merged row. Anything less certain is tracked
+    //   under its own name and the guild owner is asked about it (see
+    //   applyLookup), just like the background sync does.
     hookForResolveGame: async function (gameName, guild) {
+        // Several members starting the same new game at once share one lookup,
+        // so it gets one row and at most one question to the owner.
+        let inFlight = this.liveLookups.get(gameName);
+        if (!inFlight) {
+            inFlight = this.resolveLiveGame(gameName, guild).finally(() =>
+                this.liveLookups.delete(gameName)
+            );
+            this.liveLookups.set(gameName, inFlight);
+        }
+        return await inFlight;
+    },
+
+    resolveLiveGame: async function (gameName, guild) {
         // Known names need no IGDB request - the background sync keeps their data
         // current - and keep working while IGDB is unreachable or unconfigured.
         let known = await this.findKnownGame(gameName);
@@ -489,15 +508,11 @@ const myIgdb = {
 
         if (!this.isConfigured()) return undefined;
 
-        let match = this.getCached(gameName);
-        if (match === undefined) {
+        let resolved = this.getCached(gameName);
+        if (resolved === undefined) {
             try {
-                // IGDB's relevance ranking is unreliable for automatic resolution -
-                // prefer an exact match before falling back to its top-ranked result.
                 let results = await this.igdbSearchTop(gameName, this.syncFieldList(), 10);
-                let { exact, bases } = await this.resolveSearchResults(results, gameName);
-                let raw = exact ?? bases[0];
-                match = raw ? this.toMatch(raw) : null;
+                resolved = await this.resolveSearchResults(results, gameName);
             } catch (err) {
                 console.error(
                     `IGDB: lookup for "${gameName}" failed, leaving it to default matching for now:`,
@@ -505,11 +520,16 @@ const myIgdb = {
                 );
                 return undefined;
             }
-            this.setCached(gameName, match);
+            this.setCached(gameName, resolved);
         }
 
-        if (!match) return null;
-        return await this.resolveCanonicalGame(gameName, match, guild);
+        if (resolved.exact) {
+            return await this.resolveCanonicalGame(gameName, this.toMatch(resolved.exact), guild);
+        }
+
+        let [game] = await this.client.db.Game.findOrCreate({ where: { name: gameName } });
+        await this.applyLookup(game, resolved, guild, this.newSyncReport());
+        return game;
     },
 
     // Returns the mapped IGDB details (see mapGameDetails) for a Game row that
@@ -683,7 +703,9 @@ const myIgdb = {
     },
 
     // Only exact matches are merged automatically - anything less certain
-    // would silently rename/merge a game's whole history, so ask the owner.
+    // would silently rename/merge a game's whole history (and, through its
+    // alias, every future play of that name), so ask the owner. Used by both
+    // the background sync and live lookups.
     applyLookup: async function (game, { exact, bases }, guild, report) {
         if (exact) {
             await this.resolveCanonicalGame(game.name, this.toMatch(exact), guild, report);
@@ -733,7 +755,7 @@ const myIgdb = {
             });
         } catch (err) {
             // Leave the game unchecked, so it's asked about again on a later pass.
-            console.error("IGDB sync: could not DM the guild owner:", err);
+            console.error("IGDB: could not DM the guild owner:", err);
             report.ownerUnreachable = true;
             return;
         }
