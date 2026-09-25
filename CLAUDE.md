@@ -46,6 +46,7 @@ Discord gateway events in `index.js` are fanned out to _every_ module by checkin
 
 - `hookForCommandInteraction`, `hookForContextMenuInteraction`, `hookForButtonInteraction`, `hookForSelectMenuInteraction`, `hookForAutocompleteInteraction` — from `Events.InteractionCreate` (also for interactions in DMs, where `interaction.member`/`interaction.guild` are null; autocomplete interactions, sent on every keystroke, aren't logged)
 - `hookForVoiceUpdate` — from `Events.VoiceStateUpdate`
+- `hookForMessageCreate` — from `Events.MessageCreate` (Guild Messages intent; without the privileged Message Content intent, `message.content` is empty for others' messages)
 - `hookForChannelDelete` — from `Events.ChannelDelete`
 - `hookForEventUserAdd` / `hookForEventUserRemove` / `hookForEventUserUpdate` — from `Events.GuildScheduledEventUserAdd`/`Remove`
 - `hookForEventUpdate` — from `Events.GuildScheduledEventUpdate`
@@ -79,7 +80,7 @@ Extends `discord.js`'s `Client` and adds:
 
 ### Data layer
 
-Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-index `.js` file in that directory). Config per `NODE_ENV` is in `config/config.json`; migrations live in `migrations/` and are the source of truth for schema _and_ for seeding default `Setting` rows (recent migrations add default values for module-specific settings rather than hardcoding them in module code — see the `default-values-*` migrations). The `Command` table (`models/command.js`) tracks deployed command hashes/IDs for the deploy system above. `GameAlias` (`models/gamealias.js`) holds other names a `Game` is known under, see the IGDB sync above.
+Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-index `.js` file in that directory). Config per `NODE_ENV` is in `config/config.json`; migrations live in `migrations/` and are the source of truth for schema _and_ for seeding default `Setting` rows (recent migrations add default values for module-specific settings rather than hardcoding them in module code — see the `default-values-*` migrations). The `Command` table (`models/command.js`) tracks deployed command hashes/IDs for the deploy system above. `GameAlias` (`models/gamealias.js`) holds other names a `Game` is known under, see the IGDB sync above. `VoiceTime` and `ChannelMessages` are per-day counters (day in the configured timezone) that `Top10` fills and ranks for `/top10`'s second and third column: seconds per member in voice channels (not the AFK channel; ongoing time is kept in memory and flushed hourly and before each ranking, sessions are split at midnight) and members' messages per game text channel (counted via `hookForMessageCreate`, threads count towards their channel).
 
 ### Docker / deployment
 

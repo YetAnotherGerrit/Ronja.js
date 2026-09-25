@@ -296,4 +296,11 @@ function channelLine(l, channel) {
     return l("It gets its own channel once %d more players play it.", channel.missing);
 }
 
-module.exports = { buildGameCard, gameCardDetailOptions, loadGuildInfo };
+module.exports = {
+    buildGameCard,
+    gameCardDetailOptions,
+    loadGuildInfo,
+    duration,
+    isMember,
+    truncate,
+};

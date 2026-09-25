@@ -28,6 +28,7 @@ Ronja subscribes to these Discord gateway intents:
 
 - Guilds
 - Guild Voice States
+- Guild Messages
 - Guild Presences
 - Guild Scheduled Events
 

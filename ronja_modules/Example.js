@@ -79,6 +79,14 @@ const myExample = {
         console.debug("The voice status of a user has updated!");
     },
 
+    // Messages in any guild channel Ronja can see, including ones by bots and
+    // Ronja herself. Without the privileged Message Content intent,
+    // message.content is empty for other people's messages (see Top10.js).
+    hookForMessageCreate: async function (message) {
+        // https://discord.js.org/#/docs/discord.js/stable/class/Message
+        console.debug("Someone posted a message!");
+    },
+
     hookForChannelDelete: async function (channel) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildChannel
         console.debug("A channel has been deleted!");

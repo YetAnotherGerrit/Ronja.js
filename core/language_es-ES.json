@@ -12,11 +12,13 @@
     "Profile of %s": ["Perfil de %s"],
     "%s is on this discord server since %s.": ["%s está en este servidor de discord desde %s."],
     "Common games": ["Juegos en común"],
-    "Most popular games!": ["¡Los juegos más populares!"],
-    "Most played games of the last %d days:": ["Los juegos más jugados de los últimos %d días:"],
+    "The server's top 10!": ["¡El top 10 del servidor!"],
+    "The last %d days at a glance:": ["Los últimos %d días de un vistazo:"],
     "Top 10 by player count:": ["Top 10 por número de personas que lo juegan:"],
-    "The most played games of last week:": ["Los juegos más jugados de la semana pasada:"],
-    "The most played games of last month:": ["Los juegos más jugados del mes pasado:"],
+    "Top 10 by time in voice channels:": ["Top 10 por tiempo en canales de voz:"],
+    "Top 10 game channels by messages:": ["Top 10 canales de juegos por mensajes:"],
+    "Last week at a glance:": ["La semana pasada de un vistazo:"],
+    "Last month at a glance:": ["El mes pasado de un vistazo:"],
     "Happy new year! These have been the highlights of last year:": [
         "¡Feliz año nuevo! Estos han sido los momentos destacados del año pasado:"
     ],
@@ -91,6 +93,10 @@
         "Estos juegos son jugados por los miembros del canal:\n"
     ],
     "No games have been played.": ["No se ha jugado a ningún juego."],
+    "Nobody has been in a voice channel.": ["Nadie ha estado en un canal de voz."],
+    "Nothing has been posted in the game channels.": [
+        "No se ha publicado nada en los canales de juegos."
+    ],
     "Failed!": ["¡Fallido!"],
     "Language of the guild was changed to %s.": ["El idioma del servidor se ha cambiado a %s."],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
