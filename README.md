@@ -25,6 +25,10 @@ want to play with your friends and need to decide on what game to play.
   game channels with the most messages.
     - Also weekly, monthly and yearly top 10.
 - /ical command to get an ical-feed for the events you attend.
+- /news command in a game's text channel to show the game's latest Steam
+  announcements (patch notes etc.) and how many are playing it on Steam right
+  now. Finds the game on Steam via IGDB if configured, otherwise via Steam's
+  store search by the game's exact name.
 - Optional [IGDB](https://www.igdb.com/) integration to reduce duplicate
   game entries caused by naming variants or special editions (e.g. "Baldur's
   Gate 3" vs "Baldur's Gate III"), and a /gameinfo command to look up a
