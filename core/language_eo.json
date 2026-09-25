@@ -153,7 +153,7 @@
         "Bone, \"%s\" restas kiel ĝi estas. Mi demandos denove post 100 tagoj."
     ],
     "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" estis kongruigita kun \"%s\" sur IGDB."],
-    "%s expects a time like 04:00, or nothing to turn it off.": [
-        "%s atendas horon kiel 04:00, aŭ nenion por malŝalti ĝin."
+    "%s expects an hour from 0 to 23, or nothing to turn it off.": [
+        "%s atendas horon de 0 ĝis 23, aŭ nenion por malŝalti ĝin."
     ]
 }

@@ -549,11 +549,12 @@ const myIgdb = {
     },
 
     hookForCron: function () {
+        this.logSyncSchedule();
         return [
             {
-                // Checked every minute rather than scheduled once, so a changed
-                // igdbSyncTime applies without a restart.
-                schedule: "* * * * *", // https://crontab.guru/
+                // Checked hourly rather than scheduled once, so a changed
+                // igdbSyncHour applies without a restart.
+                schedule: "0 * * * *", // https://crontab.guru/
                 action: () => {
                     this.logSyncSchedule();
                     if (this.isSyncDue(DateTime.now())) return this.runSyncPass();
@@ -562,54 +563,54 @@ const myIgdb = {
         ];
     },
 
-    // The admin-configured igdbSyncTime as { hour, minute }, or null if it's
-    // unset or not a valid HH:MM time.
-    parseSyncTime: function () {
-        let time = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(this.cfg("igdbSyncTime")?.trim() ?? "");
-        return time ? { hour: Number(time[1]), minute: Number(time[2]) } : null;
+    // The admin-configured igdbSyncHour (0-23), or null if it's unset or invalid.
+    parseSyncHour: function () {
+        let hour = /^([01]?\d|2[0-3])$/.exec(this.cfg("igdbSyncHour")?.trim() ?? "");
+        return hour ? Number(hour[1]) : null;
     },
 
-    // Whether `now` is the admin-configured igdbSyncTime (HH:MM in the server's
-    // timezone). No (valid) time configured means no background sync at all.
+    // Whether `now` falls into the admin-configured igdbSyncHour (in the
+    // server's timezone). No (valid) hour configured means no background sync.
     isSyncDue: function (now) {
-        let time = this.parseSyncTime();
-        if (!time) return false;
-        let local = now.setZone(this.cfg("timezone") || "system");
-        return local.hour === time.hour && local.minute === time.minute;
+        let hour = this.parseSyncHour();
+        if (hour === null) return false;
+        return now.setZone(this.cfg("timezone") || "system").hour === hour;
     },
 
-    // Logs whether and when the sync will run - once after startup and again
-    // whenever that changes - since otherwise nothing shows until a pass runs.
+    // Logs whether and when the sync will run - once at startup and again on
+    // the hourly check whenever that changed - since otherwise nothing shows
+    // until a pass runs.
     logSyncSchedule: function () {
-        let value = this.cfg("igdbSyncTime")?.trim() || "";
+        let value = this.cfg("igdbSyncHour")?.trim() || "";
         let zone = this.cfg("timezone") || "system";
         let state = [value, zone, this.isConfigured()].join("|");
         if (state === this.loggedSyncSchedule) return;
         this.loggedSyncSchedule = state;
 
+        let hour = this.parseSyncHour();
+        let at = `${String(hour).padStart(2, "0")}:00`;
         if (!value) {
-            console.log("IGDB sync: off, no igdbSyncTime set.");
-        } else if (!this.parseSyncTime()) {
-            console.warn(`IGDB sync: off, igdbSyncTime "${value}" isn't a valid HH:MM time.`);
+            console.log("IGDB sync: off, no igdbSyncHour set.");
+        } else if (hour === null) {
+            console.warn(`IGDB sync: off, igdbSyncHour "${value}" isn't an hour from 0 to 23.`);
         } else if (!DateTime.now().setZone(zone).isValid) {
             console.warn(`IGDB sync: off, the timezone setting "${zone}" isn't valid.`);
         } else if (!this.isConfigured()) {
-            console.log(`IGDB sync: set for ${value} (${zone}) daily, but IGDB isn't configured.`);
+            console.log(`IGDB sync: set for ${at} (${zone}) daily, but IGDB isn't configured.`);
         } else {
             let next = this.nextSyncRun(DateTime.now());
             let wait = next.diff(DateTime.now(), ["hours", "minutes"]);
             console.log(
-                `IGDB sync: runs daily at ${value} (${zone}), next run ${next.toFormat("yyyy-LL-dd HH:mm ZZZZ")}, in ${Math.floor(wait.hours)}h ${Math.round(wait.minutes)}m.`
+                `IGDB sync: runs daily at ${at} (${zone}), next run ${next.toFormat("yyyy-LL-dd HH:mm ZZZZ")}, in ${Math.floor(wait.hours)}h ${Math.round(wait.minutes)}m.`
             );
         }
     },
 
-    // The next time the configured igdbSyncTime comes around, in the server's
+    // The next time the configured igdbSyncHour starts, in the server's
     // timezone - today if it's still ahead, otherwise tomorrow.
     nextSyncRun: function (now) {
-        let time = this.parseSyncTime();
         let local = now.setZone(this.cfg("timezone") || "system");
-        let next = local.set({ ...time, second: 0, millisecond: 0 });
+        let next = local.set({ hour: this.parseSyncHour(), minute: 0, second: 0, millisecond: 0 });
         return next <= local ? next.plus({ days: 1 }) : next;
     },
 

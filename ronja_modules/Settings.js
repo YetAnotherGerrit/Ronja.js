@@ -44,8 +44,8 @@ async function plainValue(guild, setting) {
     return setting.value;
 }
 
-// HH:MM, 24h - the format of "time" settings (see IGDB.js' igdbSyncTime).
-const TIME_PATTERN = /^([01]?\d|2[0-3]):[0-5]\d$/;
+// A whole hour of the day, 0-23 - the format of "hour" settings (see IGDB.js' igdbSyncHour).
+const HOUR_PATTERN = /^([01]?\d|2[0-3])$/;
 
 function embedValue(plain, setting) {
     if (plain === "(not set)") return "*(not set)*";
@@ -177,8 +177,8 @@ const mySettings = {
             .setCustomId("settingsValue")
             .setLabel(this.l(interaction.locale, "New value"))
             .setStyle(TextInputStyle.Short)
-            // A time can be cleared, which turns off whatever it schedules.
-            .setRequired(setting.type !== "time");
+            // An hour can be cleared, which turns off whatever it schedules.
+            .setRequired(setting.type !== "hour");
 
         if (!isSensitive(setting.name) && setting.value) {
             input.setValue(setting.value);
@@ -206,10 +206,10 @@ const mySettings = {
         let invalid = null;
         if (setting.type === "integer" && !/^-?\d+$/.test(value)) {
             invalid = this.l(interaction.locale, "%s expects a whole number.", setting.name);
-        } else if (setting.type === "time" && value && !TIME_PATTERN.test(value)) {
+        } else if (setting.type === "hour" && value && !HOUR_PATTERN.test(value)) {
             invalid = this.l(
                 interaction.locale,
-                "%s expects a time like 04:00, or nothing to turn it off.",
+                "%s expects an hour from 0 to 23, or nothing to turn it off.",
                 setting.name
             );
         }

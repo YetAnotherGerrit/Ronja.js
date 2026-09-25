@@ -159,7 +159,7 @@
         "D'accord, \"%s\" reste tel quel. Je redemanderai dans 100 jours."
     ],
     "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" a été associé à \"%s\" sur IGDB."],
-    "%s expects a time like 04:00, or nothing to turn it off.": [
-        "%s attend une heure comme 04:00, ou rien pour le désactiver."
+    "%s expects an hour from 0 to 23, or nothing to turn it off.": [
+        "%s attend une heure de 0 à 23, ou rien pour le désactiver."
     ]
 }
