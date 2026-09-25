@@ -14,6 +14,12 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myExample = {
+    // Called once when Ronja is ready, after every module got its client, l()
+    // and cfg() - e.g. to pick up state from the caches (see Top10.js).
+    hookForReady: async function () {
+        console.debug("Ronja is ready!");
+    },
+
     hookForCron: function () {
         return [
             {

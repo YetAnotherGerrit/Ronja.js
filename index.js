@@ -81,6 +81,11 @@ client.once(Events.ClientReady, async () => {
         }
     });
 
+    // Only once every module has its client, l() and cfg().
+    ronja_modules.forEach((m) => {
+        if (m.hookForReady) invokeHook(() => m.hookForReady());
+    });
+
     console.log("Ready!");
 });
 

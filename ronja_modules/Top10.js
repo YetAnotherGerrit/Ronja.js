@@ -301,12 +301,13 @@ const myTop10 = {
         }
     },
 
-    hookForCron: function () {
-        // Called once when Ronja gets ready: whoever is in voice with others by
-        // then counts from now on.
+    // Whoever is already in voice with others counts from now on.
+    hookForReady: function () {
         let now = new Date();
         this.countedVoiceStates().forEach((state) => this.voiceSince.set(state.id, now));
+    },
 
+    hookForCron: function () {
         let schedules = [
             {
                 schedule: "0 * * * *",
