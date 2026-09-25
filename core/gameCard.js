@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, time, TimestampStyles } = require("discord.js");
 const { DateTime } = require("luxon");
 
 // Discord allows 6000 characters across all embeds of a message. These caps
@@ -43,7 +43,7 @@ function buildGameCard(client, details, locale) {
     };
     let list = (items) => truncate((items || []).join(", "), LIST_MAX_LENGTH);
 
-    add(l("Release date"), releaseDate(details.releaseDate, locale));
+    add(l("Release date"), releaseDate(details.releaseDate));
     add(l("Platforms"), list(details.platforms));
     if (details.rating != null) add(l("Rating"), `${Math.round(details.rating)}/100`);
     add(l("Genres"), list(details.genres));
@@ -59,12 +59,14 @@ function buildGameCard(client, details, locale) {
     return e;
 }
 
-// The details' ISO date (e.g. "2021-03-25") written out for `locale`, e.g.
-// "25. März 2021". Anything that isn't an ISO date is shown as it is.
-function releaseDate(date, locale) {
+// The details' ISO date (e.g. "2021-03-25") as a Discord timestamp, which
+// every viewer sees in their own language. Discord also shifts it into the
+// viewer's timezone, so it points at noon UTC - the same calendar day from
+// UTC-11 to UTC+11. Anything that isn't an ISO date is shown as it is.
+function releaseDate(date) {
     if (!date) return null;
-    let parsed = DateTime.fromISO(date, { zone: "utc" });
-    return parsed.isValid ? parsed.setLocale(locale).toLocaleString(DateTime.DATE_FULL) : date;
+    let noon = DateTime.fromISO(date, { zone: "utc" }).set({ hour: 12 });
+    return noon.isValid ? time(noon.toJSDate(), TimestampStyles.LongDate) : date;
 }
 
 function duration(l, seconds) {
