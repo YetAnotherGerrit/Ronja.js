@@ -497,7 +497,7 @@ const myZocken = {
 
     hookForButtonInteraction: async function (interaction) {
         if (interaction.customId === "zockenSelect") {
-            let [mem, memCreated] = await this.client.db.MemberSetting.findOrCreate({
+            let [mem] = await this.client.myFindOrCreate(this.client.db.MemberSetting, {
                 where: { memberid: interaction.member.id, name: "zockenmention" },
                 defaults: { value: "1" },
             });

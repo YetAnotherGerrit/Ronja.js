@@ -17,6 +17,24 @@ function stableStringify(value) {
     return JSON.stringify(value);
 }
 
+// Like Model.findOrCreate, but without its internal transaction: Sequelize runs
+// every SQLite transaction on a connection of its own, and its lookup's read lock
+// then deadlocks with any write on the main connection (e.g. during the IGDB
+// sync) - failing with SQLITE_BUSY even after Sequelize's retries. The main
+// connection runs statements one after another, so this can't lock itself out.
+// Returns [instance, created], like findOrCreate.
+async function findOrCreateWithoutTransaction(model, { where, defaults = {} }) {
+    let found = await model.findOne({ where });
+    if (found) return [found, false];
+    try {
+        return [await model.create({ ...where, ...defaults }), true];
+    } catch (err) {
+        // Created concurrently in between (only detectable with a unique constraint).
+        if (!(err instanceof Sequelize.UniqueConstraintError)) throw err;
+        return [await model.findOne({ where }), false];
+    }
+}
+
 class Ronja extends Client {
     db = {};
     myConfig = {};
@@ -91,6 +109,11 @@ class Ronja extends Client {
             console.error(`Could not fetch game details for "${game.name}":`, err);
             return null;
         }
+    }
+
+    // Use this instead of Model.findOrCreate - see findOrCreateWithoutTransaction.
+    myFindOrCreate(model, options) {
+        return findOrCreateWithoutTransaction(model, options);
     }
 
     async myNotifyOwner(guild, message) {
@@ -242,4 +265,5 @@ class Ronja extends Client {
 
 module.exports = {
     Ronja,
+    findOrCreateWithoutTransaction,
 };

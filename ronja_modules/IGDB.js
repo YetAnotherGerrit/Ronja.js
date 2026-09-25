@@ -7,7 +7,7 @@ const {
     MessageFlags,
 } = require("discord.js");
 const { DateTime } = require("luxon");
-const { Op, UniqueConstraintError } = require("sequelize");
+const { Op, TimeoutError, UniqueConstraintError } = require("sequelize");
 const { setTimeout: sleep } = require("node:timers/promises");
 
 const IGDB_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h - IGDB data barely changes day to day.
@@ -452,7 +452,7 @@ const myIgdb = {
         let db = this.client.db;
         if (!name || (await db.Game.findOne({ where: { name } }))) return;
 
-        let [alias, created] = await db.GameAlias.findOrCreate({
+        let [alias, created] = await this.client.myFindOrCreate(db.GameAlias, {
             where: { name },
             defaults: { GameId: game.id },
         });
@@ -528,7 +528,9 @@ const myIgdb = {
             return await this.resolveCanonicalGame(gameName, this.toMatch(resolved.exact), guild);
         }
 
-        let [game] = await this.client.db.Game.findOrCreate({ where: { name: gameName } });
+        let [game] = await this.client.myFindOrCreate(this.client.db.Game, {
+            where: { name: gameName },
+        });
         await this.applyLookup(game, resolved, guild, this.newSyncReport());
         return game;
     },
@@ -751,9 +753,12 @@ const myIgdb = {
             try {
                 await this.applyLookup(game, resolved, guild, report);
             } catch (err) {
-                // Not IGDB's fault (e.g. a name collision while merging) - retrying
-                // on every pass wouldn't help, so treat it like a not-found game.
                 console.error(`IGDB sync: could not apply the lookup for "${game.name}":`, err);
+                // A locked database is temporary - leave the game for a later pass.
+                if (err instanceof TimeoutError) continue;
+                // Otherwise it's not IGDB's fault (e.g. a name collision while
+                // merging), and retrying on every pass wouldn't help - so treat
+                // it like a not-found game.
                 await game.update({ igdbStatus: "notFound", igdbCheckedAt: new Date() });
             }
         }
