@@ -596,8 +596,21 @@ const myIgdb = {
         } else if (!this.isConfigured()) {
             console.log(`IGDB sync: set for ${value} (${zone}) daily, but IGDB isn't configured.`);
         } else {
-            console.log(`IGDB sync: runs daily at ${value} (${zone}).`);
+            let next = this.nextSyncRun(DateTime.now());
+            let wait = next.diff(DateTime.now(), ["hours", "minutes"]);
+            console.log(
+                `IGDB sync: runs daily at ${value} (${zone}), next run ${next.toFormat("yyyy-LL-dd HH:mm ZZZZ")}, in ${Math.floor(wait.hours)}h ${Math.round(wait.minutes)}m.`
+            );
         }
+    },
+
+    // The next time the configured igdbSyncTime comes around, in the server's
+    // timezone - today if it's still ahead, otherwise tomorrow.
+    nextSyncRun: function (now) {
+        let time = this.parseSyncTime();
+        let local = now.setZone(this.cfg("timezone") || "system");
+        let next = local.set({ ...time, second: 0, millisecond: 0 });
+        return next <= local ? next.plus({ days: 1 }) : next;
     },
 
     // One background sync pass: looks up games never matched to IGDB (plus
