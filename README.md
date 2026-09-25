@@ -17,7 +17,9 @@ want to play with your friends and need to decide on what game to play.
       pinned in each new channel.
     - Automatic archiving of channels about games that are not played anymore.
 - /lfg command to find members to game with by assisting with what common
-  games you have.
+  games you have. With IGDB configured, single-player-only games are left out
+  and each game's online player limit is shown (in the voice channel status
+  too, flagging games too small for everyone in the channel).
 - /top10 command to show the most popular games in the guild.
     - Also weekly, monthly and yearly top 10.
 - /ical command to get an ical-feed for the events you attend.
@@ -31,7 +33,7 @@ want to play with your friends and need to decide on what game to play.
   certain or IGDB doesn't know an activity at all (so non-games can be
   ignored), and game data is kept up to date. Configured with a Twitch/IGDB client ID and secret via
   /settings; the rest of Ronja works the same without it.
-- Serverprofile command to show common games for a specific member.
+- Serverprofile command to show common multiplayer games for a specific member.
 - /settings command with an interactive menu to view and change Ronja's
   configuration for your guild.
 - Available in English, German, Spanish, French, Italian, Portuguese, and

@@ -65,8 +65,8 @@
     "Ping me also offline.": ["Menciu min ankaŭ eksterrete."],
     "Ping me only, when I am online.": ["Menciu min nur kiam mi estas enrete."],
     "Please, never ping me.": ["Bonvolu neniam mencii min."],
-    "You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
-        "Vi estas sciigata, se vi ambaŭ ludis almenaŭ unu komunan ludon dum la lastaj 100 tagoj. Se vi ne volas ricevi tiujn sciigojn, vi povas ŝanĝi tion nun.\n\nVia nuna agordo:\n> %s"
+    "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
+        "Vi estas sciigata, se vi ambaŭ ludis almenaŭ unu komunan plurludantan ludon dum la lastaj 100 tagoj. Se vi ne volas ricevi tiujn sciigojn, vi povas ŝanĝi tion nun.\n\nVia nuna agordo:\n> %s"
     ],
     "Notifications...": ["Sciigoj..."],
     "Also notify myself that someone wants to game, even when I am offline.": [
@@ -210,5 +210,6 @@
     ],
     "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
         "Bone, \"%s\" restas registrata kiel ludo. Mi daŭre kontrolos IGDB por ĝi kaj demandos denove nur se IGDB trovos ion."
-    ]
+    ],
+    "up to %d": ["ĝis %d"]
 }
