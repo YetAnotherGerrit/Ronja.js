@@ -9,6 +9,7 @@ const {
 const { DateTime } = require("luxon");
 const { Op, TimeoutError, UniqueConstraintError } = require("sequelize");
 const { setTimeout: sleep } = require("node:timers/promises");
+const { normalizeGameName } = require("../core/gameList.js");
 
 const IGDB_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h - IGDB data barely changes day to day.
 const IGDB_MIN_REQUEST_INTERVAL_MS = 250; // IGDB allows 4 requests per second.
@@ -219,12 +220,6 @@ const myIgdb = {
         return bases;
     },
 
-    // Game names compare equal regardless of case, punctuation and spacing, so
-    // e.g. "Death Stranding Director's Cut" matches "Death Stranding: Director's Cut".
-    normalizeName: function (name) {
-        return name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
-    },
-
     // Collapses search results onto their base games and looks for an exact
     // match on `name`: an official name before an alternative one, and within
     // each, a result that is a game of its own before one that collapses (e.g.
@@ -233,8 +228,8 @@ const myIgdb = {
     // Returns { exact: base game | null, bases: unique base games, in order }.
     resolveSearchResults: async function (results, name) {
         let bases = await this.collapseToBase(results);
-        let wanted = this.normalizeName(name);
-        let same = (other) => Boolean(wanted) && this.normalizeName(other) === wanted;
+        let wanted = normalizeGameName(name);
+        let same = (other) => Boolean(wanted) && normalizeGameName(other) === wanted;
         let finders = [
             (r) => same(r.name),
             (r) => (r.alternative_names || []).some((a) => same(a.name)),
@@ -344,6 +339,12 @@ const myIgdb = {
             multiplayer: this.mapMultiplayer(g.multiplayer_modes || []),
             timeToBeat: this.mapTimeToBeat(timeToBeat),
             websites,
+            // From its Steam store link (store.steampowered.com/app/<id>/...),
+            // for /news in ronja_modules/SteamNews.js. Null if it has none.
+            steamAppId:
+                websites
+                    .find((w) => w.type === "steam")
+                    ?.url.match(/store\.steampowered\.com\/app\/(\d+)/)?.[1] ?? null,
             rating: g.total_rating ?? null,
             coverUrl: g.cover?.image_id
                 ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.cover.image_id}.jpg`

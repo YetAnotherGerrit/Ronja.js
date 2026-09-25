@@ -245,5 +245,13 @@
     "You joined %s.": ["Vi aliĝis al %s."],
     "You left #%s. I'll add you back when I see you playing %s again.": [
         "Vi forlasis #%s. Mi realdonos vin, kiam mi vidos vin denove ludi %s."
-    ]
+    ],
+    "/news only works in a game's text channel.": ["/news funkcias nur en la tekstkanalo de ludo."],
+    "No Steam news available for %s.": ["Neniuj Steam-novaĵoj haveblas por %s."],
+    "Steam can't be reached right now, please try again later.": [
+        "Steam ne estas atingebla nun, bonvolu reprovi poste."
+    ],
+    "News for %s": ["Novaĵoj pri %s"],
+    "Playing on Steam right now: %s": ["Ludas nun ĉe Steam: %s"],
+    "Read more": ["Legi pli"]
 }
