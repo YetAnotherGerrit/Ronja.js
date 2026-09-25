@@ -9,8 +9,6 @@
     "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
         "Kelkaj el vi remalkovris %s lastatempe. #%s estis reaktivigita el la arkivo.\n\nAliaj estos aldonitaj al tiu kanalo tuj kiam mi vidos ilin ludantajn ĝin."
     ],
-    " active players": [" aktivaj ludantoj"],
-    ", %s in the queue": [", %s en atendovico"],
     "Profile of %s": ["Profilo de %s"],
     "%s is on this discord server since %s.": ["%s estas sur ĉi tiu discord-servilo ekde %s."],
     "Common games": ["Komunaj ludoj"],
@@ -90,9 +88,6 @@
     ],
     "No games have been played.": ["Neniu ludo estis ludita."],
     "Failed!": ["Malsukcesis!"],
-    "Could not be safed. Maybe the bot is missing some permissions?": [
-        "Ne eblis konservi. Eble la roboto malhavas kelkajn permesojn?"
-    ],
     "Language of the guild was changed to %s.": ["La lingvo de la servilo estis ŝanĝita al %s."],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
         "Ne eblis krei tekstan kanalon por %s: la kategorio #%s atingis la limon de 50 kanaloj de Discord."

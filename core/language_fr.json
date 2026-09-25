@@ -9,8 +9,6 @@
     "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
         "Quelques personnes parmi vous ont redécouvert %s récemment. #%s a été réactivé depuis les archives.\n\nLes autres personnes seront ajoutées à ce salon dès que je les verrai y jouer."
     ],
-    " active players": [" joueurs actifs"],
-    ", %s in the queue": [", %s en attente"],
     "Profile of %s": ["Profil de %s"],
     "%s is on this discord server since %s.": ["%s est sur ce serveur discord depuis %s."],
     "Common games": ["Jeux en commun"],
@@ -94,9 +92,6 @@
     ],
     "No games have been played.": ["Aucun jeu n'a été joué."],
     "Failed!": ["Échec !"],
-    "Could not be safed. Maybe the bot is missing some permissions?": [
-        "Impossible d'enregistrer. Le bot manque peut-être de certaines permissions ?"
-    ],
     "Language of the guild was changed to %s.": ["La langue du serveur a été changée en %s."],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
         "Impossible de créer un salon textuel pour %s : la catégorie #%s a atteint la limite de 50 salons de Discord."

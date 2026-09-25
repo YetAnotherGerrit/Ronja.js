@@ -9,8 +9,6 @@
     "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
         "Einige von euch haben kürzlich %s wiederentdeckt. #%s wurde aus dem Archiv reaktiviert.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sie es spielen sehe."
     ],
-    " active players": [" aktive Spieler"],
-    ", %s in the queue": [", %s in der Warteschlange"],
     "Profile of %s": ["Profil von %s"],
     "%s is on this discord server since %s.": ["%s ist auf diesem Discord-Server seit %s."],
     "Common games": ["Gemeinsame Spiele"],
@@ -35,7 +33,7 @@
         "Bitte wähle eine gültige Uhrzeit: SS:MM. Die Minute muss zwischen 0 und 59 liegen."
     ],
     "Please choose a valid time: HH:MM (24-hour time format).": [
-        "Bitte wählen Sie eine gültige Uhrzeit: HH:MM (24-Stunden-Zeitformat)."
+        "Bitte wähle eine gültige Uhrzeit: HH:MM (24-Stunden-Format)."
     ],
     "The chosen time and day need to be at least 5 minutes in the future.": [
         "Die gewählte Uhrzeit und der Tag müssen mindestens 5 Minuten in der Zukunft liegen."
@@ -93,10 +91,7 @@
         "Diese Spiele werden von den Kanalmitgliedern gespielt:\n"
     ],
     "No games have been played.": ["Es wurde nicht gespielt."],
-    "Failed!": ["Failed!"],
-    "Could not be safed. Maybe the bot is missing some permissions?": [
-        "Could not be safed. Maybe the bot is missing some permissions?"
-    ],
+    "Failed!": ["Fehlgeschlagen!"],
     "Language of the guild was changed to %s.": ["Serversprache wurde auf %s geändert."],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
         "Konnte keinen Textkanal für %s erstellen: Die Kategorie #%s hat Discords Limit von 50 Kanälen erreicht."
