@@ -9,6 +9,7 @@ const {
 const { DateTime } = require("luxon");
 const { Op, TimeoutError, UniqueConstraintError } = require("sequelize");
 const { setTimeout: sleep } = require("node:timers/promises");
+const { buildGameCard, gameCardDetailOptions } = require("../core/gameCard.js");
 
 const IGDB_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h - IGDB data barely changes day to day.
 const IGDB_MIN_REQUEST_INTERVAL_MS = 250; // IGDB allows 4 requests per second.
@@ -49,6 +50,25 @@ const COLLAPSED_GAME_TYPES = [
     14, // Update
 ];
 const COLLAPSE_MAX_HOPS = 3; // e.g. an edition of an expanded game of the base game
+
+// IGDB fields for the details shown by /gameinfo and the game card (see
+// mapGameDetails). Time to beat comes from its own endpoint.
+const DETAILS_FIELDS = [
+    "name,url,summary,first_release_date,total_rating,cover.image_id,platforms.name",
+    "genres.name,game_modes.name,websites.url,websites.type,multiplayer_modes.*",
+].join(",");
+// The IGDB website types worth linking on the game card, by the key
+// core/gameCard.js knows them under (https://api-docs.igdb.com/#website-type).
+const DETAILS_WEBSITE_TYPES = {
+    1: "official",
+    2: "wiki",
+    13: "steam",
+    14: "reddit",
+    15: "itch",
+    16: "epic",
+    17: "gog",
+    18: "discord",
+};
 
 const myIgdb = {
     collectorTimeout: 60 * 1000,
@@ -140,10 +160,10 @@ const myIgdb = {
         if (slot > now) await sleep(slot - now);
     },
 
-    igdbRequest: async function (body) {
+    igdbRequest: async function (body, endpoint = "games") {
         let token = await this.getIgdbToken();
         await this.waitForIgdbSlot();
-        let res = await fetch("https://api.igdb.com/v4/games", {
+        let res = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
             method: "POST",
             headers: {
                 "Client-ID": this.cfg("igdbClientId"),
@@ -285,7 +305,7 @@ const myIgdb = {
 
     releaseYear: function (candidate) {
         return candidate.first_release_date
-            ? DateTime.fromSeconds(candidate.first_release_date).toFormat("yyyy")
+            ? DateTime.fromSeconds(candidate.first_release_date, { zone: "utc" }).toFormat("yyyy")
             : undefined;
     },
 
@@ -297,15 +317,32 @@ const myIgdb = {
         }));
     },
 
-    mapGameDetails: function (g) {
+    // Maps a raw IGDB game (fetched with DETAILS_FIELDS) and its time to beat
+    // (a raw game_time_to_beats entry, or undefined) onto the details object
+    // handed out by hookForGameDetails and shown by core/gameCard.js.
+    mapGameDetails: function (g, timeToBeat) {
+        let websites = [];
+        for (let w of g.websites || []) {
+            let type = DETAILS_WEBSITE_TYPES[w.type];
+            if (type && w.url && !websites.some((known) => known.type === type)) {
+                websites.push({ type, url: w.url });
+            }
+        }
+
         return {
             id: g.id,
             name: g.name,
+            url: g.url || null,
             summary: g.summary || null,
             releaseDate: g.first_release_date
-                ? DateTime.fromSeconds(g.first_release_date).toFormat("yyyy-LL-dd")
+                ? DateTime.fromSeconds(g.first_release_date, { zone: "utc" }).toISODate()
                 : null,
             platforms: (g.platforms || []).map((p) => p.name),
+            genres: (g.genres || []).map((genre) => genre.name),
+            gameModes: (g.game_modes || []).map((m) => m.name),
+            multiplayer: this.mapMultiplayer(g.multiplayer_modes || []),
+            timeToBeat: this.mapTimeToBeat(timeToBeat),
+            websites,
             rating: g.total_rating ?? null,
             coverUrl: g.cover?.image_id
                 ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.cover.image_id}.jpg`
@@ -313,11 +350,48 @@ const myIgdb = {
         };
     },
 
+    // IGDB lists multiplayer modes per platform - the card only needs the
+    // best of each (most players, any platform with co-op). Null if IGDB has
+    // no multiplayer data for the game.
+    mapMultiplayer: function (modes) {
+        if (!modes.length) return null;
+        let most = (field) => Math.max(0, ...modes.map((m) => m[field] || 0));
+        let any = (field) => modes.some((m) => m[field]);
+        return {
+            onlineMax: most("onlinemax"),
+            onlineCoop: any("onlinecoop"),
+            onlineCoopMax: most("onlinecoopmax"),
+            offlineMax: most("offlinemax"),
+            offlineCoop: any("offlinecoop"),
+            offlineCoopMax: most("offlinecoopmax"),
+            lanCoop: any("lancoop"),
+            splitscreen: any("splitscreen") || any("splitscreenonline"),
+            campaignCoop: any("campaigncoop"),
+            dropIn: any("dropin"),
+        };
+    },
+
+    // { hastily, normally, completely } in seconds, each null if unknown -
+    // or null if IGDB has no time to beat for the game at all.
+    mapTimeToBeat: function (t) {
+        let times = {
+            hastily: t?.hastily || null,
+            normally: t?.normally || null,
+            completely: t?.completely || null,
+        };
+        return Object.values(times).some(Boolean) ? times : null;
+    },
+
     fetchGameDetailsById: async function (id) {
-        let results = await this.igdbRequest(
-            `fields name,summary,first_release_date,cover.image_id,platforms.name,total_rating; where id = ${Number(id)}; limit 1;`
+        let [game] = await this.igdbRequest(
+            `fields ${DETAILS_FIELDS}; where id = ${Number(id)}; limit 1;`
         );
-        return results[0] ? this.mapGameDetails(results[0]) : null;
+        if (!game) return null;
+        let [timeToBeat] = await this.igdbRequest(
+            `fields hastily,normally,completely; where game_id = ${Number(id)}; limit 1;`,
+            "game_time_to_beats"
+        );
+        return this.mapGameDetails(game, timeToBeat);
     },
 
     // Moves `source`'s GameStatus history onto `target` and drops `source`.
@@ -552,6 +626,11 @@ const myIgdb = {
             this.setCached(game.igdbId, details, this.igdbDetailsCache);
         }
         return details;
+    },
+
+    // The choices /settings offers for the gameCardDetails setting.
+    hookForSettingOptions: function (name, locale) {
+        if (name === "gameCardDetails") return gameCardDetailOptions(this.client, locale);
     },
 
     hookForCron: function () {
@@ -1051,42 +1130,6 @@ const myIgdb = {
         await reply(Colors.Green, message);
     },
 
-    buildGameInfoEmbed: function (details, locale) {
-        let e = new EmbedBuilder()
-            .setColor(Colors.Green)
-            .setTitle(details.name)
-            .setFooter({ text: "IGDB" });
-
-        if (details.summary) e.setDescription(details.summary.slice(0, 4096));
-        if (details.coverUrl) e.setThumbnail(details.coverUrl);
-
-        let fields = [];
-        if (details.releaseDate) {
-            fields.push({
-                name: this.l(locale, "Release date"),
-                value: details.releaseDate,
-                inline: true,
-            });
-        }
-        if (details.platforms.length) {
-            fields.push({
-                name: this.l(locale, "Platforms"),
-                value: details.platforms.join(", "),
-                inline: true,
-            });
-        }
-        if (details.rating !== null) {
-            fields.push({
-                name: this.l(locale, "Rating"),
-                value: `${Math.round(details.rating)}/100`,
-                inline: true,
-            });
-        }
-        if (fields.length) e.addFields(fields);
-
-        return e;
-    },
-
     replyError: async function (interaction, message) {
         await interaction.editReply({
             embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(message)],
@@ -1171,7 +1214,9 @@ const myIgdb = {
         }
 
         await interaction.editReply({
-            embeds: [this.buildGameInfoEmbed(details, interaction.locale)],
+            embeds: [
+                buildGameCard(this.client, details, interaction.locale).setColor(Colors.Green),
+            ],
             components: [],
         });
     },

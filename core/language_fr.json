@@ -165,5 +165,46 @@
     "Not a game, ignore it": ["Pas un jeu, l'ignorer"],
     "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
         "D'accord, \"%s\" n'est plus traité comme un jeu : il n'est plus suivi ni listé nulle part."
-    ]
+    ],
+    "Genres": ["Genres"],
+    "Time to beat": ["Durée de vie"],
+    "Rushed: %s": ["En ligne droite : %s"],
+    "Normally: %s": ["Normalement : %s"],
+    "Completionist: %s": ["À 100 % : %s"],
+    "%d h": ["%d h"],
+    "%d min": ["%d min"],
+    "Multiplayer": ["Multijoueur"],
+    "Game modes": ["Modes de jeu"],
+    "Links": ["Liens"],
+    "Online co-op, up to %d players": ["Coop en ligne, jusqu'à %d joueurs"],
+    "Online co-op": ["Coop en ligne"],
+    "Online multiplayer, up to %d players": ["Multijoueur en ligne, jusqu'à %d joueurs"],
+    "Couch co-op, up to %d players": ["Coop en local, jusqu'à %d joueurs"],
+    "Couch co-op": ["Coop en local"],
+    "Local multiplayer, up to %d players": ["Multijoueur local, jusqu'à %d joueurs"],
+    "LAN co-op": ["Coop en LAN"],
+    "Split screen": ["Écran partagé"],
+    "Co-op campaign": ["Campagne en coop"],
+    "Drop-in/drop-out": ["Drop-in/drop-out"],
+    "Official site": ["Site officiel"],
+    "Wiki": ["Wiki"],
+    "Could not post the game card in #%s: I need the Send Messages and Embed Links permissions there.": [
+        "Impossible de publier la fiche du jeu dans #%s : j'ai besoin des permissions « Envoyer des messages » et « Intégrer des liens » dans ce salon."
+    ],
+    "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
+        "Impossible d'épingler la fiche du jeu dans #%s : j'ai besoin de la permission « Épingler des messages » dans ce salon."
+    ],
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.": [
+        "Impossible de supprimer la notification d'épinglage de Discord dans #%s : j'ai besoin de la permission « Voir les anciens messages » dans ce salon."
+    ],
+    "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
+        "Impossible de vérifier si quelqu'un a écrit dans #%s, je l'archive donc au lieu de le supprimer : j'ai besoin de la permission « Voir les anciens messages » dans ce salon."
+    ],
+    "Cover": ["Jaquette"],
+    "Summary": ["Résumé"],
+    "Or the game modes, if IGDB has no multiplayer details": [
+        "Ou les modes de jeu, si IGDB n'a pas de détails sur le multijoueur"
+    ],
+    "(none)": ["(aucun)"],
+    "Choose any number of options...": ["Choisis autant d'options que tu veux..."]
 }

@@ -16,7 +16,12 @@
 
     And the following bot permissions:
     - View Channels, Manage Channels, Manage Roles, Manage Events, Send Messages,
-      Embed Links, Move Members
+      Embed Links, Read Message History, Pin Messages, Move Members
+
+    Read Message History and Pin Messages are needed for the pinned game card
+    in new game text channels, and for telling empty channels (deleted) apart
+    from ones with posts (archived). If Ronja lacks a permission for something
+    it tries, it tells the server owner via DM.
 
 ### Discord intents
 

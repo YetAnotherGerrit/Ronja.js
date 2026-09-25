@@ -159,5 +159,46 @@
     "Not a game, ignore it": ["Ne ludo, ignoru ĝin"],
     "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
         "Bone, \"%s\" ne plu estas traktata kiel ludo: ĝi nenie plu estas registrata aŭ listigata."
-    ]
+    ],
+    "Genres": ["Ĝenroj"],
+    "Time to beat": ["Ludodaŭro"],
+    "Rushed: %s": ["Rapide: %s"],
+    "Normally: %s": ["Normale: %s"],
+    "Completionist: %s": ["Plene: %s"],
+    "%d h": ["%d h"],
+    "%d min": ["%d min"],
+    "Multiplayer": ["Plurludanta"],
+    "Game modes": ["Ludreĝimoj"],
+    "Links": ["Ligiloj"],
+    "Online co-op, up to %d players": ["Reta kunlaboro, ĝis %d ludantoj"],
+    "Online co-op": ["Reta kunlaboro"],
+    "Online multiplayer, up to %d players": ["Reta plurludado, ĝis %d ludantoj"],
+    "Couch co-op, up to %d players": ["Loka kunlaboro, ĝis %d ludantoj"],
+    "Couch co-op": ["Loka kunlaboro"],
+    "Local multiplayer, up to %d players": ["Loka plurludado, ĝis %d ludantoj"],
+    "LAN co-op": ["LAN-kunlaboro"],
+    "Split screen": ["Dividita ekrano"],
+    "Co-op campaign": ["Kunlabora kampanjo"],
+    "Drop-in/drop-out": ["Libera aliĝo kaj foriro"],
+    "Official site": ["Oficiala retejo"],
+    "Wiki": ["Vikio"],
+    "Could not post the game card in #%s: I need the Send Messages and Embed Links permissions there.": [
+        "Ne povis afiŝi la ludkarton en #%s: mi bezonas tie la permesojn „Sendi mesaĝojn“ kaj „Enkorpigi ligilojn“."
+    ],
+    "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
+        "Ne povis fiksi la ludkarton en #%s: mi bezonas tie la permeson „Fiksi mesaĝojn“."
+    ],
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.": [
+        "Ne povis forigi la fiksan sciigon de Discord en #%s: mi bezonas tie la permeson „Legi mesaĝhistorion“."
+    ],
+    "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
+        "Ne povis kontroli, ĉu iu afiŝis en #%s, do mi arĥivas ĝin anstataŭ forigi ĝin: mi bezonas tie la permeson „Legi mesaĝhistorion“."
+    ],
+    "Cover": ["Kovrilo"],
+    "Summary": ["Resumo"],
+    "Or the game modes, if IGDB has no multiplayer details": [
+        "Aŭ la ludreĝimoj, se IGDB ne havas detalojn pri plurludado"
+    ],
+    "(none)": ["(neniu)"],
+    "Choose any number of options...": ["Elektu iom ajn da opcioj..."]
 }

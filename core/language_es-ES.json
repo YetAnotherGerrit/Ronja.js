@@ -165,5 +165,46 @@
     "Not a game, ignore it": ["No es un juego, ignorarlo"],
     "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
         "Vale, \"%s\" ya no se trata como un juego: ya no se registra ni aparece en ninguna lista."
-    ]
+    ],
+    "Genres": ["Géneros"],
+    "Time to beat": ["Duración"],
+    "Rushed: %s": ["Rápido: %s"],
+    "Normally: %s": ["Normal: %s"],
+    "Completionist: %s": ["Completo: %s"],
+    "%d h": ["%d h"],
+    "%d min": ["%d min"],
+    "Multiplayer": ["Multijugador"],
+    "Game modes": ["Modos de juego"],
+    "Links": ["Enlaces"],
+    "Online co-op, up to %d players": ["Cooperativo en línea, hasta %d jugadores"],
+    "Online co-op": ["Cooperativo en línea"],
+    "Online multiplayer, up to %d players": ["Multijugador en línea, hasta %d jugadores"],
+    "Couch co-op, up to %d players": ["Cooperativo local, hasta %d jugadores"],
+    "Couch co-op": ["Cooperativo local"],
+    "Local multiplayer, up to %d players": ["Multijugador local, hasta %d jugadores"],
+    "LAN co-op": ["Cooperativo LAN"],
+    "Split screen": ["Pantalla dividida"],
+    "Co-op campaign": ["Campaña cooperativa"],
+    "Drop-in/drop-out": ["Entrar y salir en cualquier momento"],
+    "Official site": ["Sitio oficial"],
+    "Wiki": ["Wiki"],
+    "Could not post the game card in #%s: I need the Send Messages and Embed Links permissions there.": [
+        "No se pudo publicar la ficha del juego en #%s: necesito allí los permisos «Enviar mensajes» e «Insertar enlaces»."
+    ],
+    "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
+        "No se pudo fijar la ficha del juego en #%s: necesito allí el permiso «Fijar mensajes»."
+    ],
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.": [
+        "No se pudo eliminar el aviso de mensaje fijado de Discord en #%s: necesito allí el permiso «Leer el historial de mensajes»."
+    ],
+    "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
+        "No se pudo comprobar si alguien ha escrito en #%s, así que lo archivo en lugar de eliminarlo: necesito allí el permiso «Leer el historial de mensajes»."
+    ],
+    "Cover": ["Portada"],
+    "Summary": ["Resumen"],
+    "Or the game modes, if IGDB has no multiplayer details": [
+        "O los modos de juego, si IGDB no tiene detalles del multijugador"
+    ],
+    "(none)": ["(ninguno)"],
+    "Choose any number of options...": ["Elige tantas opciones como quieras..."]
 }

@@ -111,11 +111,28 @@ const myExample = {
     // uses the first one it finds. Other modules call client.myGameDetails(game)
     // (never this hook directly) to decorate their output with extra details
     // about a Game row. Return null if there's nothing to offer, or an object
-    // like { id, name, summary, releaseDate, platforms, rating, coverUrl } -
-    // callers must treat every field as optional (see ronja_modules/IGDB.js).
+    // like { id, name, url, summary, releaseDate, platforms, genres, gameModes,
+    // multiplayer, timeToBeat, websites, rating, coverUrl } - callers must treat
+    // every field as optional (see mapGameDetails in ronja_modules/IGDB.js).
+    // core/gameCard.js renders it as the game card embed.
     // A throw is caught and logged by myGameDetails, which then returns null.
     hookForGameDetails: async function (game) {
         console.debug("Someone wants to know more about a Game row!");
+    },
+
+    // Not fanned out from a Discord event: /settings (ronja_modules/Settings.js)
+    // asks every module for the choices of a "multiselect" setting and uses the
+    // first non-empty answer. Return [{ value, label, description? }] (at most
+    // 25, labels translated for `locale`) for a setting this module owns, or
+    // undefined for any other. The setting's value is the comma-separated list
+    // of picked values, e.g. "cover,summary" (see gameCardDetails in IGDB.js).
+    hookForSettingOptions: function (name, locale) {
+        if (name === "exampleChoices") {
+            return [
+                { value: "a", label: this.l(locale, "Option A") },
+                { value: "b", label: this.l(locale, "Option B") },
+            ];
+        }
     },
 };
 
