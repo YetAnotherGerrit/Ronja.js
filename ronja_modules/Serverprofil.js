@@ -9,18 +9,23 @@ const {
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const { Op } = require("sequelize");
-const { multiplayerGamesWhere, playerLimit } = require("../core/gameList.js");
+const { playerLimit } = require("../core/gameList.js");
 
-// What a profile lists: the member's top genres of the games they played in
-// the last 100 days, their games played in the last 30 days, and the
-// multiplayer games both of you played in the last 100 days (the same window
-// /lfg pings use) - each game list most recently played first, at most 10.
+// A profile lists the member's top genres of the games they played in the
+// last 100 days, and their games played in the last 30 days - plus, on
+// someone else's profile, the games you both played in the last 100 days
+// (the same window /lfg pings use), marked as shared. Most recently played
+// by the member first, at most 20, split over as many fields as they need.
 const GENRES_DAYS = 100;
 const GENRES_SHOWN = 3;
 const RECENT_GAMES_DAYS = 30;
-const COMMON_GAMES_DAYS = 100;
-const GAMES_SHOWN = 10;
+const SHARED_GAMES_DAYS = 100;
+const GAMES_SHOWN = 20;
 const FIELD_MAX_LENGTH = 1024; // Discord's limit for a field value.
+// Shared multiplayer games are ones to play together, shared single-player
+// games still something to talk about.
+const SHARED_MULTIPLAYER_ICON = "🤝";
+const SHARED_SINGLE_PLAYER_ICON = "💬";
 
 const myServerprofil = {
     commands: [
@@ -51,7 +56,14 @@ const myServerprofil = {
                     )
                 );
 
-            let genres = this.favoriteGenres(await this.lastPlayedGames([m.id], GENRES_DAYS));
+            let played = await this.playedGames(
+                m.id,
+                Math.max(GENRES_DAYS, RECENT_GAMES_DAYS, SHARED_GAMES_DAYS)
+            );
+
+            let genres = this.favoriteGenres(
+                played.filter((g) => g.lastplayed >= this.daysAgo(GENRES_DAYS))
+            );
             if (genres.length) {
                 e.addFields([
                     {
@@ -61,73 +73,54 @@ const myServerprofil = {
                 ]);
             }
 
-            let recent = await this.lastPlayedGames([m.id], RECENT_GAMES_DAYS);
-            if (recent.length) {
-                e.addFields([
-                    {
-                        name: this.l(locale, "Recently played"),
-                        value: this.gameLines(locale, recent),
-                    },
-                ]);
-            }
-
+            let shared = new Set();
             if (interaction.member.id != m.id) {
-                let common = await this.lastPlayedGames(
-                    [interaction.member.id, m.id],
-                    COMMON_GAMES_DAYS,
-                    multiplayerGamesWhere
-                );
-                if (common.length) {
-                    e.addFields([
-                        {
-                            name: this.l(locale, "Common games"),
-                            value: this.gameLines(locale, common, true),
-                        },
-                    ]);
-                }
+                let own = await this.playedGames(interaction.member.id, SHARED_GAMES_DAYS);
+                shared = new Set(own.map((g) => g.game.id));
+            }
+            let games = played.filter((g) =>
+                shared.has(g.game.id)
+                    ? g.lastplayed >= this.daysAgo(SHARED_GAMES_DAYS)
+                    : g.lastplayed >= this.daysAgo(RECENT_GAMES_DAYS)
+            );
+            if (games.length) {
+                e.addFields(this.gameFields(locale, games, shared));
+                let legend = this.sharedLegend(locale, games.slice(0, GAMES_SHOWN), shared);
+                if (legend) e.setFooter({ text: legend });
             }
 
             interaction.editReply({ embeds: [e] });
         }
     },
 
-    // The games every one of `members` played in the last `days` days, as
-    // [{ game, lastplayed }] with the last time any of them played it, most
-    // recently played first.
-    lastPlayedGames: async function (members, days, gameWhere = {}) {
+    daysAgo: function (days) {
+        return DateTime.now().setZone(this.cfg("timezone")).minus({ days }).toJSDate();
+    },
+
+    // The games `member` played in the last `days` days, as [{ game, lastplayed }],
+    // most recently played first.
+    playedGames: async function (member, days) {
         let statuses = await this.client.db.GameStatus.findAll({
-            where: {
-                member: members,
-                lastplayed: {
-                    [Op.gte]: DateTime.now()
-                        .setZone(this.cfg("timezone"))
-                        .minus({ days })
-                        .toJSDate(),
-                },
-            },
-            include: [{ model: this.client.db.Game, where: gameWhere }],
+            where: { member, lastplayed: { [Op.gte]: this.daysAgo(days) } },
+            include: [{ model: this.client.db.Game }],
         });
 
         // Grouped by the joined game's id, not s.GameId: the migrations named
         // that column "gameId", which SQLite then returns instead.
         let games = new Map();
         for (let s of statuses) {
-            let g = games.get(s.Game.id) ?? {
-                game: s.Game,
-                lastplayed: s.lastplayed,
-                members: new Set(),
-            };
-            if (s.lastplayed > g.lastplayed) g.lastplayed = s.lastplayed;
-            g.members.add(s.member);
-            games.set(s.Game.id, g);
+            let g = games.get(s.Game.id);
+            if (!g || s.lastplayed > g.lastplayed) {
+                games.set(s.Game.id, { game: s.Game, lastplayed: s.lastplayed });
+            }
         }
 
-        return [...games.values()]
-            .filter((g) => g.members.size === members.length)
-            .sort((a, b) => b.lastplayed - a.lastplayed || a.game.name.localeCompare(b.game.name));
+        return [...games.values()].sort(
+            (a, b) => b.lastplayed - a.lastplayed || a.game.name.localeCompare(b.game.name)
+        );
     },
 
-    // The IGDB genre names most of `games` (see lastPlayedGames) have, at most
+    // The IGDB genre names most of `games` (see playedGames) have, at most
     // GENRES_SHOWN - on a tie, the genre played most recently first. Games
     // without genre data don't count.
     favoriteGenres: function (games) {
@@ -144,32 +137,58 @@ const myServerprofil = {
             .map(([genre]) => genre);
     },
 
-    // One line per game (with its player limit if `withLimit`) and when it
-    // was last played, in the viewer's own locale and timezone - at most
-    // GAMES_SHOWN of them, and as many as fit into a field.
-    gameLines: function (locale, games, withLimit = false) {
-        let lines = games.map(
-            (g) =>
-                g.game.name +
-                (withLimit ? playerLimit(this.client, locale, g.game.onlineMaxPlayers) : "") +
-                ` (${time(g.lastplayed, TimestampStyles.RelativeTime)})`
-        );
+    sharedIcon: function (game) {
+        return game.singlePlayerOnly ? SHARED_SINGLE_PLAYER_ICON : SHARED_MULTIPLAYER_ICON;
+    },
 
-        let shown = [];
-        for (let i = 0; i < lines.length && shown.length < GAMES_SHOWN; i++) {
-            let more =
-                lines.length > i + 1
-                    ? `\n${this.l(locale, "...and %d more", lines.length - i - 1)}`
+    // One line per game and when the member last played it, in the viewer's
+    // own locale and timezone. Games in `shared` (game ids) get their icon,
+    // multiplayer ones also their player limit. At most GAMES_SHOWN games,
+    // split over as many fields as they need.
+    gameFields: function (locale, games, shared) {
+        let lines = games.slice(0, GAMES_SHOWN).map(({ game, lastplayed }) => {
+            let isShared = shared.has(game.id);
+            let icon = isShared ? `${this.sharedIcon(game)} ` : "";
+            let limit =
+                isShared && !game.singlePlayerOnly
+                    ? playerLimit(this.client, locale, game.onlineMaxPlayers)
                     : "";
-            if ([...shown, lines[i]].join("\n").length + more.length > FIELD_MAX_LENGTH) break;
-            shown.push(lines[i]);
+            return `${icon}${game.name}${limit} (${time(lastplayed, TimestampStyles.RelativeTime)})`;
+        });
+        if (games.length > GAMES_SHOWN) {
+            lines.push(this.l(locale, "...and %d more", games.length - GAMES_SHOWN));
         }
 
-        let value = shown.join("\n");
-        if (lines.length > shown.length) {
-            value += `\n${this.l(locale, "...and %d more", lines.length - shown.length)}`;
+        let values = [];
+        for (let line of lines) {
+            let last = values.length - 1;
+            if (last >= 0 && values[last].length + 1 + line.length <= FIELD_MAX_LENGTH) {
+                values[last] += `\n${line}`;
+            } else {
+                values.push(line);
+            }
         }
-        return value;
+        return values.map((value, i) => ({
+            name: i === 0 ? this.l(locale, "Recently played") : "\u200b",
+            value,
+        }));
+    },
+
+    // Explains the shared icons that `games` (the ones shown) use, or "" if none.
+    sharedLegend: function (locale, games, shared) {
+        let icons = new Set(
+            games.filter((g) => shared.has(g.game.id)).map((g) => this.sharedIcon(g.game))
+        );
+        let legend = [];
+        if (icons.has(SHARED_MULTIPLAYER_ICON)) {
+            legend.push(`${SHARED_MULTIPLAYER_ICON} ${this.l(locale, "You both play it")}`);
+        }
+        if (icons.has(SHARED_SINGLE_PLAYER_ICON)) {
+            legend.push(
+                `${SHARED_SINGLE_PLAYER_ICON} ${this.l(locale, "You both play it (single-player)")}`
+            );
+        }
+        return legend.join(" · ");
     },
 };
 

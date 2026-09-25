@@ -11,7 +11,6 @@
     ],
     "Profile of %s": ["Profilo di %s"],
     "%s is on this discord server since %s.": ["%s è su questo server discord da %s."],
-    "Common games": ["Giochi in comune"],
     "Recently played": ["Giocati di recente"],
     "The server's top 10!": ["La top 10 del server!"],
     "The last %d days at a glance:": ["Gli ultimi %d giorni in sintesi:"],
@@ -291,5 +290,7 @@
     "Arcade": ["Arcade"],
     "Visual Novel": ["Visual novel"],
     "Card & Board Game": ["Giochi di carte e da tavolo"],
-    "MOBA": ["MOBA"]
+    "MOBA": ["MOBA"],
+    "You both play it": ["Lo avete in comune"],
+    "You both play it (single-player)": ["Lo avete in comune (giocatore singolo)"]
 }
