@@ -4,6 +4,8 @@ const {
     Colors,
     ActionRowBuilder,
     StringSelectMenuBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     MessageFlags,
 } = require("discord.js");
 const { DateTime } = require("luxon");
@@ -27,6 +29,9 @@ const SYNC_DECLINED_RETRY_MS = 100 * DAY_MS;
 const SYNC_PICK_PREFIX = "igdbSyncPick:";
 const SYNC_PICK_NONE = "none";
 const SYNC_PICK_IGNORE = "ignore";
+const SYNC_UNKNOWN_PREFIX = "igdbSyncUnknown:"; // + "<action>:<game id>"
+const SYNC_UNKNOWN_KEEP = "keep";
+const SYNC_UNKNOWN_IGNORE = "ignore";
 const SUMMARY_MAX_LENGTH = 2000; // Discord's message limit.
 
 // IGDB fields every game lookup needs, on top of syncFields: alternative names
@@ -849,8 +854,10 @@ const myIgdb = {
 
     // Only exact matches are merged automatically - anything less certain
     // would silently rename/merge a game's whole history (and, through its
-    // alias, every future play of that name), so ask the owner. Used by both
-    // the background sync and live lookups.
+    // alias, every future play of that name), so ask the owner. A game IGDB
+    // has no results for at all is tracked as not found, and the owner is
+    // asked once whether it's a game at all. Used by both the background sync
+    // and live lookups.
     applyLookup: async function (game, { exact, bases }, guild, report) {
         if (exact) {
             await this.resolveCanonicalGame(game.name, this.toMatch(exact), guild, report);
@@ -861,6 +868,8 @@ const myIgdb = {
                 guild,
                 report
             );
+        } else if (!game.igdbNotFoundAsked) {
+            await this.askOwnerIfGame(game, guild, report);
         } else {
             if (game.igdbStatus !== "notFound") report.notFound.push(game.name);
             await game.update({ igdbStatus: "notFound", igdbCheckedAt: new Date() });
@@ -907,6 +916,56 @@ const myIgdb = {
         }
 
         await game.update({ igdbStatus: "pending", igdbCheckedAt: new Date() });
+        report.pending.push(game.name);
+    },
+
+    // DMs the guild owner whether a game IGDB has no results for is a game at
+    // all. Like askOwnerToPick, the answer is handled statelessly (by
+    // hookForButtonInteraction). Until then, and after "It's a game", the game
+    // stays tracked as not found and is retried as usual - just never asked
+    // about this way again, even once its status has moved on.
+    askOwnerIfGame: async function (game, guild, report) {
+        if (report.ownerUnreachable) return;
+        let locale = guild.preferredLocale;
+        let button = (action, style, label) =>
+            new ButtonBuilder()
+                .setCustomId(`${SYNC_UNKNOWN_PREFIX}${action}:${game.id}`)
+                .setStyle(style)
+                .setLabel(this.l(locale, label));
+
+        try {
+            let owner = await guild.fetchOwner();
+            await owner.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Blue)
+                        .setDescription(
+                            this.l(
+                                locale,
+                                'I found "%s" in the game history, but IGDB doesn\'t know it at all. Is it a game?',
+                                game.name
+                            )
+                        ),
+                ],
+                components: [
+                    new ActionRowBuilder().addComponents(
+                        button(SYNC_UNKNOWN_KEEP, ButtonStyle.Primary, "It's a game, keep it"),
+                        button(SYNC_UNKNOWN_IGNORE, ButtonStyle.Secondary, "Not a game, ignore it")
+                    ),
+                ],
+            });
+        } catch (err) {
+            // Leave the game as it was, so it's asked about again on a later pass.
+            console.error("IGDB: could not DM the guild owner:", err);
+            report.ownerUnreachable = true;
+            return;
+        }
+
+        await game.update({
+            igdbStatus: "notFound",
+            igdbCheckedAt: new Date(),
+            igdbNotFoundAsked: true,
+        });
         report.pending.push(game.name);
     },
 
@@ -1031,6 +1090,72 @@ const myIgdb = {
         await this.client.myNotifyOwner(guild, message ?? format(0).slice(0, SUMMARY_MAX_LENGTH));
     },
 
+    // Replaces an owner question with its answer. Errors keep the question's
+    // menu or buttons, so the owner can simply try again.
+    replyToOwner: async function (interaction, color, message, keepComponents = false) {
+        await interaction.editReply({
+            embeds: [new EmbedBuilder().setColor(color).setDescription(message)],
+            ...(keepComponents ? {} : { components: [] }),
+        });
+    },
+
+    // The guild owner said `game` isn't a game. Every listing (top 10, /lfg,
+    // profiles, text channels) goes through GameStatus, so without its play
+    // history the activity is gone from all of them. The row itself stays, so
+    // its name (and aliases) are recognized and ignored from now on (see
+    // resolveLiveGame).
+    ignoreGame: async function (game) {
+        await this.client.db.GameStatus.destroy({ where: { GameId: game.id } });
+        await game.update({ igdbStatus: "ignored", igdbCheckedAt: new Date() });
+    },
+
+    // The guild owner's answer to an askOwnerIfGame question.
+    hookForButtonInteraction: async function (interaction) {
+        if (!interaction.customId.startsWith(SYNC_UNKNOWN_PREFIX)) return;
+        let guild = this.client.guilds.cache.first();
+        if (!guild || interaction.user.id !== guild.ownerId) return;
+        let locale = guild.preferredLocale;
+
+        await interaction.deferUpdate();
+        let reply = (...args) => this.replyToOwner(interaction, ...args);
+
+        let [action, gameId] = interaction.customId.slice(SYNC_UNKNOWN_PREFIX.length).split(":");
+        let game = await this.client.db.Game.findByPk(Number(gameId));
+        if (!game || game.igdbId || game.igdbStatus === "ignored") {
+            await reply(
+                Colors.Blue,
+                this.l(
+                    locale,
+                    "This question is outdated: the game has been matched, merged or marked as not a game in the meantime, so nothing was changed."
+                )
+            );
+            return;
+        }
+
+        if (action === SYNC_UNKNOWN_IGNORE) {
+            await this.ignoreGame(game);
+            await reply(
+                Colors.Green,
+                this.l(
+                    locale,
+                    "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.",
+                    game.name
+                )
+            );
+            return;
+        }
+
+        // Nothing to change: the game stays tracked, and the sync keeps retrying it.
+        await reply(
+            Colors.Green,
+            this.l(
+                locale,
+                'Okay, "%s" stays tracked as a game. I\'ll keep checking IGDB for it and only ask again if IGDB finds something.',
+                game.name
+            )
+        );
+    },
+
     // The guild owner's answer to an askOwnerToPick question.
     hookForSelectMenuInteraction: async function (interaction) {
         if (!interaction.customId.startsWith(SYNC_PICK_PREFIX)) return;
@@ -1039,14 +1164,7 @@ const myIgdb = {
         let locale = guild.preferredLocale;
 
         await interaction.deferUpdate();
-
-        // Errors keep the menu, so the owner can simply try again.
-        let reply = async (color, message, keepMenu = false) => {
-            await interaction.editReply({
-                embeds: [new EmbedBuilder().setColor(color).setDescription(message)],
-                ...(keepMenu ? {} : { components: [] }),
-            });
-        };
+        let reply = (...args) => this.replyToOwner(interaction, ...args);
 
         let gameId = Number(interaction.customId.slice(SYNC_PICK_PREFIX.length));
         let game = await this.client.db.Game.findByPk(gameId);
@@ -1072,12 +1190,7 @@ const myIgdb = {
         }
 
         if (choice === SYNC_PICK_IGNORE) {
-            // Every listing (top 10, /lfg, profiles, text channels) goes through
-            // GameStatus, so without its play history the activity is gone from
-            // all of them. The row itself stays, so its name (and aliases) are
-            // recognized and ignored from now on (see resolveLiveGame).
-            await this.client.db.GameStatus.destroy({ where: { GameId: game.id } });
-            await game.update({ igdbStatus: "ignored", igdbCheckedAt: new Date() });
+            await this.ignoreGame(game);
             await reply(
                 Colors.Green,
                 this.l(
