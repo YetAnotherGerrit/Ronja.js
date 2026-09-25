@@ -257,5 +257,15 @@
     "You joined %s.": ["Ora hai accesso a %s."],
     "You left #%s. I'll add you back when I see you playing %s again.": [
         "Hai lasciato #%s. Ti aggiungerò di nuovo quando ti vedrò giocare ancora a %s."
-    ]
+    ],
+    "/news only works in a game's text channel.": [
+        "/news funziona solo nel canale testuale di un gioco."
+    ],
+    "No Steam news available for %s.": ["Nessuna notizia di Steam disponibile per %s."],
+    "Steam can't be reached right now, please try again later.": [
+        "Impossibile raggiungere Steam in questo momento, riprova più tardi."
+    ],
+    "News for %s": ["Notizie su %s"],
+    "Playing on Steam right now: %s": ["In gioco su Steam in questo momento: %s"],
+    "Read more": ["Leggi di più"]
 }

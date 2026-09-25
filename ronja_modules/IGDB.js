@@ -344,6 +344,12 @@ const myIgdb = {
             multiplayer: this.mapMultiplayer(g.multiplayer_modes || []),
             timeToBeat: this.mapTimeToBeat(timeToBeat),
             websites,
+            // From its Steam store link (store.steampowered.com/app/<id>/...),
+            // for /news in ronja_modules/SteamNews.js. Null if it has none.
+            steamAppId:
+                websites
+                    .find((w) => w.type === "steam")
+                    ?.url.match(/store\.steampowered\.com\/app\/(\d+)/)?.[1] ?? null,
             rating: g.total_rating ?? null,
             coverUrl: g.cover?.image_id
                 ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${g.cover.image_id}.jpg`
