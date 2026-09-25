@@ -59,6 +59,7 @@ const myIgdb = {
     igdbToken: null, // { accessToken, expiresAt }
     igdbNextRequestAt: 0,
     syncRunning: false,
+    loggedSyncSchedule: null,
     liveLookups: new Map(), // gameName -> in-flight resolveLiveGame() promise
 
     // Per-game IGDB data stored on Game rows and kept up to date by the
@@ -554,19 +555,49 @@ const myIgdb = {
                 // igdbSyncTime applies without a restart.
                 schedule: "* * * * *", // https://crontab.guru/
                 action: () => {
+                    this.logSyncSchedule();
                     if (this.isSyncDue(DateTime.now())) return this.runSyncPass();
                 },
             },
         ];
     },
 
+    // The admin-configured igdbSyncTime as { hour, minute }, or null if it's
+    // unset or not a valid HH:MM time.
+    parseSyncTime: function () {
+        let time = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(this.cfg("igdbSyncTime")?.trim() ?? "");
+        return time ? { hour: Number(time[1]), minute: Number(time[2]) } : null;
+    },
+
     // Whether `now` is the admin-configured igdbSyncTime (HH:MM in the server's
     // timezone). No (valid) time configured means no background sync at all.
     isSyncDue: function (now) {
-        let time = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(this.cfg("igdbSyncTime")?.trim() ?? "");
+        let time = this.parseSyncTime();
         if (!time) return false;
         let local = now.setZone(this.cfg("timezone") || "system");
-        return local.hour === Number(time[1]) && local.minute === Number(time[2]);
+        return local.hour === time.hour && local.minute === time.minute;
+    },
+
+    // Logs whether and when the sync will run - once after startup and again
+    // whenever that changes - since otherwise nothing shows until a pass runs.
+    logSyncSchedule: function () {
+        let value = this.cfg("igdbSyncTime")?.trim() || "";
+        let zone = this.cfg("timezone") || "system";
+        let state = [value, zone, this.isConfigured()].join("|");
+        if (state === this.loggedSyncSchedule) return;
+        this.loggedSyncSchedule = state;
+
+        if (!value) {
+            console.log("IGDB sync: off, no igdbSyncTime set.");
+        } else if (!this.parseSyncTime()) {
+            console.warn(`IGDB sync: off, igdbSyncTime "${value}" isn't a valid HH:MM time.`);
+        } else if (!DateTime.now().setZone(zone).isValid) {
+            console.warn(`IGDB sync: off, the timezone setting "${zone}" isn't valid.`);
+        } else if (!this.isConfigured()) {
+            console.log(`IGDB sync: set for ${value} (${zone}) daily, but IGDB isn't configured.`);
+        } else {
+            console.log(`IGDB sync: runs daily at ${value} (${zone}).`);
+        }
     },
 
     // One background sync pass: looks up games never matched to IGDB (plus
@@ -575,11 +606,22 @@ const myIgdb = {
     // ago. All progress lives on the Game rows themselves, so an interrupted
     // pass is simply picked up again by the next one.
     runSyncPass: async function () {
-        if (this.syncRunning || !this.isConfigured()) return;
+        if (this.syncRunning) {
+            console.log("IGDB sync: skipped, the previous pass is still running.");
+            return;
+        }
+        if (!this.isConfigured()) {
+            console.log("IGDB sync: skipped, IGDB isn't configured.");
+            return;
+        }
         // Ronja is single-guild - this is where merges get reported to.
         let guild = this.client.guilds.cache.first();
-        if (!guild) return;
+        if (!guild) {
+            console.warn("IGDB sync: skipped, Ronja isn't in any guild.");
+            return;
+        }
 
+        console.log("IGDB sync: pass started.");
         this.syncRunning = true;
         let report = this.newSyncReport();
         try {
@@ -605,6 +647,7 @@ const myIgdb = {
             await this.sendSyncSummary(guild, report);
         } finally {
             this.syncRunning = false;
+            console.log("IGDB sync: pass finished.");
         }
     },
 
