@@ -187,5 +187,17 @@
     "Co-op campaign": ["Campagne en coop"],
     "Drop-in/drop-out": ["Drop-in/drop-out"],
     "Official site": ["Site officiel"],
-    "Wiki": ["Wiki"]
+    "Wiki": ["Wiki"],
+    "Could not post the game card in #%s: I need the Send Messages and Embed Links permissions there.": [
+        "Impossible de publier la fiche du jeu dans #%s : j'ai besoin des permissions « Envoyer des messages » et « Intégrer des liens » dans ce salon."
+    ],
+    "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
+        "Impossible d'épingler la fiche du jeu dans #%s : j'ai besoin de la permission « Épingler des messages » dans ce salon."
+    ],
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.": [
+        "Impossible de supprimer la notification d'épinglage de Discord dans #%s : j'ai besoin des permissions « Voir les anciens messages » et « Gérer les messages » dans ce salon."
+    ],
+    "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
+        "Impossible de vérifier si quelqu'un a écrit dans #%s, je l'archive donc au lieu de le supprimer : j'ai besoin de la permission « Voir les anciens messages » dans ce salon."
+    ]
 }

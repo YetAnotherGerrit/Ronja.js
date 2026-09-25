@@ -121,7 +121,7 @@
     "Choose a category to view its settings.": [
         "Wähle eine Kategorie, um ihre Einstellungen zu sehen."
     ],
-    "Release date": ["Veröffentlichungsdatum"],
+    "Release date": ["Veröffentlicht"],
     "Platforms": ["Plattformen"],
     "Rating": ["Bewertung"],
     "IGDB is not configured on this server.": ["IGDB ist auf diesem Server nicht konfiguriert."],
@@ -191,5 +191,17 @@
     "Co-op campaign": ["Koop-Kampagne"],
     "Drop-in/drop-out": ["Drop-in/Drop-out"],
     "Official site": ["Offizielle Website"],
-    "Wiki": ["Wiki"]
+    "Wiki": ["Wiki"],
+    "Could not post the game card in #%s: I need the Send Messages and Embed Links permissions there.": [
+        "Konnte die Spielkarte in #%s nicht posten: Ich brauche dort die Berechtigungen „Nachrichten senden“ und „Links einbetten“."
+    ],
+    "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
+        "Konnte die Spielkarte in #%s nicht anpinnen: Ich brauche dort die Berechtigung „Nachrichten anpinnen“."
+    ],
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.": [
+        "Konnte Discords Anpinn-Hinweis in #%s nicht entfernen: Ich brauche dort die Berechtigungen „Nachrichtenverlauf anzeigen“ und „Nachrichten verwalten“."
+    ],
+    "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
+        "Konnte nicht prüfen, ob jemand in #%s geschrieben hat, deshalb archiviere ich den Kanal, statt ihn zu löschen: Ich brauche dort die Berechtigung „Nachrichtenverlauf anzeigen“."
+    ]
 }

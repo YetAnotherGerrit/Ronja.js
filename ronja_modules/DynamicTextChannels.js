@@ -124,23 +124,42 @@ const myDynamicTextChannels = {
 
     // Posts and pins the game card as the first message of a new game channel.
     // Games without details (not matched to IGDB, or IGDB isn't configured)
-    // get none. Failures are only logged - the channel works without its card.
+    // get none. The channel works without its card, so failures are only
+    // reported - to the guild owner if a permission is missing.
     postGameCard: async function (channel, game) {
         let details = await this.client.myGameDetails(game);
         if (!details) return;
+        let guild = channel.guild;
+        let locale = guild.preferredLocale;
 
         let card;
         try {
             card = await channel.send({
-                embeds: [
-                    buildGameCard(this.client, details, channel.guild.preferredLocale).setColor(
-                        Colors.Blue
-                    ),
-                ],
+                embeds: [buildGameCard(this.client, details, locale).setColor(Colors.Blue)],
             });
+        } catch (err) {
+            let message = this.l(
+                locale,
+                "Could not post the game card in #%s: I need the Send Messages and Embed Links permissions there.",
+                channel.name
+            );
+            if (!this.client.myNotifyOwnerOnPermissionError(guild, err, message)) {
+                console.error(`Could not post the game card in #${channel.name}:`, err);
+            }
+            return;
+        }
+
+        try {
             await card.pin();
         } catch (err) {
-            console.error(`Could not post and pin the game card in #${channel.name}:`, err);
+            let message = this.l(
+                locale,
+                "Could not pin the game card in #%s: I need the Pin Messages permission there.",
+                channel.name
+            );
+            if (!this.client.myNotifyOwnerOnPermissionError(guild, err, message)) {
+                console.error(`Could not pin the game card in #${channel.name}:`, err);
+            }
             return;
         }
 
@@ -155,7 +174,14 @@ const myDynamicTextChannels = {
                 )
                 ?.delete();
         } catch (err) {
-            console.warn(`Could not delete the pin notice in #${channel.name}:`, err);
+            let message = this.l(
+                locale,
+                "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.",
+                channel.name
+            );
+            if (!this.client.myNotifyOwnerOnPermissionError(guild, err, message)) {
+                console.warn(`Could not delete the pin notice in #${channel.name}:`, err);
+            }
         }
     },
 
@@ -227,10 +253,17 @@ const myDynamicTextChannels = {
                 try {
                     hasMemberPosts = await this.hasMemberPosts(channel);
                 } catch (err) {
-                    console.error(
-                        `Could not read the history of #${channel.name}, archiving it rather than deleting it:`,
-                        err
+                    let message = this.l(
+                        channel.guild.preferredLocale,
+                        "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.",
+                        channel.name
                     );
+                    if (!this.client.myNotifyOwnerOnPermissionError(channel.guild, err, message)) {
+                        console.error(
+                            `Could not read the history of #${channel.name}, archiving it rather than deleting it:`,
+                            err
+                        );
+                    }
                 }
                 if (!hasMemberPosts) {
                     console.log(`Deleted empty #${channel.name} instead of archiving it.`);

@@ -1,4 +1,4 @@
-const { Client, EmbedBuilder, Colors, REST, Routes } = require("discord.js");
+const { Client, EmbedBuilder, Colors, REST, Routes, RESTJSONErrorCodes } = require("discord.js");
 const Sequelize = require("sequelize");
 
 const fs = require("node:fs");
@@ -124,6 +124,16 @@ class Ronja extends Client {
         } catch (err) {
             console.error(`Could not DM the guild owner: ${err}`);
         }
+    }
+
+    // DMs the guild owner `message` if `err` is Discord refusing an action
+    // because Ronja lacks a permission - only they can fix that. Returns
+    // whether it did, so callers can log any other error themselves.
+    myNotifyOwnerOnPermissionError(guild, err, message) {
+        let codes = [RESTJSONErrorCodes.MissingPermissions, RESTJSONErrorCodes.MissingAccess];
+        if (!codes.includes(err?.code)) return false;
+        this.myNotifyOwner(guild, message);
+        return true;
     }
 
     myTranslator() {
