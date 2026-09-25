@@ -206,5 +206,15 @@
         "O los modos de juego, si IGDB no tiene detalles del multijugador"
     ],
     "(none)": ["(ninguno)"],
-    "Choose any number of options...": ["Elige tantas opciones como quieras..."]
+    "Choose any number of options...": ["Elige tantas opciones como quieras..."],
+    "I found \"%s\" in the game history, but IGDB doesn't know it at all. Is it a game?": [
+        "He encontrado \"%s\" en el historial de juegos, pero IGDB no lo conoce en absoluto. ¿Es un juego?"
+    ],
+    "It's a game, keep it": ["Es un juego, mantenerlo"],
+    "This question is outdated: the game has been matched, merged or marked as not a game in the meantime, so nothing was changed.": [
+        "Esta pregunta está desactualizada: el juego ya se ha asociado, fusionado o marcado como que no es un juego mientras tanto, así que no se ha cambiado nada."
+    ],
+    "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
+        "Vale, \"%s\" se sigue registrando como juego. Seguiré buscándolo en IGDB y solo volveré a preguntar si IGDB encuentra algo."
+    ]
 }

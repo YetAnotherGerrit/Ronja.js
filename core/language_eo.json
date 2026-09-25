@@ -200,5 +200,15 @@
         "Aŭ la ludreĝimoj, se IGDB ne havas detalojn pri plurludado"
     ],
     "(none)": ["(neniu)"],
-    "Choose any number of options...": ["Elektu iom ajn da opcioj..."]
+    "Choose any number of options...": ["Elektu iom ajn da opcioj..."],
+    "I found \"%s\" in the game history, but IGDB doesn't know it at all. Is it a game?": [
+        "Mi trovis \"%s\" en la ludhistorio, sed IGDB tute ne konas ĝin. Ĉu ĝi estas ludo?"
+    ],
+    "It's a game, keep it": ["Ĝi estas ludo, konservu ĝin"],
+    "This question is outdated: the game has been matched, merged or marked as not a game in the meantime, so nothing was changed.": [
+        "Ĉi tiu demando estas malaktuala: la ludo intertempe estis kongruigita, kunfandita aŭ markita kiel ne ludo, do nenio ŝanĝiĝis."
+    ],
+    "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
+        "Bone, \"%s\" restas registrata kiel ludo. Mi daŭre kontrolos IGDB por ĝi kaj demandos denove nur se IGDB trovos ion."
+    ]
 }

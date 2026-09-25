@@ -28,7 +28,8 @@ want to play with your friends and need to decide on what game to play.
   the top 10 also show the (top) game's cover art. Once a sync hour is set,
   games tracked before IGDB was enabled are matched gradually in the
   background each day, asking the server owner via DM when a match isn't
-  certain, and game data is kept up to date. Configured with a Twitch/IGDB client ID and secret via
+  certain or IGDB doesn't know an activity at all (so non-games can be
+  ignored), and game data is kept up to date. Configured with a Twitch/IGDB client ID and secret via
   /settings; the rest of Ronja works the same without it.
 - Serverprofile command to show common games for a specific member.
 - /settings command with an interactive menu to view and change Ronja's

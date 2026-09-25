@@ -39,6 +39,11 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
                 defaultValue: null,
             },
+            igdbNotFoundAsked: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+            },
             channel: {
                 type: DataTypes.STRING,
                 defaultValue: null,
