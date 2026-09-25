@@ -36,6 +36,7 @@ const client = new Ronja({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessages,
         GatewayIntentBits.GuildPresences,
         GatewayIntentBits.GuildScheduledEvents,
     ],
@@ -78,6 +79,11 @@ client.once(Events.ClientReady, async () => {
                 });
             });
         }
+    });
+
+    // Only once every module has its client, l() and cfg().
+    ronja_modules.forEach((m) => {
+        if (m.hookForReady) invokeHook(() => m.hookForReady());
     });
 
     console.log("Ready!");
@@ -133,6 +139,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
     ronja_modules.forEach((m) => {
         if (m.hookForVoiceUpdate) invokeHook(() => m.hookForVoiceUpdate(oldState, newState));
+    });
+});
+
+// Listen for MessageCreate and forward to all modules. Without the privileged
+// Message Content intent, message.content is empty for others' messages.
+client.on(Events.MessageCreate, async (message) => {
+    ronja_modules.forEach((m) => {
+        if (m.hookForMessageCreate) invokeHook(() => m.hookForMessageCreate(message));
     });
 });
 

@@ -14,6 +14,12 @@ const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
 const myExample = {
+    // Called once when Ronja is ready, after every module got its client, l()
+    // and cfg() - e.g. to pick up state from the caches (see Top10.js).
+    hookForReady: async function () {
+        console.debug("Ronja is ready!");
+    },
+
     hookForCron: function () {
         return [
             {
@@ -77,6 +83,14 @@ const myExample = {
     hookForVoiceUpdate: async function (oldState, newState) {
         // https://discord.js.org/#/docs/discord.js/stable/class/VoiceState
         console.debug("The voice status of a user has updated!");
+    },
+
+    // Messages in any guild channel Ronja can see, including ones by bots and
+    // Ronja herself. Without the privileged Message Content intent,
+    // message.content is empty for other people's messages (see Top10.js).
+    hookForMessageCreate: async function (message) {
+        // https://discord.js.org/#/docs/discord.js/stable/class/Message
+        console.debug("Someone posted a message!");
     },
 
     hookForChannelDelete: async function (channel) {

@@ -12,11 +12,13 @@
     "Profile of %s": ["Profilo de %s"],
     "%s is on this discord server since %s.": ["%s estas sur ĉi tiu discord-servilo ekde %s."],
     "Common games": ["Komunaj ludoj"],
-    "Most popular games!": ["La plej popularaj ludoj!"],
-    "Most played games of the last %d days:": ["La plej ludataj ludoj de la lastaj %d tagoj:"],
-    "Top 10 by player count:": ["Supraj 10 laŭ nombro de ludantoj:"],
-    "The most played games of last week:": ["La plej ludataj ludoj de la pasinta semajno:"],
-    "The most played games of last month:": ["La plej ludataj ludoj de la pasinta monato:"],
+    "The server's top 10!": ["La supraj 10 de la servilo!"],
+    "The last %d days at a glance:": ["La lastaj %d tagoj unuavide:"],
+    "Games by player count": ["Ludoj laŭ nombro de ludantoj"],
+    "Members by time in voice": ["Membroj laŭ tempo en voĉkanaloj"],
+    "Game channels by messages": ["Ludkanaloj laŭ mesaĝoj"],
+    "Last week at a glance:": ["La pasinta semajno unuavide:"],
+    "Last month at a glance:": ["La pasinta monato unuavide:"],
     "Happy new year! These have been the highlights of last year:": [
         "Feliĉan novan jaron! Jen la elstaraĵoj de la pasinta jaro:"
     ],
@@ -87,6 +89,8 @@
         "Ĉi tiuj ludoj estas ludataj de la kanalaj membroj:\n"
     ],
     "No games have been played.": ["Neniu ludo estis ludita."],
+    "Nobody has been in a voice channel.": ["Neniu estis en voĉkanalo."],
+    "Nothing has been posted in the game channels.": ["Nenio estis afiŝita en la ludkanaloj."],
     "Failed!": ["Malsukcesis!"],
     "Language of the guild was changed to %s.": ["La lingvo de la servilo estis ŝanĝita al %s."],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [

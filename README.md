@@ -20,7 +20,9 @@ want to play with your friends and need to decide on what game to play.
   games you have. With IGDB configured, single-player-only games are left out
   and each game's online player limit is shown (in the voice channel status
   too, flagging games too small for everyone in the channel).
-- /top10 command to show the most popular games in the guild.
+- /top10 command to show the most popular games in the guild, next to the
+  members who spent the most time in voice channels with others and the
+  game channels with the most messages.
     - Also weekly, monthly and yearly top 10.
 - /ical command to get an ical-feed for the events you attend.
 - Optional [IGDB](https://www.igdb.com/) integration to reduce duplicate

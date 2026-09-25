@@ -197,8 +197,7 @@ const myDynamicTextChannels = {
 
     // Whether anyone but Ronja ever posted in `channel` - Ronja's own messages
     // (the game card, its pin notice, ...) don't count. Reads the history
-    // itself, since without the GuildMessages intent channel.lastMessageId
-    // isn't kept up to date.
+    // itself, since channel.lastMessageId would count those too.
     hasMemberPosts: async function (channel) {
         let before;
         while (true) {
