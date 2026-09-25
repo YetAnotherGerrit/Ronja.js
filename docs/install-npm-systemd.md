@@ -38,18 +38,27 @@ enable "Presence Intent" under "Privileged Gateway Intents". The other two
 privileged intents Discord offers, Server Members Intent and Message Content
 Intent, are not used by Ronja and don't need to be enabled.
 
-4. Download the latest version of Ronja.js:
-   https://github.com/YetAnotherGerrit/Ronja.js/releases/latest
+4. Get Ronja.js, either
+    - by cloning the repository, which creates a `Ronja.js` folder:
 
-5. Extract to whatever folder you want to use.
+        ```
+        git clone https://github.com/YetAnotherGerrit/Ronja.js.git
+        ```
 
-6. Run `npm install` to install dependencies.
+        This gets the current `main` branch, which may include changes that
+        aren't in a release yet.
 
-7. Set the `RONJA_TOKEN` environment variable.
+    - or by downloading the latest release and extracting it to whatever
+      folder you want to use:
+      https://github.com/YetAnotherGerrit/Ronja.js/releases/latest
 
-8. Run `npm run migrate` to create the database.
+5. Run `npm install` to install dependencies.
 
-9. Run `npm start`
+6. Set the `RONJA_TOKEN` environment variable.
+
+7. Run `npm run migrate` to create the database.
+
+8. Run `npm start`
 
     Slash- and context-menu-commands are registered with Discord automatically on
     startup and only re-synced when their definition actually changes.
