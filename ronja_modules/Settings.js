@@ -44,6 +44,9 @@ async function plainValue(guild, setting) {
     return setting.value;
 }
 
+// A whole hour of the day, 0-23 - the format of "hour" settings (see IGDB.js' igdbSyncHour).
+const HOUR_PATTERN = /^([01]?\d|2[0-3])$/;
+
 function embedValue(plain, setting) {
     if (plain === "(not set)") return "*(not set)*";
     if (isSensitive(setting.name)) return "||••••••••||";
@@ -174,7 +177,8 @@ const mySettings = {
             .setCustomId("settingsValue")
             .setLabel(this.l(interaction.locale, "New value"))
             .setStyle(TextInputStyle.Short)
-            .setRequired(true);
+            // An hour can be cleared, which turns off whatever it schedules.
+            .setRequired(setting.type !== "hour");
 
         if (!isSensitive(setting.name) && setting.value) {
             input.setValue(setting.value);
@@ -197,11 +201,21 @@ const mySettings = {
             return;
         }
 
-        let value = submitted.fields.getTextInputValue("settingsValue");
+        let value = submitted.fields.getTextInputValue("settingsValue").trim();
 
+        let invalid = null;
         if (setting.type === "integer" && !/^-?\d+$/.test(value)) {
+            invalid = this.l(interaction.locale, "%s expects a whole number.", setting.name);
+        } else if (setting.type === "hour" && value && !HOUR_PATTERN.test(value)) {
+            invalid = this.l(
+                interaction.locale,
+                "%s expects an hour from 0 to 23, or nothing to turn it off.",
+                setting.name
+            );
+        }
+        if (invalid) {
             await submitted.reply({
-                content: this.l(interaction.locale, "%s expects a whole number.", setting.name),
+                embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(invalid)],
                 flags: MessageFlags.Ephemeral,
             });
             return;

@@ -134,5 +134,36 @@
     "That game is no longer available on IGDB.": ["Ese juego ya no está disponible en IGDB."],
     "IGDB merged the duplicate game \"%s\" into \"%s\", but they had different text channels - %s is now orphaned (no game is linked to it anymore). You may want to archive, delete, or repurpose it manually.": [
         "IGDB fusionó el juego duplicado \"%s\" con \"%s\", pero tenían canales de texto diferentes - %s ha quedado huérfano (ya no hay ningún juego vinculado a él). Puede que quieras archivarlo, eliminarlo o reutilizarlo manualmente."
+    ],
+    "None of these, keep as is": ["Ninguno de estos, dejarlo como está"],
+    "I found \"%s\" in the game history, but IGDB has no game with exactly that name. Which game is it?": [
+        "He encontrado \"%s\" en el historial de juegos, pero IGDB no tiene ningún juego con exactamente ese nombre. ¿Qué juego es?"
+    ],
+    "Matched to IGDB": ["Asociados con IGDB"],
+    "Merged duplicates": ["Duplicados fusionados"],
+    "Updated from IGDB": ["Actualizados desde IGDB"],
+    "No longer on IGDB, please check": ["Ya no están en IGDB, compruébalo"],
+    "Not found on IGDB": ["No encontrados en IGDB"],
+    "Waiting for your answer": ["Esperando tu respuesta"],
+    "Orphaned text channels (no game is linked to them anymore, you may want to archive, delete, or repurpose them manually)": [
+        "Canales de texto huérfanos (ya no hay ningún juego vinculado a ellos, puede que quieras archivarlos, eliminarlos o reutilizarlos manualmente)"
+    ],
+    "The IGDB sync is done, here's what changed:": [
+        "La sincronización con IGDB ha terminado, esto es lo que ha cambiado:"
+    ],
+    "...and %d more": ["...y %d más"],
+    "This question is outdated: the game has been matched or merged in the meantime, so nothing was changed.": [
+        "Esta pregunta está desactualizada: el juego ya se ha asociado o fusionado mientras tanto, así que no se ha cambiado nada."
+    ],
+    "Okay, \"%s\" stays as it is. I'll ask again in 100 days.": [
+        "Vale, \"%s\" se queda como está. Volveré a preguntar dentro de 100 días."
+    ],
+    "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" se ha asociado con \"%s\" en IGDB."],
+    "%s expects an hour from 0 to 23, or nothing to turn it off.": [
+        "%s espera una hora del 0 al 23, o nada para desactivarlo."
+    ],
+    "Not a game, ignore it": ["No es un juego, ignorarlo"],
+    "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
+        "Vale, \"%s\" ya no se trata como un juego: ya no se registra ni aparece en ninguna lista."
     ]
 }

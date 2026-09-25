@@ -84,8 +84,10 @@ client.once(Events.ClientReady, async () => {
 
 // Listen for Interactions and forward to all modules
 client.on(Events.InteractionCreate, async (interaction) => {
+    // interaction.member is null for interactions in DMs (e.g. the IGDB sync's
+    // questions to the guild owner), so fall back to the user.
     console.log(
-        `${interaction.member.displayName} used commandName ${interaction.commandName} (${interaction.customId}).`
+        `${(interaction.member ?? interaction.user).displayName} used commandName ${interaction.commandName} (${interaction.customId}).`
     );
 
     if (interaction.isCommand()) {
@@ -106,6 +108,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
         ronja_modules.forEach((m) => {
             if (m.hookForButtonInteraction)
                 invokeHook(() => m.hookForButtonInteraction(interaction));
+        });
+    }
+
+    if (interaction.isStringSelectMenu()) {
+        ronja_modules.forEach((m) => {
+            if (m.hookForSelectMenuInteraction)
+                invokeHook(() => m.hookForSelectMenuInteraction(interaction));
         });
     }
 });
@@ -173,62 +182,73 @@ client.on(
 client.on(Events.PresenceUpdate, (oldPresence, newPresence) => {
     if (newPresence.member.user.bot) return;
 
-    newPresence.activities.forEach(async (newActivity) => {
-        if (newActivity.type === ActivityType.Playing) {
-            const gameName = client.myResolveGameName(newActivity);
-            // Activity can't be attributed to a real game (e.g. a GeForce NOW
-            // session without a discoverable game title) - ignore it entirely.
-            if (!gameName) return;
+    // Through invokeHook, so a failing lookup (e.g. a locked database) is logged
+    // instead of becoming an unhandled rejection that ends the process.
+    newPresence.activities.forEach((newActivity) =>
+        invokeHook(async () => {
+            if (newActivity.type === ActivityType.Playing) {
+                const gameName = client.myResolveGameName(newActivity);
+                // Activity can't be attributed to a real game (e.g. a GeForce NOW
+                // session without a discoverable game title) - ignore it entirely.
+                if (!gameName) return;
 
-            // Check if user started playing....
-            let justStarted = true;
-            // If the activity is already in the old state, they did not start.
-            oldPresence?.activities.forEach((oldActivity) => {
-                if (client.myResolveGameName(oldActivity) === gameName) justStarted = false;
-            });
-
-            if (justStarted) {
-                // At most one module is expected to implement hookForResolveGame (IGDB
-                // today): it can gatekeep untracked activities (returning null) or hand
-                // back an already-resolved/deduped Game row. undefined means "not
-                // handled" (module absent, or not configured) - fall back to a plain
-                // exact-name match, same as before this hook existed.
-                let resolver = ronja_modules.find((m) => m.hookForResolveGame);
-                let resolvedGame = resolver
-                    ? await resolver.hookForResolveGame(gameName, newPresence.guild)
-                    : undefined;
-
-                if (resolvedGame === null) return;
-
-                let game =
-                    resolvedGame ??
-                    (await client.db.Game.findOrCreate({ where: { name: gameName } }))[0];
-
-                console.log(`${newPresence.member.displayName} starts playing ${game.name}.`);
-
-                let [gamePlayed, gamePlayedCreated] = await client.db.GameStatus.findOrCreate({
-                    where: {
-                        GameId: game.id,
-                        member: newPresence.member.id,
-                    },
-                    defaults: { lastplayed: newActivity.createdTimestamp },
+                // Check if user started playing....
+                let justStarted = true;
+                // If the activity is already in the old state, they did not start.
+                oldPresence?.activities.forEach((oldActivity) => {
+                    if (client.myResolveGameName(oldActivity) === gameName) justStarted = false;
                 });
 
-                if (gamePlayedCreated == false) {
-                    await gamePlayed.update({
-                        lastplayed: newActivity.createdTimestamp,
+                if (justStarted) {
+                    // At most one module is expected to implement hookForResolveGame (IGDB
+                    // today): it can gatekeep untracked activities (returning null) or hand
+                    // back an already-resolved/deduped Game row. undefined means "not
+                    // handled" (module absent, or not configured) - fall back to a plain
+                    // exact-name match, same as before this hook existed.
+                    let resolver = ronja_modules.find((m) => m.hookForResolveGame);
+                    let resolvedGame = resolver
+                        ? await resolver.hookForResolveGame(gameName, newPresence.guild)
+                        : undefined;
+
+                    if (resolvedGame === null) return;
+
+                    let game =
+                        resolvedGame ??
+                        (
+                            await client.myFindOrCreate(client.db.Game, {
+                                where: { name: gameName },
+                            })
+                        )[0];
+
+                    console.log(`${newPresence.member.displayName} starts playing ${game.name}.`);
+
+                    let [gamePlayed, gamePlayedCreated] = await client.myFindOrCreate(
+                        client.db.GameStatus,
+                        {
+                            where: {
+                                GameId: game.id,
+                                member: newPresence.member.id,
+                            },
+                            defaults: { lastplayed: newActivity.createdTimestamp },
+                        }
+                    );
+
+                    if (gamePlayedCreated == false) {
+                        await gamePlayed.update({
+                            lastplayed: newActivity.createdTimestamp,
+                        });
+                    }
+
+                    ronja_modules.forEach((m) => {
+                        if (m.hookForStartedPlaying)
+                            invokeHook(() =>
+                                m.hookForStartedPlaying(oldPresence, newPresence, newActivity, game)
+                            );
                     });
                 }
-
-                ronja_modules.forEach((m) => {
-                    if (m.hookForStartedPlaying)
-                        invokeHook(() =>
-                            m.hookForStartedPlaying(oldPresence, newPresence, newActivity, game)
-                        );
-                });
             }
-        }
-    });
+        })
+    );
 });
 
 // client.on(Events.Debug, console.debug);

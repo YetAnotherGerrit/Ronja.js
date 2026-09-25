@@ -23,7 +23,10 @@ want to play with your friends and need to decide on what game to play.
   game entries caused by naming variants or special editions (e.g. "Baldur's
   Gate 3" vs "Baldur's Gate III"), and a /gameinfo command to look up a
   game's IGDB details. When enabled, dynamic text channel notifications and
-  the top 10 also show the (top) game's cover art. Configured with a Twitch/IGDB client ID and secret via
+  the top 10 also show the (top) game's cover art. Once a sync hour is set,
+  games tracked before IGDB was enabled are matched gradually in the
+  background each day, asking the server owner via DM when a match isn't
+  certain, and game data is kept up to date. Configured with a Twitch/IGDB client ID and secret via
   /settings; the rest of Ronja works the same without it.
 - Serverprofile command to show common games for a specific member.
 - /settings command with an interactive menu to view and change Ronja's

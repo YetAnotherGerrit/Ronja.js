@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             Game.hasMany(models.GameStatus);
+            Game.hasMany(models.GameAlias, { onDelete: "CASCADE" });
         }
     }
     Game.init(
@@ -20,6 +21,21 @@ module.exports = (sequelize, DataTypes) => {
             igdbId: {
                 type: DataTypes.STRING,
                 unique: true,
+                allowNull: true,
+                defaultValue: null,
+            },
+            igdbStatus: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                defaultValue: null,
+            },
+            igdbCheckedAt: {
+                type: DataTypes.DATE,
+                allowNull: true,
+                defaultValue: null,
+            },
+            igdbSyncedFields: {
+                type: DataTypes.STRING,
                 allowNull: true,
                 defaultValue: null,
             },
