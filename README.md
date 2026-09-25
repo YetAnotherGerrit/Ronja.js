@@ -32,14 +32,15 @@ want to play with your friends and need to decide on what game to play.
 - Optional [IGDB](https://www.igdb.com/) integration to reduce duplicate
   game entries caused by naming variants or special editions (e.g. "Baldur's
   Gate 3" vs "Baldur's Gate III"), and a /gameinfo command to look up a
-  game's IGDB details. When enabled, dynamic text channel notifications and
-  the top 10 also show the (top) game's cover art. Once a sync hour is set,
+  game's IGDB details. When enabled, dynamic text channel notifications also
+  show the game's card with its cover art. Once a sync hour is set,
   games tracked before IGDB was enabled are matched gradually in the
   background each day, asking the server owner via DM when a match isn't
   certain or IGDB doesn't know an activity at all (so non-games can be
   ignored), and game data is kept up to date. Configured with a Twitch/IGDB client ID and secret via
   /settings; the rest of Ronja works the same without it.
-- Serverprofile command to show common multiplayer games for a specific member.
+- Serverprofile command to show a member's recently played games and the
+  multiplayer games you both played recently.
 - /settings command with an interactive menu to view and change Ronja's
   configuration for your guild.
 - Available in English, German, Spanish, French, Italian, Portuguese, and
