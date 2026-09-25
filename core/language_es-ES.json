@@ -122,11 +122,9 @@
     "Release date": ["Fecha de lanzamiento"],
     "Platforms": ["Plataformas"],
     "Rating": ["Valoración"],
-    "IGDB is not configured on this server.": ["IGDB no está configurado en este servidor."],
     "Could not reach IGDB right now, please try again later.": [
         "No se pudo contactar con IGDB en este momento, inténtalo de nuevo más tarde."
     ],
-    "No game found on IGDB for \"%s\".": ["No se encontró ningún juego en IGDB para \"%s\"."],
     "Multiple games matched - which one did you mean?": [
         "Se encontraron varios juegos - ¿cuál querías decir?"
     ],
@@ -235,5 +233,21 @@
     ],
     "It gets its own channel once %d more players play it.": [
         "Tendrá su propio canal cuando lo jueguen %d jugadores más."
+    ],
+    "Played here": ["Jugado aquí"],
+    "No game found for \"%s\".": ["No se encontró ningún juego para \"%s\"."],
+    "That game is no longer known here.": ["Ese juego ya no se conoce aquí."],
+    "Join channel": ["Unirse al canal"],
+    "Leave channel": ["Salir del canal"],
+    "This game doesn't have an active text channel anymore.": [
+        "Este juego ya no tiene un canal de texto activo."
+    ],
+    "Could not change who can see #%s: I need the Manage Permissions permission there.": [
+        "No se pudo cambiar quién puede ver #%s: necesito allí el permiso \"Gestionar permisos\"."
+    ],
+    "Sorry, I couldn't change your access to #%s.": ["Lo siento, no pude cambiar tu acceso a #%s."],
+    "You joined %s.": ["Te uniste a %s."],
+    "You left #%s. I'll add you back when I see you playing %s again.": [
+        "Saliste de #%s. Te volveré a añadir cuando te vea jugar a %s otra vez."
     ]
 }

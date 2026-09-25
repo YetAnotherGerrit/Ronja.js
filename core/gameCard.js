@@ -74,6 +74,8 @@ function truncate(text, max) {
 // client.myGameDetails(game) - without a color, which is up to the caller.
 // Shows the details the admin picked in the gameCardDetails setting, minus
 // anything the details don't have. Title and IGDB link are always shown.
+// For a game without details, pass just { name } - the card then has only
+// its title (and the guild info, if any) and doesn't mention IGDB.
 // The guild's players and the game's text channel are only shown with
 // `guildInfo` (see loadGuildInfo), which only short-lived cards pass: pinned
 // or notification cards stay up for weeks, while that info changes daily.
@@ -81,7 +83,9 @@ function buildGameCard(client, details, locale, guildInfo = null) {
     let l = (...args) => client.myTranslator(locale, ...args);
     let shown = shownDetails(client);
     let show = (detail) => shown.includes(detail);
-    let e = new EmbedBuilder().setTitle(truncate(details.name, 256)).setFooter({ text: "IGDB" });
+    let e = new EmbedBuilder().setTitle(truncate(details.name, 256));
+
+    if (details.id != null) e.setFooter({ text: "IGDB" });
 
     if (details.url) e.setURL(details.url);
     if (show("summary") && details.summary) {
@@ -189,17 +193,16 @@ function links(l, websites) {
     return value;
 }
 
-// What a short-lived card for the game with IGDB id `igdbId` shows about
-// `guild` (see buildGameCard): only the parts the gameCardDetails setting
-// shows are looked up, the others are left undefined.
+// What a short-lived card for `game` (a Game row, or null for a game Ronja
+// doesn't track) shows about `guild` (see buildGameCard): only the parts the
+// gameCardDetails setting shows are looked up, the others are left undefined.
 // - players: the members still in the guild who played it recently, most
 //   recent first, as [{ id, lastplayed }] - empty if Ronja doesn't track it.
 // - channel: its game text channel as { active: id } or { archived: name },
 //   or { missing: n } with the number of players it needs to get one - or
 //   null if game text channels aren't set up or its channel can't be read.
-async function loadGuildInfo(client, guild, igdbId) {
+async function loadGuildInfo(client, guild, game) {
     let shown = shownDetails(client);
-    let game = await client.db.Game.findOne({ where: { igdbId: String(igdbId) } });
     let info = {};
     if (shown.includes("players")) info.players = await recentPlayers(client, guild, game);
     if (shown.includes("channel")) info.channel = await textChannel(client, guild, game);

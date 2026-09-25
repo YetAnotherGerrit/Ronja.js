@@ -23,6 +23,7 @@ const ronja_modules = [];
 ronja_modules.push(require("./ronja_modules/Calendarfeed.js"));
 ronja_modules.push(require("./ronja_modules/DynamicTextChannels.js"));
 ronja_modules.push(require("./ronja_modules/DynamicVoiceChannels.js"));
+ronja_modules.push(require("./ronja_modules/GameInfo.js"));
 ronja_modules.push(require("./ronja_modules/IGDB.js"));
 ronja_modules.push(require("./ronja_modules/Serverprofil.js"));
 ronja_modules.push(require("./ronja_modules/SetLanguage.js"));
@@ -84,6 +85,15 @@ client.once(Events.ClientReady, async () => {
 
 // Listen for Interactions and forward to all modules
 client.on(Events.InteractionCreate, async (interaction) => {
+    // Sent on every keystroke in an autocompleted option - too noisy to log.
+    if (interaction.isAutocomplete()) {
+        ronja_modules.forEach((m) => {
+            if (m.hookForAutocompleteInteraction)
+                invokeHook(() => m.hookForAutocompleteInteraction(interaction));
+        });
+        return;
+    }
+
     // interaction.member is null for interactions in DMs (e.g. the IGDB sync's
     // questions to the guild owner), so fall back to the user.
     console.log(

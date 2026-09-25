@@ -118,11 +118,9 @@
     "Release date": ["Eldondato"],
     "Platforms": ["Platformoj"],
     "Rating": ["Takso"],
-    "IGDB is not configured on this server.": ["IGDB ne estas agordita sur ĉi tiu servilo."],
     "Could not reach IGDB right now, please try again later.": [
         "IGDB ne estis atingebla nun, bonvolu reprovi poste."
     ],
-    "No game found on IGDB for \"%s\".": ["Neniu ludo trovita sur IGDB por \"%s\"."],
     "Multiple games matched - which one did you mean?": ["Pluraj ludoj kongruis - kiun vi celis?"],
     "Choose a game...": ["Elektu ludon..."],
     "That game is no longer available on IGDB.": ["Tiu ludo ne plu haveblas sur IGDB."],
@@ -229,5 +227,23 @@
     ],
     "It gets its own channel once %d more players play it.": [
         "Ĝi ricevos propran kanalon, kiam ankoraŭ %d ludantoj ludos ĝin."
+    ],
+    "Played here": ["Ludita ĉi tie"],
+    "No game found for \"%s\".": ["Neniu ludo trovita por \"%s\"."],
+    "That game is no longer known here.": ["Tiu ludo ne plu estas konata ĉi tie."],
+    "Join channel": ["Aliĝi al kanalo"],
+    "Leave channel": ["Forlasi kanalon"],
+    "This game doesn't have an active text channel anymore.": [
+        "Tiu ludo ne plu havas aktivan tekstkanalon."
+    ],
+    "Could not change who can see #%s: I need the Manage Permissions permission there.": [
+        "Ne povis ŝanĝi, kiu povas vidi #%s: mi bezonas tie la permeson \"Administri permesojn\"."
+    ],
+    "Sorry, I couldn't change your access to #%s.": [
+        "Pardonu, mi ne povis ŝanĝi vian aliron al #%s."
+    ],
+    "You joined %s.": ["Vi aliĝis al %s."],
+    "You left #%s. I'll add you back when I see you playing %s again.": [
+        "Vi forlasis #%s. Mi realdonos vin, kiam mi vidos vin denove ludi %s."
     ]
 }
