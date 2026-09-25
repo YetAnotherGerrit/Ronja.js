@@ -12,7 +12,9 @@ want to play with your friends and need to decide on what game to play.
       the voice channel's members.
 - Dynamically created text channels
     - Channels for specific games are created when a specific number of
-      members on the guild own the same game.
+      members on the guild have recently played the same game.
+    - With IGDB configured, a card with the game's key facts and links is
+      pinned in each new channel.
     - Automatic archiving of channels about games that are not played anymore.
 - /lfg command to find members to game with by assisting with what common
   games you have.
