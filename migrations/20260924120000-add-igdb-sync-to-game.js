@@ -5,8 +5,8 @@ module.exports = {
     async up(queryInterface, Sequelize) {
         // Background IGDB sync state per game (see ronja_modules/IGDB.js):
         // - igdbStatus: null (unchecked, or matched and fine), "notFound",
-        //   "pending" (waiting for the guild owner), "declined" or "gone"
-        //   (matched, but no longer on IGDB).
+        //   "pending" (waiting for the guild owner), "declined", "ignored" (not a
+        //   game, per the guild owner) or "gone" (matched, but no longer on IGDB).
         // - igdbCheckedAt: last IGDB check, drives retries and the refresh order.
         // - igdbSyncedFields: the synced columns this row was last filled with.
         await queryInterface.addColumn("Games", "igdbStatus", {

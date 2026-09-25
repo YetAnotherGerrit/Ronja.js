@@ -155,5 +155,9 @@
     "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" estis kongruigita kun \"%s\" sur IGDB."],
     "%s expects an hour from 0 to 23, or nothing to turn it off.": [
         "%s atendas horon de 0 ĝis 23, aŭ nenion por malŝalti ĝin."
+    ],
+    "Not a game, ignore it": ["Ne ludo, ignoru ĝin"],
+    "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
+        "Bone, \"%s\" ne plu estas traktata kiel ludo: ĝi nenie plu estas registrata aŭ listigata."
     ]
 }

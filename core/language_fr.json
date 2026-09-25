@@ -161,5 +161,9 @@
     "Matched \"%s\" to \"%s\" on IGDB.": ["\"%s\" a été associé à \"%s\" sur IGDB."],
     "%s expects an hour from 0 to 23, or nothing to turn it off.": [
         "%s attend une heure de 0 à 23, ou rien pour le désactiver."
+    ],
+    "Not a game, ignore it": ["Pas un jeu, l'ignorer"],
+    "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
+        "D'accord, \"%s\" n'est plus traité comme un jeu : il n'est plus suivi ni listé nulle part."
     ]
 }

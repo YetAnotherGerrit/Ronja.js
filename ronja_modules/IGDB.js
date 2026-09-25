@@ -25,6 +25,7 @@ const SYNC_NOT_FOUND_RETRY_MS = 30 * DAY_MS;
 const SYNC_DECLINED_RETRY_MS = 100 * DAY_MS;
 const SYNC_PICK_PREFIX = "igdbSyncPick:";
 const SYNC_PICK_NONE = "none";
+const SYNC_PICK_IGNORE = "ignore";
 const SUMMARY_MAX_LENGTH = 2000; // Discord's message limit.
 
 // IGDB fields every game lookup needs, on top of syncFields: alternative names
@@ -460,9 +461,10 @@ const myIgdb = {
     },
 
     // A game Ronja already knows under this exact activity name: one matched to
-    // IGDB, one the guild owner kept as it is or hasn't answered the sync's
-    // question about yet (so IGDB's top-ranked guess can't override that), or
-    // one known by this alias. Returns null for anything else.
+    // IGDB, one the guild owner kept as it is, marked as not a game or hasn't
+    // answered the sync's question about yet (so IGDB's top-ranked guess can't
+    // override that), one IGDB doesn't know, or one known by this alias.
+    // Returns null for anything else.
     findKnownGame: async function (name) {
         let db = this.client.db;
         let game = await db.Game.findOne({
@@ -470,7 +472,7 @@ const myIgdb = {
                 name,
                 [Op.or]: [
                     { igdbId: { [Op.ne]: null } },
-                    { igdbStatus: ["declined", "pending", "notFound"] },
+                    { igdbStatus: ["declined", "pending", "notFound", "ignored"] },
                 ],
             },
         });
@@ -484,6 +486,7 @@ const myIgdb = {
     // - undefined: not handled here (an unknown name while IGDB is unconfigured,
     //   or a transient IGDB error) - the caller should fall back to its default
     //   behavior.
+    // - null: the guild owner said this activity isn't a game - don't track it.
     // - a Game instance: the row to use. For an exact IGDB match, that's the
     //   canonical, already-created/merged row. Anything less certain is tracked
     //   under its own name and the guild owner is asked about it (see
@@ -505,7 +508,8 @@ const myIgdb = {
         // Known names need no IGDB request - the background sync keeps their data
         // current - and keep working while IGDB is unreachable or unconfigured.
         let known = await this.findKnownGame(gameName);
-        if (known) return known;
+        // The guild owner said this activity isn't a game - don't track it.
+        if (known) return known.igdbStatus === "ignored" ? null : known;
 
         if (!this.isConfigured()) return undefined;
 
@@ -797,6 +801,7 @@ const myIgdb = {
             .addOptions([
                 ...this.candidateOptions(candidates),
                 { label: this.l(locale, "None of these, keep as is"), value: SYNC_PICK_NONE },
+                { label: this.l(locale, "Not a game, ignore it"), value: SYNC_PICK_IGNORE },
             ]);
 
         try {
@@ -983,6 +988,24 @@ const myIgdb = {
             await reply(
                 Colors.Green,
                 this.l(locale, 'Okay, "%s" stays as it is. I\'ll ask again in 100 days.', game.name)
+            );
+            return;
+        }
+
+        if (choice === SYNC_PICK_IGNORE) {
+            // Every listing (top 10, /lfg, profiles, text channels) goes through
+            // GameStatus, so without its play history the activity is gone from
+            // all of them. The row itself stays, so its name (and aliases) are
+            // recognized and ignored from now on (see resolveLiveGame).
+            await this.client.db.GameStatus.destroy({ where: { GameId: game.id } });
+            await game.update({ igdbStatus: "ignored", igdbCheckedAt: new Date() });
+            await reply(
+                Colors.Green,
+                this.l(
+                    locale,
+                    "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.",
+                    game.name
+                )
             );
             return;
         }
