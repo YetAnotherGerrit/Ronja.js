@@ -29,22 +29,38 @@ const myTop10 = {
             .setDMPermission(false),
     ],
 
-    // Members in a voice channel, by id: since when their time there hasn't
-    // been stored yet. Members who were already in voice when Ronja got ready
-    // are missing and count from then on (see voiceSinceFor).
+    // Members in voice with others, by id: since when their time there hasn't
+    // been stored yet (see isCounting).
     voiceSince: new Map(),
 
-    // Time in the guild's AFK channel doesn't count, neither does any bot's.
-    inCountedVoice: function (state) {
-        return Boolean(
-            state.channelId &&
-            state.channelId !== state.guild.afkChannelId &&
-            !state.member?.user.bot
-        );
+    // Only time with at least one other member counts: not alone, not with
+    // just bots, not in the guild's AFK channel - and no bot's time at all.
+    isCounting: function (state) {
+        if (!state?.channel || state.channelId === state.guild.afkChannelId) return false;
+        if (state.member?.user.bot) return false;
+        return state.channel.members.filter((m) => !m.user.bot).size >= 2;
     },
 
-    voiceSinceFor: function (member) {
-        return this.voiceSince.get(member) ?? this.client.readyAt;
+    // Starts or stores `member`'s voice time, as `counting` now says.
+    setCounting: async function (member, counting, now) {
+        let since = this.voiceSince.get(member);
+        if (counting) {
+            if (!since) this.voiceSince.set(member, now);
+            return;
+        }
+        if (!since) return;
+        this.voiceSince.delete(member);
+        await this.addVoiceTime(member, since, now);
+    },
+
+    countedVoiceStates: function () {
+        let states = [];
+        this.client.guilds.cache.forEach((guild) =>
+            guild.voiceStates.cache.forEach((state) => {
+                if (this.isCounting(state)) states.push(state);
+            })
+        );
+        return states;
     },
 
     today: function (date = new Date()) {
@@ -89,39 +105,33 @@ const myTop10 = {
         }
     },
 
-    // Stores the voice time of everyone still in voice up to now, so /top10
-    // includes it and a restart loses at most the time since the last flush.
+    // Stores the voice time of everyone still in voice with others up to now,
+    // so /top10 includes it and a restart loses at most the time since then.
     flushVoiceTime: async function () {
         let now = new Date();
-        let inVoice = [];
-        this.client.guilds.cache.forEach((guild) =>
-            guild.voiceStates.cache.forEach((state) => {
-                if (this.inCountedVoice(state)) inVoice.push(state.id);
-            })
-        );
+        let counting = this.countedVoiceStates().map((state) => state.id);
 
-        let flushed = inVoice.map((member) => [member, this.voiceSinceFor(member)]);
-        // Anyone else left without Ronja noticing (e.g. while reconnecting to
-        // Discord) - when is unknown, so their time since the last flush is lost.
+        let flushed = counting.map((member) => [member, this.voiceSince.get(member)]);
+        // Anyone else stopped counting without Ronja noticing (e.g. while
+        // reconnecting to Discord) - when is unknown, so their time since the
+        // last flush is lost. Likewise, anyone who started unnoticed counts from now.
         this.voiceSince.clear();
-        flushed.forEach(([member]) => this.voiceSince.set(member, now));
+        counting.forEach((member) => this.voiceSince.set(member, now));
 
-        for (let [member, since] of flushed) await this.addVoiceTime(member, since, now);
+        for (let [member, since] of flushed) if (since) await this.addVoiceTime(member, since, now);
     },
 
+    // A join, leave or move can start or end the counted time of everyone in
+    // the channels involved, e.g. the one left behind alone.
     hookForVoiceUpdate: async function (oldState, newState) {
-        let was = this.inCountedVoice(oldState);
-        let is = this.inCountedVoice(newState);
-        if (was === is) return;
+        let now = new Date();
+        let states = new Map([[newState.id, newState]]);
+        [oldState.channel, newState.channel].forEach((channel) =>
+            channel?.members.forEach((m) => states.set(m.id, m.voice))
+        );
 
-        let member = newState.id;
-        if (is) {
-            this.voiceSince.set(member, new Date());
-            return;
-        }
-        let since = this.voiceSinceFor(member);
-        this.voiceSince.delete(member);
-        await this.addVoiceTime(member, since, new Date());
+        for (let [member, state] of states)
+            await this.setCounting(member, this.isCounting(state), now);
     },
 
     // Counts members' messages in game text channels (and their threads).
@@ -292,6 +302,11 @@ const myTop10 = {
     },
 
     hookForCron: function () {
+        // Called once when Ronja gets ready: whoever is in voice with others by
+        // then counts from now on.
+        let now = new Date();
+        this.countedVoiceStates().forEach((state) => this.voiceSince.set(state.id, now));
+
         let schedules = [
             {
                 schedule: "0 * * * *",
