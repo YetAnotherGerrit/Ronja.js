@@ -1,4 +1,4 @@
-const { Client, EmbedBuilder, Colors, REST, Routes, RESTJSONErrorCodes } = require("discord.js");
+const { Client, REST, Routes, RESTJSONErrorCodes } = require("discord.js");
 const Sequelize = require("sequelize");
 
 const fs = require("node:fs");
