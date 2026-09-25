@@ -275,13 +275,14 @@ async function textChannel(client, guild, game) {
 
 function playerLines(l, players) {
     if (!players.length) return l("Nobody here has played it recently.");
-    let lines = players
+    let list = players
         .slice(0, RECENT_PLAYERS_SHOWN)
-        .map((p) => `${userMention(p.id)} · ${time(p.lastplayed, TimestampStyles.RelativeTime)}`);
+        .map((p) => `${userMention(p.id)} (${time(p.lastplayed, TimestampStyles.RelativeTime)})`)
+        .join(", ");
     if (players.length > RECENT_PLAYERS_SHOWN) {
-        lines.push(l("...and %d more", players.length - RECENT_PLAYERS_SHOWN));
+        list += ` ${l("...and %d more", players.length - RECENT_PLAYERS_SHOWN)}`;
     }
-    return lines.join("\n");
+    return list;
 }
 
 function channelLine(l, channel) {
