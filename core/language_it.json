@@ -167,5 +167,27 @@
     "Not a game, ignore it": ["Non è un gioco, ignoralo"],
     "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
         "Va bene, \"%s\" non è più considerato un gioco: non viene più registrato né elencato da nessuna parte."
-    ]
+    ],
+    "Genres": ["Generi"],
+    "Time to beat": ["Durata"],
+    "Rushed: %s": ["Di corsa: %s"],
+    "Normally: %s": ["Normalmente: %s"],
+    "Completionist: %s": ["Al 100%: %s"],
+    "%d h": ["%d h"],
+    "%d min": ["%d min"],
+    "Multiplayer": ["Multigiocatore"],
+    "Game modes": ["Modalità di gioco"],
+    "Links": ["Link"],
+    "Online co-op, up to %d players": ["Cooperativa online, fino a %d giocatori"],
+    "Online co-op": ["Cooperativa online"],
+    "Online multiplayer, up to %d players": ["Multigiocatore online, fino a %d giocatori"],
+    "Couch co-op, up to %d players": ["Cooperativa locale, fino a %d giocatori"],
+    "Couch co-op": ["Cooperativa locale"],
+    "Local multiplayer, up to %d players": ["Multigiocatore locale, fino a %d giocatori"],
+    "LAN co-op": ["Cooperativa LAN"],
+    "Split screen": ["Schermo condiviso"],
+    "Co-op campaign": ["Campagna cooperativa"],
+    "Drop-in/drop-out": ["Drop-in/drop-out"],
+    "Official site": ["Sito ufficiale"],
+    "Wiki": ["Wiki"]
 }

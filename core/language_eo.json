@@ -159,5 +159,27 @@
     "Not a game, ignore it": ["Ne ludo, ignoru ĝin"],
     "Okay, \"%s\" isn't treated as a game anymore: it's no longer tracked or listed anywhere.": [
         "Bone, \"%s\" ne plu estas traktata kiel ludo: ĝi nenie plu estas registrata aŭ listigata."
-    ]
+    ],
+    "Genres": ["Ĝenroj"],
+    "Time to beat": ["Ludodaŭro"],
+    "Rushed: %s": ["Rapide: %s"],
+    "Normally: %s": ["Normale: %s"],
+    "Completionist: %s": ["Plene: %s"],
+    "%d h": ["%d h"],
+    "%d min": ["%d min"],
+    "Multiplayer": ["Plurludanta"],
+    "Game modes": ["Ludreĝimoj"],
+    "Links": ["Ligiloj"],
+    "Online co-op, up to %d players": ["Reta kunlaboro, ĝis %d ludantoj"],
+    "Online co-op": ["Reta kunlaboro"],
+    "Online multiplayer, up to %d players": ["Reta plurludado, ĝis %d ludantoj"],
+    "Couch co-op, up to %d players": ["Loka kunlaboro, ĝis %d ludantoj"],
+    "Couch co-op": ["Loka kunlaboro"],
+    "Local multiplayer, up to %d players": ["Loka plurludado, ĝis %d ludantoj"],
+    "LAN co-op": ["LAN-kunlaboro"],
+    "Split screen": ["Dividita ekrano"],
+    "Co-op campaign": ["Kunlabora kampanjo"],
+    "Drop-in/drop-out": ["Libera aliĝo kaj foriro"],
+    "Official site": ["Oficiala retejo"],
+    "Wiki": ["Vikio"]
 }

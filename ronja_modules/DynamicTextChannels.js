@@ -4,8 +4,10 @@ const {
     EmbedBuilder,
     Colors,
     RESTJSONErrorCodes,
+    MessageType,
 } = require("discord.js");
 const { DateTime } = require("luxon");
+const { buildGameCard } = require("../core/gameCard.js");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
@@ -90,21 +92,84 @@ const myDynamicTextChannels = {
         }
     },
 
+    // Posts to the notification channel. With details for `game` (see
+    // client.myGameDetails), its game card goes along as a second embed.
     notifyChannel: async function (myTitle, myDescription, game) {
         if (this.cfg("dtcNotificationChannel")) {
             let details = await this.client.myGameDetails(game);
             this.client.channels
                 .fetch(this.cfg("dtcNotificationChannel"))
                 .then((notificationChannel) => {
-                    let e = new EmbedBuilder()
-                        .setColor(Colors.Blue)
-                        .setTitle(myTitle)
-                        .setDescription(myDescription);
-                    if (details?.coverUrl) e.setThumbnail(details.coverUrl);
+                    let embeds = [
+                        new EmbedBuilder()
+                            .setColor(Colors.Blue)
+                            .setTitle(myTitle)
+                            .setDescription(myDescription),
+                    ];
+                    if (details) {
+                        embeds.push(
+                            buildGameCard(
+                                this.client,
+                                details,
+                                notificationChannel.guild.preferredLocale
+                            ).setColor(Colors.Blue)
+                        );
+                    }
 
-                    notificationChannel.send({ embeds: [e] }).catch(console.error);
+                    notificationChannel.send({ embeds }).catch(console.error);
                 })
                 .catch(console.warn);
+        }
+    },
+
+    // Posts and pins the game card as the first message of a new game channel.
+    // Games without details (not matched to IGDB, or IGDB isn't configured)
+    // get none. Failures are only logged - the channel works without its card.
+    postGameCard: async function (channel, game) {
+        let details = await this.client.myGameDetails(game);
+        if (!details) return;
+
+        let card;
+        try {
+            card = await channel.send({
+                embeds: [
+                    buildGameCard(this.client, details, channel.guild.preferredLocale).setColor(
+                        Colors.Blue
+                    ),
+                ],
+            });
+            await card.pin();
+        } catch (err) {
+            console.error(`Could not post and pin the game card in #${channel.name}:`, err);
+            return;
+        }
+
+        // Discord announces the pin right below the card - just noise in a new channel.
+        try {
+            let notices = await channel.messages.fetch({ after: card.id, limit: 10 });
+            await notices
+                .find(
+                    (m) =>
+                        m.type === MessageType.ChannelPinnedMessage &&
+                        m.author.id === this.client.user.id
+                )
+                ?.delete();
+        } catch (err) {
+            console.warn(`Could not delete the pin notice in #${channel.name}:`, err);
+        }
+    },
+
+    // Whether anyone but Ronja ever posted in `channel` - Ronja's own messages
+    // (the game card, its pin notice, ...) don't count. Reads the history
+    // itself, since without the GuildMessages intent channel.lastMessageId
+    // isn't kept up to date.
+    hasMemberPosts: async function (channel) {
+        let before;
+        while (true) {
+            let page = await channel.messages.fetch({ limit: 100, before, cache: false });
+            if (page.some((m) => m.author.id !== this.client.user.id)) return true;
+            if (page.size < 100) return false;
+            before = page.lastKey();
         }
     },
 
@@ -134,6 +199,9 @@ const myDynamicTextChannels = {
 
             this.assignAllPlayersToChannel(newChannel, game, this.cfg("dtcDaysTarget"));
             game.update({ channel: newChannel.id });
+            // Only after linking the channel - fetching the details can take a
+            // moment, and meanwhile the game must not look channel-less.
+            this.postGameCard(newChannel, game);
 
             console.log(`Created new text channel #${newChannel.name}.`);
             this.sortTextChannelCategoryByName(dtcGamesCategory);
@@ -155,7 +223,16 @@ const myDynamicTextChannels = {
     checkActiveTextChannel: async function (channel) {
         if (this.cfg("dtcArchivedGamesCategory")) {
             if (!(await this.hasGameBeenPlayedForChannel(channel, this.cfg("dtcDaysToArchive")))) {
-                if (!channel.lastMessageId) {
+                let hasMemberPosts = true;
+                try {
+                    hasMemberPosts = await this.hasMemberPosts(channel);
+                } catch (err) {
+                    console.error(
+                        `Could not read the history of #${channel.name}, archiving it rather than deleting it:`,
+                        err
+                    );
+                }
+                if (!hasMemberPosts) {
                     console.log(`Deleted empty #${channel.name} instead of archiving it.`);
                     await channel.delete();
                     return;
