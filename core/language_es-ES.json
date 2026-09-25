@@ -14,9 +14,9 @@
     "Common games": ["Juegos en común"],
     "The server's top 10!": ["¡El top 10 del servidor!"],
     "The last %d days at a glance:": ["Los últimos %d días de un vistazo:"],
-    "Top 10 by player count:": ["Top 10 por número de personas que lo juegan:"],
-    "Top 10 by time in voice channels:": ["Top 10 por tiempo en canales de voz:"],
-    "Top 10 game channels by messages:": ["Top 10 canales de juegos por mensajes:"],
+    "Games by player count": ["Juegos por número de personas que los juegan"],
+    "Members by time in voice": ["Miembros por tiempo en canales de voz"],
+    "Game channels by messages": ["Canales de juegos por mensajes"],
     "Last week at a glance:": ["La semana pasada de un vistazo:"],
     "Last month at a glance:": ["El mes pasado de un vistazo:"],
     "Happy new year! These have been the highlights of last year:": [

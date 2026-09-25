@@ -155,7 +155,7 @@ const myTop10 = {
     topGames: async function (since) {
         let g = await this.client.db.Game.findAll({
             raw: true,
-            attributes: ["name", "igdbId", [Sequelize.fn("COUNT", "*"), "cName"]],
+            attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
             include: [
                 {
                     model: this.client.db.GameStatus,
@@ -169,15 +169,11 @@ const myTop10 = {
             group: "Game.name",
         });
 
-        return {
-            first: g[0],
-            lines: g
-                .slice(0, TOP)
-                .map(
-                    (gg) =>
-                        `**${gg.cName}**  :busts_in_silhouette:  ${truncate(gg.name, NAME_LENGTH)}`
-                ),
-        };
+        return g
+            .slice(0, TOP)
+            .map(
+                (gg) => `**${gg.cName}**  :busts_in_silhouette:  ${truncate(gg.name, NAME_LENGTH)}`
+            );
     },
 
     // Sums a daily counter per key since the day `since` falls on, ranked. All
@@ -243,26 +239,19 @@ const myTop10 = {
             this.topGameChannels(guild, lng, since),
         ]);
 
-        // As the embed's image, not its thumbnail: next to a thumbnail, Discord
-        // puts only two inline fields in a row.
-        if (games.first) {
-            let details = await this.client.myGameDetails(games.first);
-            if (details?.coverUrl) e.setImage(details.coverUrl);
-        }
-
         e.addFields([
             {
-                name: this.l(lng, "Top 10 by player count:"),
-                value: games.lines.join("\n") || this.l(lng, "No games have been played."),
+                name: this.l(lng, "Games by player count"),
+                value: games.join("\n") || this.l(lng, "No games have been played."),
                 inline: true,
             },
             {
-                name: this.l(lng, "Top 10 by time in voice channels:"),
+                name: this.l(lng, "Members by time in voice"),
                 value: voice.join("\n") || this.l(lng, "Nobody has been in a voice channel."),
                 inline: true,
             },
             {
-                name: this.l(lng, "Top 10 game channels by messages:"),
+                name: this.l(lng, "Game channels by messages"),
                 value:
                     channels.join("\n") ||
                     this.l(lng, "Nothing has been posted in the game channels."),

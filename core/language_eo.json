@@ -14,9 +14,9 @@
     "Common games": ["Komunaj ludoj"],
     "The server's top 10!": ["La supraj 10 de la servilo!"],
     "The last %d days at a glance:": ["La lastaj %d tagoj unuavide:"],
-    "Top 10 by player count:": ["Supraj 10 laŭ nombro de ludantoj:"],
-    "Top 10 by time in voice channels:": ["Supraj 10 laŭ tempo en voĉkanaloj:"],
-    "Top 10 game channels by messages:": ["Supraj 10 ludkanaloj laŭ mesaĝoj:"],
+    "Games by player count": ["Ludoj laŭ nombro de ludantoj"],
+    "Members by time in voice": ["Membroj laŭ tempo en voĉkanaloj"],
+    "Game channels by messages": ["Ludkanaloj laŭ mesaĝoj"],
     "Last week at a glance:": ["La pasinta semajno unuavide:"],
     "Last month at a glance:": ["La pasinta monato unuavide:"],
     "Happy new year! These have been the highlights of last year:": [
