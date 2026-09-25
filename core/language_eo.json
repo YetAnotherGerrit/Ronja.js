@@ -193,5 +193,12 @@
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "Ne povis kontroli, ĉu iu afiŝis en #%s, do mi arĥivas ĝin anstataŭ forigi ĝin: mi bezonas tie la permeson „Legi mesaĝhistorion“."
-    ]
+    ],
+    "Cover": ["Kovrilo"],
+    "Summary": ["Resumo"],
+    "Or the game modes, if IGDB has no multiplayer details": [
+        "Aŭ la ludreĝimoj, se IGDB ne havas detalojn pri plurludado"
+    ],
+    "(none)": ["(neniu)"],
+    "Choose any number of options...": ["Elektu iom ajn da opcioj..."]
 }

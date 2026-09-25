@@ -119,6 +119,21 @@ const myExample = {
     hookForGameDetails: async function (game) {
         console.debug("Someone wants to know more about a Game row!");
     },
+
+    // Not fanned out from a Discord event: /settings (ronja_modules/Settings.js)
+    // asks every module for the choices of a "multiselect" setting and uses the
+    // first non-empty answer. Return [{ value, label, description? }] (at most
+    // 25, labels translated for `locale`) for a setting this module owns, or
+    // undefined for any other. The setting's value is the comma-separated list
+    // of picked values, e.g. "cover,summary" (see gameCardDetails in IGDB.js).
+    hookForSettingOptions: function (name, locale) {
+        if (name === "exampleChoices") {
+            return [
+                { value: "a", label: this.l(locale, "Option A") },
+                { value: "b", label: this.l(locale, "Option B") },
+            ];
+        }
+    },
 };
 
 module.exports = myExample;

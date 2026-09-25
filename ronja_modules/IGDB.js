@@ -9,7 +9,7 @@ const {
 const { DateTime } = require("luxon");
 const { Op, TimeoutError, UniqueConstraintError } = require("sequelize");
 const { setTimeout: sleep } = require("node:timers/promises");
-const { buildGameCard } = require("../core/gameCard.js");
+const { buildGameCard, gameCardDetailOptions } = require("../core/gameCard.js");
 
 const IGDB_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h - IGDB data barely changes day to day.
 const IGDB_MIN_REQUEST_INTERVAL_MS = 250; // IGDB allows 4 requests per second.
@@ -626,6 +626,11 @@ const myIgdb = {
             this.setCached(game.igdbId, details, this.igdbDetailsCache);
         }
         return details;
+    },
+
+    // The choices /settings offers for the gameCardDetails setting.
+    hookForSettingOptions: function (name, locale) {
+        if (name === "gameCardDetails") return gameCardDetailOptions(this.client, locale);
     },
 
     hookForCron: function () {

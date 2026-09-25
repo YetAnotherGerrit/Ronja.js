@@ -203,5 +203,12 @@
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "Konnte nicht prüfen, ob jemand in #%s geschrieben hat, deshalb archiviere ich den Kanal, statt ihn zu löschen: Ich brauche dort die Berechtigung „Nachrichtenverlauf anzeigen“."
-    ]
+    ],
+    "Cover": ["Cover"],
+    "Summary": ["Beschreibung"],
+    "Or the game modes, if IGDB has no multiplayer details": [
+        "Oder die Spielmodi, wenn IGDB keine Mehrspieler-Details hat"
+    ],
+    "(none)": ["(keine)"],
+    "Choose any number of options...": ["Wähle beliebig viele Optionen aus..."]
 }

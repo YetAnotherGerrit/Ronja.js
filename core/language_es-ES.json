@@ -199,5 +199,12 @@
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "No se pudo comprobar si alguien ha escrito en #%s, así que lo archivo en lugar de eliminarlo: necesito allí el permiso «Leer el historial de mensajes»."
-    ]
+    ],
+    "Cover": ["Portada"],
+    "Summary": ["Resumen"],
+    "Or the game modes, if IGDB has no multiplayer details": [
+        "O los modos de juego, si IGDB no tiene detalles del multijugador"
+    ],
+    "(none)": ["(ninguno)"],
+    "Choose any number of options...": ["Elige tantas opciones como quieras..."]
 }

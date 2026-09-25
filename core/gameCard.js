@@ -22,38 +22,69 @@ const LINKS = [
     ["discord", "Discord"],
 ];
 
+// What a card can show, in the order /settings offers it. The admin picks
+// which of them are shown in the gameCardDetails setting.
+const DETAILS = [
+    ["cover", "Cover"],
+    ["summary", "Summary"],
+    ["releaseDate", "Release date"],
+    ["platforms", "Platforms"],
+    ["rating", "Rating"],
+    ["genres", "Genres"],
+    ["timeToBeat", "Time to beat"],
+    ["multiplayer", "Multiplayer", "Or the game modes, if IGDB has no multiplayer details"],
+    ["links", "Links"],
+];
+
+// The gameCardDetails choices for /settings (see hookForSettingOptions).
+function gameCardDetailOptions(client, locale) {
+    let l = (...args) => client.myTranslator(locale, ...args);
+    return DETAILS.map(([value, label, description]) => ({
+        value,
+        label: l(label),
+        ...(description ? { description: l(description) } : {}),
+    }));
+}
+
 function truncate(text, max) {
     return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
 
 // Builds the card embed for a game's details, as returned by
 // client.myGameDetails(game) - without a color, which is up to the caller.
-// Everything the details don't have is left out.
+// Shows the details the admin picked in the gameCardDetails setting, minus
+// anything the details don't have. Title and IGDB link are always shown.
 function buildGameCard(client, details, locale) {
     let l = (...args) => client.myTranslator(locale, ...args);
+    let shown = (client.myConfigGet("gameCardDetails") || "").split(",");
+    let show = (detail) => shown.includes(detail);
     let e = new EmbedBuilder().setTitle(truncate(details.name, 256)).setFooter({ text: "IGDB" });
 
     if (details.url) e.setURL(details.url);
-    if (details.summary) e.setDescription(truncate(details.summary, SUMMARY_MAX_LENGTH));
-    if (details.coverUrl) e.setThumbnail(details.coverUrl);
+    if (show("summary") && details.summary) {
+        e.setDescription(truncate(details.summary, SUMMARY_MAX_LENGTH));
+    }
+    if (show("cover") && details.coverUrl) e.setThumbnail(details.coverUrl);
 
     let fields = [];
-    let add = (name, value, inline = true) => {
-        if (value) fields.push({ name, value, inline });
+    let add = (detail, name, value, inline = true) => {
+        if (show(detail) && value) fields.push({ name, value, inline });
     };
     let list = (items) => truncate((items || []).join(", "), LIST_MAX_LENGTH);
 
-    add(l("Release date"), releaseDate(details.releaseDate));
-    add(l("Platforms"), list(details.platforms));
-    if (details.rating != null) add(l("Rating"), `${Math.round(details.rating)}/100`);
-    add(l("Genres"), list(details.genres));
-    add(l("Time to beat"), timeToBeatLines(l, details.timeToBeat));
+    add("releaseDate", l("Release date"), releaseDate(details.releaseDate));
+    add("platforms", l("Platforms"), list(details.platforms));
+    if (details.rating != null) {
+        add("rating", l("Rating"), `${Math.round(details.rating)}/100`);
+    }
+    add("genres", l("Genres"), list(details.genres));
+    add("timeToBeat", l("Time to beat"), timeToBeatLines(l, details.timeToBeat));
 
     let multiplayer = multiplayerLines(l, details.multiplayer);
-    if (multiplayer) add(l("Multiplayer"), multiplayer);
-    else add(l("Game modes"), list(details.gameModes));
+    if (multiplayer) add("multiplayer", l("Multiplayer"), multiplayer);
+    else add("multiplayer", l("Game modes"), list(details.gameModes));
 
-    add(l("Links"), links(l, details.websites), false);
+    add("links", l("Links"), links(l, details.websites), false);
 
     if (fields.length) e.addFields(fields);
     return e;
@@ -128,4 +159,4 @@ function links(l, websites) {
     return value;
 }
 
-module.exports = { buildGameCard };
+module.exports = { buildGameCard, gameCardDetailOptions };

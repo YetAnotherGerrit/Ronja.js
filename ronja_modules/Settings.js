@@ -69,6 +69,27 @@ function groupByCategory(settings) {
 const mySettings = {
     collectorTimeout: 14 * 60 * 1000,
 
+    // The choices of a "multiselect" setting, from the first module whose
+    // hookForSettingOptions knows it: [{ value, label, description? }].
+    settingOptions: function (setting, locale) {
+        for (let m of this.client.myModules) {
+            let options = m.hookForSettingOptions?.(setting.name, locale);
+            if (options?.length) return options.slice(0, MAX_PICKER_OPTIONS);
+        }
+        return [];
+    },
+
+    // Like plainValue, but a "multiselect" setting (a comma-separated list of
+    // option values) shows the labels of its picked options.
+    displayValue: async function (guild, setting, locale) {
+        if (setting.type !== "multiselect") return await plainValue(guild, setting);
+        let picked = (setting.value || "").split(",");
+        let labels = this.settingOptions(setting, locale)
+            .filter((o) => picked.includes(o.value))
+            .map((o) => o.label);
+        return labels.length ? labels.join(", ") : this.l(locale, "(none)");
+    },
+
     commands: [
         new SlashCommandBuilder()
             .setName("settings")
@@ -146,6 +167,17 @@ const mySettings = {
                         let setting = settingsByName.get(name);
                         this.client.myConfigSet(name, i.values[0]);
                         setting.value = i.values[0];
+                        await i.update(
+                            await this.renderDetail(i.guild, category, setting, i.locale)
+                        );
+                        break;
+                    }
+
+                    case "settingsMulti": {
+                        let setting = settingsByName.get(name);
+                        let value = i.values.join(",");
+                        this.client.myConfigSet(name, value);
+                        setting.value = value;
                         await i.update(
                             await this.renderDetail(i.guild, category, setting, i.locale)
                         );
@@ -260,7 +292,7 @@ const mySettings = {
         for (let i = 0; i < settings.length; i += 25) {
             let fields = [];
             for (let setting of settings.slice(i, i + 25)) {
-                let plain = await plainValue(guild, setting);
+                let plain = await this.displayValue(guild, setting, locale);
                 let value = embedValue(plain, setting);
                 fields.push({
                     name: setting.name,
@@ -306,7 +338,8 @@ const mySettings = {
     },
 
     renderDetail: async function (guild, category, setting, locale) {
-        let plain = await plainValue(guild, setting);
+        let plain = await this.displayValue(guild, setting, locale);
+        let options = setting.type === "multiselect" ? this.settingOptions(setting, locale) : [];
 
         let embed = new EmbedBuilder()
             .setColor(Colors.Blue)
@@ -347,6 +380,21 @@ const mySettings = {
                             setting.type === "discordCategory"
                                 ? [ChannelType.GuildCategory]
                                 : [ChannelType.GuildText]
+                        )
+                ),
+                new ActionRowBuilder().addComponents(backButton),
+            ];
+        } else if (options.length) {
+            let picked = (setting.value || "").split(",");
+            rows = [
+                new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId(`settingsMulti:${category}:${setting.name}`)
+                        .setPlaceholder(this.l(locale, "Choose any number of options..."))
+                        .setMinValues(0)
+                        .setMaxValues(options.length)
+                        .addOptions(
+                            options.map((o) => ({ ...o, default: picked.includes(o.value) }))
                         )
                 ),
                 new ActionRowBuilder().addComponents(backButton),

@@ -199,5 +199,12 @@
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "Impossible de vérifier si quelqu'un a écrit dans #%s, je l'archive donc au lieu de le supprimer : j'ai besoin de la permission « Voir les anciens messages » dans ce salon."
-    ]
+    ],
+    "Cover": ["Jaquette"],
+    "Summary": ["Résumé"],
+    "Or the game modes, if IGDB has no multiplayer details": [
+        "Ou les modes de jeu, si IGDB n'a pas de détails sur le multijoueur"
+    ],
+    "(none)": ["(aucun)"],
+    "Choose any number of options...": ["Choisis autant d'options que tu veux..."]
 }
