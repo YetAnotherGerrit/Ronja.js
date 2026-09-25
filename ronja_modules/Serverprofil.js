@@ -105,8 +105,6 @@ const myServerprofil = {
             include: [{ model: this.client.db.Game }],
         });
 
-        // Grouped by the joined game's id, not s.GameId: the migrations named
-        // that column "gameId", which SQLite then returns instead.
         let games = new Map();
         for (let s of statuses) {
             let g = games.get(s.Game.id);
