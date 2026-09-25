@@ -3,20 +3,18 @@
     "Please be patient.": ["Só mais um pouco de paciência."],
     "A new text channel was created": ["Foi criado um novo canal de texto"],
     "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
-        "Alguns de vocês jogaram um jogo novo recentemente. Para vos dar um canal onde podem falar sobre isso, foi criado o #%s.\n\nOs outros serão adicionados a esse canal assim que eu os vir a jogar o mesmo jogo."
+        "Algumas pessoas daqui jogaram um jogo novo recentemente. Para vos dar um canal onde podem falar sobre isso, foi criado o #%s.\n\nAs outras pessoas serão adicionadas a esse canal assim que eu as vir a jogar o mesmo jogo."
     ],
     "A text channel was re-activated": ["Um canal de texto foi reativado"],
     "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
-        "Alguns de vocês redescobriram %s recentemente. O #%s foi reativado a partir do arquivo.\n\nOs outros serão adicionados a esse canal assim que eu os vir a jogar."
+        "Algumas pessoas daqui redescobriram %s recentemente. O #%s foi reativado a partir do arquivo.\n\nAs outras pessoas serão adicionadas a esse canal assim que eu as vir a jogar."
     ],
-    " active players": [" jogadores ativos"],
-    ", %s in the queue": [", %s na fila"],
     "Profile of %s": ["Perfil de %s"],
     "%s is on this discord server since %s.": ["%s está neste servidor do discord desde %s."],
     "Common games": ["Jogos em comum"],
     "Most popular games!": ["Os jogos mais populares!"],
     "Most played games of the last %d days:": ["Os jogos mais jogados nos últimos %d dias:"],
-    "Top 10 by player count:": ["Top 10 por número de jogadores:"],
+    "Top 10 by player count:": ["Top 10 por número de pessoas que o jogam:"],
     "The most played games of last week:": ["Os jogos mais jogados da semana passada:"],
     "The most played games of last month:": ["Os jogos mais jogados do mês passado:"],
     "Happy new year! These have been the highlights of last year:": [
@@ -68,7 +66,7 @@
     "Ping me only, when I am online.": ["Marca-me só quando eu estiver online."],
     "Please, never ping me.": ["Por favor, nunca me marques."],
     "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
-        "És notificado se ambos jogaram pelo menos um jogo multijogador em comum nos últimos 100 dias. Se não quiseres receber essas notificações, podes alterar isso agora.\n\nA tua configuração atual:\n> %s"
+        "Recebes uma notificação se tu e essa pessoa tiverem jogado pelo menos um jogo multijogador em comum nos últimos 100 dias. Se não quiseres receber essas notificações, podes alterar isso agora.\n\nA tua configuração atual:\n> %s"
     ],
     "Notifications...": ["Notificações..."],
     "Also notify myself that someone wants to game, even when I am offline.": [
@@ -94,9 +92,6 @@
     ],
     "No games have been played.": ["Nenhum jogo foi jogado."],
     "Failed!": ["Falhou!"],
-    "Could not be safed. Maybe the bot is missing some permissions?": [
-        "Não foi possível guardar. Talvez faltem algumas permissões ao bot?"
-    ],
     "Language of the guild was changed to %s.": ["O idioma do servidor foi alterado para %s."],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
         "Não foi possível criar um canal de texto para %s: a categoria #%s atingiu o limite de 50 canais do Discord."
@@ -124,11 +119,9 @@
     "Release date": ["Data de lançamento"],
     "Platforms": ["Plataformas"],
     "Rating": ["Classificação"],
-    "IGDB is not configured on this server.": ["O IGDB não está configurado neste servidor."],
     "Could not reach IGDB right now, please try again later.": [
         "Não foi possível contactar o IGDB neste momento, tenta novamente mais tarde."
     ],
-    "No game found on IGDB for \"%s\".": ["Nenhum jogo encontrado no IGDB para \"%s\"."],
     "Multiple games matched - which one did you mean?": [
         "Vários jogos correspondem - qual querias dizer?"
     ],
@@ -219,5 +212,41 @@
     "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
         "Está bem, \"%s\" continua a ser registado como jogo. Vou continuar a procurá-lo no IGDB e só volto a perguntar se o IGDB encontrar alguma coisa."
     ],
-    "up to %d": ["até %d"]
+    "up to %d": ["até %d"],
+    "Players": ["Quem o joga"],
+    "Who here played it recently, only in /gameinfo": [
+        "Quem aqui o jogou recentemente, só em /gameinfo"
+    ],
+    "Text channel": ["Canal de texto"],
+    "Its game text channel, only in /gameinfo": ["O seu canal de texto do jogo, só em /gameinfo"],
+    "Recently played by": ["Jogado recentemente por"],
+    "Nobody here has played it recently.": ["Ninguém aqui o jogou recentemente."],
+    "#%s is archived.": ["#%s está arquivado."],
+    "It gets its own channel the next time someone plays it.": [
+        "Terá o seu próprio canal da próxima vez que alguém o jogar."
+    ],
+    "It gets its own channel once 1 more player plays it.": [
+        "Terá o seu próprio canal quando mais 1 pessoa o jogar."
+    ],
+    "It gets its own channel once %d more players play it.": [
+        "Terá o seu próprio canal quando mais %d pessoas o jogarem."
+    ],
+    "Played here": ["Jogado aqui"],
+    "No game found for \"%s\".": ["Nenhum jogo encontrado para \"%s\"."],
+    "That game is no longer known here.": ["Esse jogo já não é conhecido aqui."],
+    "Join channel": ["Entrar no canal"],
+    "Leave channel": ["Sair do canal"],
+    "This game doesn't have an active text channel anymore.": [
+        "Este jogo já não tem um canal de texto ativo."
+    ],
+    "Could not change who can see #%s: I need the Manage Permissions permission there.": [
+        "Não foi possível alterar quem pode ver #%s: preciso aí da permissão \"Gerir permissões\"."
+    ],
+    "Sorry, I couldn't change your access to #%s.": [
+        "Desculpa, não consegui alterar o teu acesso a #%s."
+    ],
+    "You joined %s.": ["Entraste em %s."],
+    "You left #%s. I'll add you back when I see you playing %s again.": [
+        "Saíste de #%s. Volto a adicionar-te quando te vir jogar %s outra vez."
+    ]
 }

@@ -9,14 +9,12 @@
     "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
         "Einige von euch haben kürzlich %s wiederentdeckt. #%s wurde aus dem Archiv reaktiviert.\n\nAndere werden zu diesem Kanal hinzugefügt, sobald ich sie es spielen sehe."
     ],
-    " active players": [" aktive Spieler"],
-    ", %s in the queue": [", %s in der Warteschlange"],
     "Profile of %s": ["Profil von %s"],
     "%s is on this discord server since %s.": ["%s ist auf diesem Discord-Server seit %s."],
     "Common games": ["Gemeinsame Spiele"],
     "Most popular games!": ["Die beliebtesten Spiele!"],
     "Most played games of the last %d days:": ["Meistgespielte Spiele der letzten %d Tage:"],
-    "Top 10 by player count:": ["Top 10 nach Anzahl der Spieler:"],
+    "Top 10 by player count:": ["Top 10 nach Anzahl der Spielenden:"],
     "The most played games of last week:": ["Die meistgespielten Spiele der letzten Woche:"],
     "The most played games of last month:": ["Die meistgespielten Spiele des letzten Monats:"],
     "Happy new year! These have been the highlights of last year:": [
@@ -35,7 +33,7 @@
         "Bitte wähle eine gültige Uhrzeit: SS:MM. Die Minute muss zwischen 0 und 59 liegen."
     ],
     "Please choose a valid time: HH:MM (24-hour time format).": [
-        "Bitte wählen Sie eine gültige Uhrzeit: HH:MM (24-Stunden-Zeitformat)."
+        "Bitte wähle eine gültige Uhrzeit: HH:MM (24-Stunden-Format)."
     ],
     "The chosen time and day need to be at least 5 minutes in the future.": [
         "Die gewählte Uhrzeit und der Tag müssen mindestens 5 Minuten in der Zukunft liegen."
@@ -57,7 +55,7 @@
     "The ical-settings for this server are incomplete.": [
         "Die ical-Einstellungen für diesen Server sind unvollständig."
     ],
-    "%s found %d more to game with.": ["%s hat %d Mitspieler zum zocken gefunden."],
+    "%s found %d more to game with.": ["%s hat %d Leute zum Zocken gefunden."],
     "Unfortunately, nobody was found. Maybe next time.": [
         "Leider hat sich niemand gefunden. Vielleicht beim nächsten Mal."
     ],
@@ -93,10 +91,7 @@
         "Diese Spiele werden von den Kanalmitgliedern gespielt:\n"
     ],
     "No games have been played.": ["Es wurde nicht gespielt."],
-    "Failed!": ["Failed!"],
-    "Could not be safed. Maybe the bot is missing some permissions?": [
-        "Could not be safed. Maybe the bot is missing some permissions?"
-    ],
+    "Failed!": ["Fehlgeschlagen!"],
     "Language of the guild was changed to %s.": ["Serversprache wurde auf %s geändert."],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
         "Konnte keinen Textkanal für %s erstellen: Die Kategorie #%s hat Discords Limit von 50 Kanälen erreicht."
@@ -124,11 +119,9 @@
     "Release date": ["Veröffentlicht"],
     "Platforms": ["Plattformen"],
     "Rating": ["Bewertung"],
-    "IGDB is not configured on this server.": ["IGDB ist auf diesem Server nicht konfiguriert."],
     "Could not reach IGDB right now, please try again later.": [
         "IGDB konnte gerade nicht erreicht werden, bitte versuche es später erneut."
     ],
-    "No game found on IGDB for \"%s\".": ["Kein Spiel auf IGDB für \"%s\" gefunden."],
     "Multiple games matched - which one did you mean?": [
         "Mehrere Spiele wurden gefunden - welches meintest du?"
     ],
@@ -221,5 +214,41 @@
     "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
         "Okay, \"%s\" bleibt als Spiel erfasst. Ich schaue weiter bei IGDB nach und frage nur noch einmal, falls IGDB etwas findet."
     ],
-    "up to %d": ["bis zu %d"]
+    "up to %d": ["bis zu %d"],
+    "Players": ["Wer es spielt"],
+    "Who here played it recently, only in /gameinfo": [
+        "Wer hier es kürzlich gespielt hat, nur in /gameinfo"
+    ],
+    "Text channel": ["Textkanal"],
+    "Its game text channel, only in /gameinfo": ["Sein Spiel-Textkanal, nur in /gameinfo"],
+    "Recently played by": ["Kürzlich gespielt von"],
+    "Nobody here has played it recently.": ["Hier hat es in letzter Zeit niemand gespielt."],
+    "#%s is archived.": ["#%s ist archiviert."],
+    "It gets its own channel the next time someone plays it.": [
+        "Es bekommt einen eigenen Kanal, sobald es das nächste Mal jemand spielt."
+    ],
+    "It gets its own channel once 1 more player plays it.": [
+        "Es bekommt einen eigenen Kanal, sobald es 1 weitere Person spielt."
+    ],
+    "It gets its own channel once %d more players play it.": [
+        "Es bekommt einen eigenen Kanal, sobald es %d weitere Personen spielen."
+    ],
+    "Played here": ["Hier gespielt"],
+    "No game found for \"%s\".": ["Kein Spiel für „%s“ gefunden."],
+    "That game is no longer known here.": ["Dieses Spiel ist hier nicht mehr bekannt."],
+    "Join channel": ["Kanal beitreten"],
+    "Leave channel": ["Kanal verlassen"],
+    "This game doesn't have an active text channel anymore.": [
+        "Dieses Spiel hat keinen aktiven Textkanal mehr."
+    ],
+    "Could not change who can see #%s: I need the Manage Permissions permission there.": [
+        "Konnte nicht ändern, wer #%s sehen kann: Ich brauche dort die Berechtigung „Berechtigungen verwalten“."
+    ],
+    "Sorry, I couldn't change your access to #%s.": [
+        "Tut mir leid, ich konnte deinen Zugang zu #%s nicht ändern."
+    ],
+    "You joined %s.": ["Du bist %s beigetreten."],
+    "You left #%s. I'll add you back when I see you playing %s again.": [
+        "Du hast #%s verlassen. Ich füge dich wieder hinzu, sobald ich dich wieder %s spielen sehe."
+    ]
 }

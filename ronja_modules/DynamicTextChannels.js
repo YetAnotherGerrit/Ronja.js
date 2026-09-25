@@ -5,11 +5,21 @@ const {
     Colors,
     RESTJSONErrorCodes,
     MessageType,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    MessageFlags,
+    OverwriteType,
+    createComponentBuilder,
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const { buildGameCard } = require("../core/gameCard.js");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+
+// The Join/Leave channel buttons on /gameinfo's card, + "<game id>".
+const JOIN_PREFIX = "dtcJoin:";
+const LEAVE_PREFIX = "dtcLeave:";
 
 const myDynamicTextChannels = {
     defaultOverrides: async function (guild) {
@@ -381,6 +391,121 @@ const myDynamicTextChannels = {
         } else {
             console.warn("WARNING: no dtcArchivedGamesCategory set in config file!");
         }
+    },
+
+    // The game's text channel if it's active (not archived) - or null, also
+    // if game text channels aren't set up or the channel is gone.
+    activeGameChannel: async function (game, guild) {
+        if (!game?.channel || !this.cfg("dtcGamesCategory")) return null;
+        if (!this.cfg("dtcArchivedGamesCategory")) return null;
+        let channel = await guild.channels.fetch(game.channel).catch(() => null);
+        if (!channel || channel.parentId === this.cfg("dtcArchivedGamesCategory")) return null;
+        return channel;
+    },
+
+    // Whether `member` has been added to `channel`: by playing the game, or by
+    // joining it. Either gives them their own View Channel permission there.
+    isInChannel: function (channel, member) {
+        let overwrite = channel.permissionOverwrites.cache.get(member.id);
+        return (
+            overwrite?.type === OverwriteType.Member &&
+            overwrite.allow.has(PermissionFlagsBits.ViewChannel)
+        );
+    },
+
+    channelButton: function (game, joined, locale) {
+        return joined
+            ? new ButtonBuilder()
+                  .setCustomId(`${LEAVE_PREFIX}${game.id}`)
+                  .setLabel(this.l(locale, "Leave channel"))
+                  .setStyle(ButtonStyle.Secondary)
+            : new ButtonBuilder()
+                  .setCustomId(`${JOIN_PREFIX}${game.id}`)
+                  .setLabel(this.l(locale, "Join channel"))
+                  .setStyle(ButtonStyle.Primary);
+    },
+
+    // A Join or Leave button for the game's active text channel on /gameinfo's
+    // card, depending on whether `member` is in it already.
+    hookForGameCardButtons: async function (game, member, locale) {
+        let channel = await this.activeGameChannel(game, member.guild);
+        if (!channel) return [];
+        return [this.channelButton(game, this.isInChannel(channel, member), locale)];
+    },
+
+    // Joining doesn't count as playing: archiving and reactivation only go by
+    // GameStatus. Leaving lasts until Ronja sees the member play the game
+    // again (see hookForStartedPlaying), or the channel is reactivated.
+    hookForButtonInteraction: async function (interaction) {
+        let join = interaction.customId.startsWith(JOIN_PREFIX);
+        if (!join && !interaction.customId.startsWith(LEAVE_PREFIX)) return;
+
+        let locale = interaction.locale;
+        let reply = (color, message) =>
+            interaction.followUp({
+                embeds: [new EmbedBuilder().setColor(color).setDescription(message)],
+                flags: MessageFlags.Ephemeral,
+            });
+        await interaction.deferUpdate();
+
+        let gameId = interaction.customId.slice((join ? JOIN_PREFIX : LEAVE_PREFIX).length);
+        let game = await this.client.db.Game.findByPk(gameId);
+        let channel = await this.activeGameChannel(game, interaction.guild);
+        if (!channel) {
+            await interaction.editReply({ components: [] });
+            await reply(
+                Colors.Red,
+                this.l(locale, "This game doesn't have an active text channel anymore.")
+            );
+            return;
+        }
+
+        try {
+            if (join) {
+                await channel.permissionOverwrites.create(interaction.member, {
+                    ViewChannel: true,
+                });
+            } else {
+                await channel.permissionOverwrites.delete(interaction.member);
+            }
+        } catch (err) {
+            let message = this.l(
+                interaction.guild.preferredLocale,
+                "Could not change who can see #%s: I need the Manage Permissions permission there.",
+                channel.name
+            );
+            if (!this.client.myNotifyOwnerOnPermissionError(interaction.guild, err, message)) {
+                console.error(`Could not change access to #${channel.name}:`, err);
+            }
+            await reply(
+                Colors.Red,
+                this.l(locale, "Sorry, I couldn't change your access to #%s.", channel.name)
+            );
+            return;
+        }
+
+        // Swap this button for the other one, keeping the rest of the card.
+        let components = interaction.message.components.map((row) =>
+            new ActionRowBuilder().addComponents(
+                row.components.map((c) =>
+                    c.customId === interaction.customId
+                        ? this.channelButton(game, join, locale)
+                        : createComponentBuilder(c.toJSON())
+                )
+            )
+        );
+        await interaction.editReply({ components });
+        await reply(
+            Colors.Green,
+            join
+                ? this.l(locale, "You joined %s.", channel.toString())
+                : this.l(
+                      locale,
+                      "You left #%s. I'll add you back when I see you playing %s again.",
+                      channel.name,
+                      game.name
+                  )
+        );
     },
 
     hookForChannelDelete: async function (channel) {

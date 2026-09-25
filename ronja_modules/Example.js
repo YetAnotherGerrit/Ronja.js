@@ -64,6 +64,16 @@ const myExample = {
         }
     },
 
+    // Autocomplete for a command option declared with .setAutocomplete(true),
+    // sent on every keystroke. Answer within 3 seconds with at most 25
+    // choices; dispatch on commandName (see /gameinfo in GameInfo.js).
+    hookForAutocompleteInteraction: async function (interaction) {
+        // https://discord.js.org/#/docs/discord.js/stable/class/AutocompleteInteraction
+        if (interaction.commandName == "ping") {
+            await interaction.respond([{ name: "Pong!", value: "pong" }]);
+        }
+    },
+
     hookForVoiceUpdate: async function (oldState, newState) {
         // https://discord.js.org/#/docs/discord.js/stable/class/VoiceState
         console.debug("The voice status of a user has updated!");
@@ -120,12 +130,35 @@ const myExample = {
         console.debug("Someone wants to know more about a Game row!");
     },
 
+    // At most one module should implement this - client.myGameSearch(name,
+    // limit) uses the first one it finds. Return up to `limit` games named
+    // like `name` as [{ igdbId, name, releaseYear }], or undefined if this
+    // module can't search right now (e.g. isn't configured). A throw is caught
+    // and logged by myGameSearch, which then returns null (see IGDB.js).
+    hookForGameSearch: async function (name, limit) {
+        console.debug("Someone is looking for a game by name!");
+    },
+
+    // Not fanned out from a Discord event: /gameinfo (ronja_modules/GameInfo.js)
+    // asks every module for buttons to put under a game's card, shown to
+    // `member` only. Return an array of ButtonBuilders (all modules together
+    // get one row of 5) and handle their clicks in hookForButtonInteraction -
+    // or return [] (see the Join/Leave channel buttons in DynamicTextChannels.js).
+    hookForGameCardButtons: async function (game, member, locale) {
+        return [
+            new ButtonBuilder()
+                .setCustomId(`exampleCardButton:${game.id}`)
+                .setLabel(this.l(locale, "Example"))
+                .setStyle(ButtonStyle.Secondary),
+        ];
+    },
+
     // Not fanned out from a Discord event: /settings (ronja_modules/Settings.js)
     // asks every module for the choices of a "multiselect" setting and uses the
     // first non-empty answer. Return [{ value, label, description? }] (at most
     // 25, labels translated for `locale`) for a setting this module owns, or
     // undefined for any other. The setting's value is the comma-separated list
-    // of picked values, e.g. "cover,summary" (see gameCardDetails in IGDB.js).
+    // of picked values, e.g. "cover,summary" (see gameCardDetails in GameInfo.js).
     hookForSettingOptions: function (name, locale) {
         if (name === "exampleChoices") {
             return [

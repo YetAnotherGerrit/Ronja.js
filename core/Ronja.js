@@ -111,6 +111,20 @@ class Ronja extends Client {
         }
     }
 
+    // Searches the first module implementing hookForGameSearch (IGDB.js) for
+    // games named like `name`: [{ igdbId, name, releaseYear }], or null if no
+    // module can search right now (none configured, or the search failed).
+    async myGameSearch(name, limit) {
+        let provider = this.myModules.find((m) => m.hookForGameSearch);
+        if (!provider) return null;
+        try {
+            return (await provider.hookForGameSearch(name, limit)) ?? null;
+        } catch (err) {
+            console.error(`Could not search for the game "${name}":`, err);
+            return null;
+        }
+    }
+
     // Use this instead of Model.findOrCreate - see findOrCreateWithoutTransaction.
     myFindOrCreate(model, options) {
         return findOrCreateWithoutTransaction(model, options);

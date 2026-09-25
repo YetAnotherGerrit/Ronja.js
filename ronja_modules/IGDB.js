@@ -1,17 +1,14 @@
 const {
-    SlashCommandBuilder,
     EmbedBuilder,
     Colors,
     ActionRowBuilder,
     StringSelectMenuBuilder,
     ButtonBuilder,
     ButtonStyle,
-    MessageFlags,
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const { Op, TimeoutError, UniqueConstraintError } = require("sequelize");
 const { setTimeout: sleep } = require("node:timers/promises");
-const { buildGameCard, gameCardDetailOptions } = require("../core/gameCard.js");
 
 const IGDB_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h - IGDB data barely changes day to day.
 const IGDB_MIN_REQUEST_INTERVAL_MS = 250; // IGDB allows 4 requests per second.
@@ -77,8 +74,6 @@ const DETAILS_WEBSITE_TYPES = {
 };
 
 const myIgdb = {
-    collectorTimeout: 60 * 1000,
-
     // gameName -> { result: resolveSearchResults() result, expiresAt }
     igdbCache: new Map(),
     // igdbId -> { result: details | null, expiresAt }
@@ -115,27 +110,6 @@ const myIgdb = {
                 return most > 1 ? most : null;
             },
         },
-    ],
-
-    commands: [
-        new SlashCommandBuilder()
-            .setName("gameinfo")
-            .setNameLocalizations({ de: "spielinfo" })
-            .setDescription("Look up information about a game on IGDB.")
-            .setDescriptionLocalizations({
-                de: "Zeigt Informationen zu einem Spiel von IGDB.",
-            })
-            .addStringOption((option) =>
-                option
-                    .setName("name")
-                    .setNameLocalizations({ de: "name" })
-                    .setDescription("The name of the game to look up.")
-                    .setDescriptionLocalizations({
-                        de: "Der Name des gesuchten Spiels.",
-                    })
-                    .setRequired(true)
-            )
-            .setDMPermission(false),
     ],
 
     isConfigured: function () {
@@ -655,9 +629,17 @@ const myIgdb = {
         return details;
     },
 
-    // The choices /settings offers for the gameCardDetails setting.
-    hookForSettingOptions: function (name, locale) {
-        if (name === "gameCardDetails") return gameCardDetailOptions(this.client, locale);
+    // IGDB's search results for `name` as [{ igdbId, name, releaseYear }]
+    // (see /gameinfo in ronja_modules/GameInfo.js), or undefined if IGDB isn't
+    // configured. Reached via client.myGameSearch, which logs a transient error.
+    hookForGameSearch: async function (name, limit) {
+        if (!this.isConfigured()) return undefined;
+        let results = await this.igdbSearchTop(name, "name,first_release_date", limit);
+        return results.map((r) => ({
+            igdbId: String(r.id),
+            name: r.name,
+            releaseYear: this.releaseYear(r),
+        }));
     },
 
     hookForCron: function () {
@@ -1266,146 +1248,6 @@ const myIgdb = {
             )}**: ${report.orphaned.join(", ")}`;
         }
         await reply(Colors.Green, message);
-    },
-
-    replyError: async function (interaction, message) {
-        await interaction.editReply({
-            embeds: [new EmbedBuilder().setColor(Colors.Red).setDescription(message)],
-            components: [],
-        });
-    },
-
-    hookForCommandInteraction: async function (interaction) {
-        if (interaction.commandName !== "gameinfo") return;
-
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-        if (!this.isConfigured()) {
-            await this.replyError(
-                interaction,
-                this.l(interaction.locale, "IGDB is not configured on this server.")
-            );
-            return;
-        }
-
-        let name = interaction.options.getString("name");
-        let candidates;
-        try {
-            candidates = await this.igdbSearchTop(
-                name,
-                "name,first_release_date",
-                GAMEINFO_CANDIDATE_LIMIT
-            );
-        } catch (err) {
-            console.error("IGDB: /gameinfo search failed:", err);
-            await this.replyError(
-                interaction,
-                this.l(
-                    interaction.locale,
-                    "Could not reach IGDB right now, please try again later."
-                )
-            );
-            return;
-        }
-
-        if (!candidates.length) {
-            await this.replyError(
-                interaction,
-                this.l(interaction.locale, 'No game found on IGDB for "%s".', name)
-            );
-            return;
-        }
-
-        // Only one candidate at all - nothing to disambiguate, skip the picker.
-        if (candidates.length === 1) {
-            await this.showGameDetails(interaction, candidates[0].id);
-            return;
-        }
-
-        await this.presentGameChoices(interaction, candidates);
-    },
-
-    // Fetches and shows the detail embed for a single IGDB id, replacing
-    // whatever the (ephemeral) reply currently shows.
-    showGameDetails: async function (interaction, id) {
-        let details;
-        try {
-            details = await this.fetchGameDetailsById(id);
-        } catch (err) {
-            console.error("IGDB: /gameinfo detail lookup failed:", err);
-            await this.replyError(
-                interaction,
-                this.l(
-                    interaction.locale,
-                    "Could not reach IGDB right now, please try again later."
-                )
-            );
-            return;
-        }
-
-        if (!details) {
-            await this.replyError(
-                interaction,
-                this.l(interaction.locale, "That game is no longer available on IGDB.")
-            );
-            return;
-        }
-
-        await interaction.editReply({
-            embeds: [
-                buildGameCard(this.client, details, interaction.locale).setColor(Colors.Green),
-            ],
-            components: [],
-        });
-    },
-
-    // Shows the (ephemeral, invoker-only) candidate list and swaps in the
-    // detail embed once the invoking user picks one.
-    presentGameChoices: async function (interaction, candidates) {
-        let options = this.candidateOptions(candidates);
-
-        let menu = new StringSelectMenuBuilder()
-            .setCustomId("gameinfoPick")
-            .setPlaceholder(this.l(interaction.locale, "Choose a game..."))
-            .addOptions(options);
-
-        let message = await interaction.editReply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Blue)
-                    .setDescription(
-                        this.l(
-                            interaction.locale,
-                            "Multiple games matched - which one did you mean?"
-                        )
-                    ),
-            ],
-            components: [new ActionRowBuilder().addComponents(menu)],
-        });
-
-        let collector = message.createMessageComponentCollector({
-            filter: (i) => i.user.id === interaction.user.id,
-            time: this.collectorTimeout,
-            max: 1,
-        });
-
-        collector.on("collect", async (i) => {
-            try {
-                await i.deferUpdate();
-                await this.showGameDetails(interaction, i.values[0]);
-            } catch (err) {
-                console.error("IGDB: /gameinfo selection failed:", err);
-            }
-        });
-
-        collector.on("end", async (collected) => {
-            if (collected.size > 0) return;
-            try {
-                await interaction.editReply({ components: [] });
-            } catch {
-                // The ephemeral message may already be gone.
-            }
-        });
     },
 };
 
