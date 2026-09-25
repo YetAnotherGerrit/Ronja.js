@@ -37,18 +37,27 @@ enable "Presence Intent" under "Privileged Gateway Intents". The other two
 privileged intents Discord offers, Server Members Intent and Message Content
 Intent, are not used by Ronja and don't need to be enabled.
 
-3. Download the latest version of Ronja.js:
-   https://github.com/YetAnotherGerrit/Ronja.js/releases/latest
+3. Get Ronja.js, either
+    - by cloning the repository, which creates a `Ronja.js` folder:
 
-4. Extract to whatever folder you want to use.
+        ```
+        git clone https://github.com/YetAnotherGerrit/Ronja.js.git
+        ```
 
-5. Create a `.env` file next to `docker-compose.yml` containing:
+        This gets the current `main` branch, which may include changes that
+        aren't in a release yet.
+
+    - or by downloading the latest release and extracting it to whatever
+      folder you want to use:
+      https://github.com/YetAnotherGerrit/Ronja.js/releases/latest
+
+4. Create a `.env` file next to `docker-compose.yml` containing:
 
     ```
     RONJA_TOKEN=your-bot-token-here
     ```
 
-6. Run `docker compose up`
+5. Run `docker compose up`
 
     This builds the image, runs the database migrations once, then starts the
     bot. Slash- and context-menu-commands are registered with Discord
