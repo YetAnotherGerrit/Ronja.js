@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
+const { DateTime } = require("luxon");
 
 // Discord allows 6000 characters across all embeds of a message. These caps
 // keep a card well below that, so it still fits next to another embed (e.g.
@@ -42,7 +43,7 @@ function buildGameCard(client, details, locale) {
     };
     let list = (items) => truncate((items || []).join(", "), LIST_MAX_LENGTH);
 
-    add(l("Release date"), details.releaseDate);
+    add(l("Release date"), releaseDate(details.releaseDate, locale));
     add(l("Platforms"), list(details.platforms));
     if (details.rating != null) add(l("Rating"), `${Math.round(details.rating)}/100`);
     add(l("Genres"), list(details.genres));
@@ -56,6 +57,14 @@ function buildGameCard(client, details, locale) {
 
     if (fields.length) e.addFields(fields);
     return e;
+}
+
+// The details' ISO date (e.g. "2021-03-25") written out for `locale`, e.g.
+// "25. März 2021". Anything that isn't an ISO date is shown as it is.
+function releaseDate(date, locale) {
+    if (!date) return null;
+    let parsed = DateTime.fromISO(date, { zone: "utc" });
+    return parsed.isValid ? parsed.setLocale(locale).toLocaleString(DateTime.DATE_FULL) : date;
 }
 
 function duration(l, seconds) {

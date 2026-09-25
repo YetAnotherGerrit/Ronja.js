@@ -305,7 +305,7 @@ const myIgdb = {
 
     releaseYear: function (candidate) {
         return candidate.first_release_date
-            ? DateTime.fromSeconds(candidate.first_release_date).toFormat("yyyy")
+            ? DateTime.fromSeconds(candidate.first_release_date, { zone: "utc" }).toFormat("yyyy")
             : undefined;
     },
 
@@ -335,7 +335,7 @@ const myIgdb = {
             url: g.url || null,
             summary: g.summary || null,
             releaseDate: g.first_release_date
-                ? DateTime.fromSeconds(g.first_release_date).toFormat("yyyy-LL-dd")
+                ? DateTime.fromSeconds(g.first_release_date, { zone: "utc" }).toISODate()
                 : null,
             platforms: (g.platforms || []).map((p) => p.name),
             genres: (g.genres || []).map((genre) => genre.name),
