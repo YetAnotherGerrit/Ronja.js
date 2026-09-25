@@ -40,7 +40,8 @@ want to play with your friends and need to decide on what game to play.
   ignored), and game data is kept up to date. Configured with a Twitch/IGDB client ID and secret via
   /settings; the rest of Ronja works the same without it.
 - Serverprofile command to show a member's recently played games and the
-  multiplayer games you both played recently.
+  multiplayer games you both played recently. With IGDB configured, also the
+  member's favorite genres.
 - /settings command with an interactive menu to view and change Ronja's
   configuration for your guild.
 - Available in English, German, Spanish, French, Italian, Portuguese, and

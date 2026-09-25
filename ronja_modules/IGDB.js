@@ -111,6 +111,16 @@ const myIgdb = {
                 return most > 1 ? most : null;
             },
         },
+        {
+            // The Serverprofile's favorite genres: the genre names as a sorted
+            // JSON array. Null if IGDB lists no genres.
+            column: "genres",
+            fields: "genres.name",
+            map: (g) =>
+                g.genres?.length
+                    ? JSON.stringify(g.genres.map((genre) => genre.name).sort())
+                    : null,
+        },
     ],
 
     isConfigured: function () {

@@ -104,7 +104,7 @@ function buildGameCard(client, details, locale, guildInfo = null) {
     if (details.rating != null) {
         add("rating", l("Rating"), `${Math.round(details.rating)}/100`);
     }
-    add("genres", l("Genres"), list(details.genres));
+    add("genres", l("Genres"), list(details.genres?.map((genre) => l(genre))));
     add("timeToBeat", l("Time to beat"), timeToBeatLines(l, details.timeToBeat));
 
     let multiplayer = multiplayerLines(l, details.multiplayer);
