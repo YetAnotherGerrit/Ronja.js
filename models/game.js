@@ -44,6 +44,16 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 defaultValue: false,
             },
+            singlePlayerOnly: {
+                type: DataTypes.BOOLEAN,
+                allowNull: true,
+                defaultValue: null,
+            },
+            onlineMaxPlayers: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                defaultValue: null,
+            },
             channel: {
                 type: DataTypes.STRING,
                 defaultValue: null,

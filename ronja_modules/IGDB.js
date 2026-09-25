@@ -55,6 +55,7 @@ const COLLAPSED_GAME_TYPES = [
     14, // Update
 ];
 const COLLAPSE_MAX_HOPS = 3; // e.g. an edition of an expanded game of the base game
+const GAME_MODE_SINGLE = 1; // IGDB's "Single player" game mode (https://api-docs.igdb.com/#game-mode)
 
 // IGDB fields for the details shown by /gameinfo and the game card (see
 // mapGameDetails). Time to beat comes from its own endpoint.
@@ -90,10 +91,31 @@ const myIgdb = {
 
     // Per-game IGDB data stored on Game rows and kept up to date by the
     // background sync. Each entry names the IGDB `fields` it needs and maps a
-    // raw IGDB game onto its Game column (a string, number or null). A new
-    // stored field only needs its migration and an entry here: every matched
-    // game then gets it filled in gradually, and refreshes keep it current.
-    syncFields: [{ column: "name", fields: "name", map: (g) => g.name }],
+    // raw IGDB game onto its Game column (a string, number, boolean or null).
+    // A new stored field only needs its migration and an entry here: every
+    // matched game then gets it filled in gradually, and refreshes keep it current.
+    syncFields: [
+        { column: "name", fields: "name", map: (g) => g.name },
+        {
+            // Left out of the multiplayer game lists (/lfg, Serverprofile).
+            // Null if IGDB lists no game modes at all.
+            column: "singlePlayerOnly",
+            fields: "game_modes",
+            map: (g) =>
+                g.game_modes?.length ? g.game_modes.every((id) => id === GAME_MODE_SINGLE) : null,
+        },
+        {
+            // The player limit shown in those lists. Null unless IGDB knows it.
+            column: "onlineMaxPlayers",
+            fields: "multiplayer_modes.onlinemax,multiplayer_modes.onlinecoopmax",
+            map: (g) => {
+                let modes = g.multiplayer_modes || [];
+                let most = Math.max(0, ...modes.map((m) => m.onlinemax || 0));
+                most = Math.max(most, ...modes.map((m) => m.onlinecoopmax || 0));
+                return most > 1 ? most : null;
+            },
+        },
+    ],
 
     commands: [
         new SlashCommandBuilder()
@@ -1030,6 +1052,9 @@ const myIgdb = {
 
         let changes = this.syncChanges(game, { ...this.toMatch(raw).values, igdbStatus: null });
         let previousName = game.name;
+        // Filling in newly synced columns isn't worth reporting, a rename or a
+        // changed value on a refresh is.
+        let refreshed = game.igdbSyncedFields === this.syncSignature();
         try {
             await game.update({ ...changes, ...checked });
         } catch (err) {
@@ -1043,7 +1068,7 @@ const myIgdb = {
         }
 
         if (changes.name) await this.addAlias(previousName, game);
-        if (Object.keys(changes).some((key) => key !== "igdbStatus")) {
+        if (changes.name || (refreshed && Object.keys(changes).some((k) => k !== "igdbStatus"))) {
             report.updated.push(game.name);
         }
     },

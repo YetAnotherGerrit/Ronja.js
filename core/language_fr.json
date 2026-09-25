@@ -67,8 +67,8 @@
     "Ping me also offline.": ["Mentionne-moi aussi hors ligne."],
     "Ping me only, when I am online.": ["Mentionne-moi seulement quand je suis en ligne."],
     "Please, never ping me.": ["S'il te plaît, ne me mentionne jamais."],
-    "You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
-        "Tu es notifié(e) si vous avez tous les deux joué à au moins un jeu en commun au cours des 100 derniers jours. Si tu ne veux pas recevoir ces notifications, tu peux le changer maintenant.\n\nTon réglage actuel :\n> %s"
+    "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
+        "Tu es notifié(e) si vous avez tous les deux joué à au moins un jeu multijoueur en commun au cours des 100 derniers jours. Si tu ne veux pas recevoir ces notifications, tu peux le changer maintenant.\n\nTon réglage actuel :\n> %s"
     ],
     "Notifications...": ["Notifications..."],
     "Also notify myself that someone wants to game, even when I am offline.": [
@@ -216,5 +216,6 @@
     ],
     "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
         "D'accord, \"%s\" reste suivi comme un jeu. Je continuerai à le chercher sur IGDB et ne redemanderai que si IGDB trouve quelque chose."
-    ]
+    ],
+    "up to %d": ["jusqu'à %d"]
 }

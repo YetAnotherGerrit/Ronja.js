@@ -15,6 +15,7 @@ const {
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
+const { multiplayerGamesWhere, playerLimit } = require("../core/gameList.js");
 
 // TODO: Noch ein eine eigene Befehlsbibliothek packen. Brauch ich öfters. Vielleicht gibt es auch einen eleganteren Weg.
 function multiChar(a, c) {
@@ -115,7 +116,7 @@ const myZocken = {
         if (guildEventCreatorId) eventMembers.push(guildEventCreatorId);
 
         return (
-            (await this.createZockenText(eventMembers)) ||
+            (await this.createZockenText(lng, eventMembers)) ||
             this.l(
                 lng,
                 'Nobody is participating yet. Don\'t forget to click that "Interested"-Button!'
@@ -123,7 +124,9 @@ const myZocken = {
         );
     },
 
-    createZockenText: async function (zockenMembers) {
+    // The multiplayer games the members played, most played by them first.
+    // With `players`, games whose player limit is lower than that are flagged.
+    createZockenText: async function (lng, zockenMembers, players = 0) {
         let maxGames = 10;
 
         if (zockenMembers.length > 0) {
@@ -131,7 +134,8 @@ const myZocken = {
 
             let gamesPlayed = await this.client.db.Game.findAll({
                 raw: true,
-                attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
+                attributes: ["name", "onlineMaxPlayers", [Sequelize.fn("COUNT", "*"), "cName"]],
+                where: multiplayerGamesWhere,
                 include: [
                     {
                         model: this.client.db.GameStatus,
@@ -153,6 +157,7 @@ const myZocken = {
                         multiChar(gamePlayed.cName, ":bust_in_silhouette:"),
                         " ",
                         gamePlayed.name,
+                        playerLimit(this.client, lng, gamePlayed.onlineMaxPlayers, players),
                         "\n"
                     );
                     maxGames = maxGames - 1;
@@ -179,6 +184,7 @@ const myZocken = {
                 let g = await this.client.db.Game.findAll({
                     raw: true,
                     attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
+                    where: multiplayerGamesWhere,
                     include: [
                         {
                             model: this.client.db.GameStatus,
@@ -530,7 +536,7 @@ const myZocken = {
                         .setDescription(
                             this.l(
                                 interaction.locale,
-                                "You are notified if you both played at least one mutual game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s",
+                                "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s",
                                 statusZockenSelectText
                             )
                         ),
@@ -676,13 +682,19 @@ const myZocken = {
             channel.members.forEach((member) => {
                 voiceMembers.push(member.id);
             });
+            let players = channel.members.filter((member) => !member.user.bot).size;
 
             myMsg
                 .edit(
                     this.l(
                         channel.guild.preferredLocale,
                         "This games are played by the channel members:\n"
-                    ) + (await this.createZockenText(voiceMembers))
+                    ) +
+                        (await this.createZockenText(
+                            channel.guild.preferredLocale,
+                            voiceMembers,
+                            players
+                        ))
                 )
                 .catch(console.error);
         }

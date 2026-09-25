@@ -6,6 +6,7 @@ const {
     MessageFlags,
 } = require("discord.js");
 const Sequelize = require("sequelize");
+const { multiplayerGamesWhere, playerLimit } = require("../core/gameList.js");
 
 const myServerprofil = {
     commands: [
@@ -49,7 +50,8 @@ const myServerprofil = {
                 let s = "";
                 let g = await this.client.db.Game.findAll({
                     raw: true,
-                    attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
+                    attributes: ["name", "onlineMaxPlayers", [Sequelize.fn("COUNT", "*"), "cName"]],
+                    where: multiplayerGamesWhere,
                     include: [
                         {
                             model: this.client.db.GameStatus,
@@ -67,7 +69,11 @@ const myServerprofil = {
 
                 g.forEach((gg) => {
                     if (gg.cName === 2) {
-                        s = s.concat(gg.name, "\n");
+                        s = s.concat(
+                            gg.name,
+                            playerLimit(this.client, interaction.locale, gg.onlineMaxPlayers),
+                            "\n"
+                        );
                     }
                 });
 
