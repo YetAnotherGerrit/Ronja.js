@@ -11,9 +11,12 @@ const { DateTime } = require("luxon");
 const { Op } = require("sequelize");
 const { multiplayerGamesWhere, playerLimit } = require("../core/gameList.js");
 
-// What a profile lists: the member's games played in the last 30 days, and
-// the multiplayer games both of you played in the last 100 days (the same
-// window /lfg pings use) - each most recently played first, at most 10.
+// What a profile lists: the member's top genres of the games they played in
+// the last 100 days, their games played in the last 30 days, and the
+// multiplayer games both of you played in the last 100 days (the same window
+// /lfg pings use) - each game list most recently played first, at most 10.
+const GENRES_DAYS = 100;
+const GENRES_SHOWN = 3;
 const RECENT_GAMES_DAYS = 30;
 const COMMON_GAMES_DAYS = 100;
 const GAMES_SHOWN = 10;
@@ -47,6 +50,16 @@ const myServerprofil = {
                         time(m.joinedAt, TimestampStyles.LongDate)
                     )
                 );
+
+            let genres = this.favoriteGenres(await this.lastPlayedGames([m.id], GENRES_DAYS));
+            if (genres.length) {
+                e.addFields([
+                    {
+                        name: this.l(locale, "Favorite genres"),
+                        value: genres.map((genre) => this.l(locale, genre)).join(", "),
+                    },
+                ]);
+            }
 
             let recent = await this.lastPlayedGames([m.id], RECENT_GAMES_DAYS);
             if (recent.length) {
@@ -110,6 +123,23 @@ const myServerprofil = {
         return [...games.values()]
             .filter((g) => g.members.size === members.length)
             .sort((a, b) => b.lastplayed - a.lastplayed || a.game.name.localeCompare(b.game.name));
+    },
+
+    // The IGDB genre names most of `games` (see lastPlayedGames) have, at most
+    // GENRES_SHOWN - on a tie, the genre played most recently first. Games
+    // without genre data don't count.
+    favoriteGenres: function (games) {
+        let counts = new Map();
+        for (let { game } of games) {
+            for (let genre of game.genres ? JSON.parse(game.genres) : []) {
+                counts.set(genre, (counts.get(genre) ?? 0) + 1);
+            }
+        }
+        // Sorting is stable, and `games` is most recently played first.
+        return [...counts.entries()]
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, GENRES_SHOWN)
+            .map(([genre]) => genre);
     },
 
     // One line per game (with its player limit if `withLimit`) and when it

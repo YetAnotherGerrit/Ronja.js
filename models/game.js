@@ -54,6 +54,11 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
                 defaultValue: null,
             },
+            genres: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                defaultValue: null,
+            },
             channel: {
                 type: DataTypes.STRING,
                 defaultValue: null,
