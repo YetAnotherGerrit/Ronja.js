@@ -14,4 +14,11 @@ function playerLimit(client, locale, maxPlayers, players = 0) {
     return players > maxPlayers ? `${limit} ⚠️` : limit;
 }
 
-module.exports = { multiplayerGamesWhere, playerLimit };
+// Game names compare equal regardless of case, punctuation and spacing, so
+// e.g. "Death Stranding Director's Cut" matches "Death Stranding: Director's Cut"
+// (and "Valheim™" matches "Valheim").
+function normalizeGameName(name) {
+    return name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+module.exports = { multiplayerGamesWhere, playerLimit, normalizeGameName };
