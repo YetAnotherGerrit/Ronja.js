@@ -3,11 +3,11 @@
     "Please be patient.": ["Só mais um pouco de paciência."],
     "A new text channel was created": ["Foi criado um novo canal de texto"],
     "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
-        "Alguns de vocês jogaram um jogo novo recentemente. Para vos dar um canal onde podem falar sobre isso, foi criado o #%s.\n\nOs outros serão adicionados a esse canal assim que eu os vir a jogar o mesmo jogo."
+        "Algumas pessoas daqui jogaram um jogo novo recentemente. Para vos dar um canal onde podem falar sobre isso, foi criado o #%s.\n\nAs outras pessoas serão adicionadas a esse canal assim que eu as vir a jogar o mesmo jogo."
     ],
     "A text channel was re-activated": ["Um canal de texto foi reativado"],
     "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
-        "Alguns de vocês redescobriram %s recentemente. O #%s foi reativado a partir do arquivo.\n\nOs outros serão adicionados a esse canal assim que eu os vir a jogar."
+        "Algumas pessoas daqui redescobriram %s recentemente. O #%s foi reativado a partir do arquivo.\n\nAs outras pessoas serão adicionadas a esse canal assim que eu as vir a jogar."
     ],
     " active players": [" jogadores ativos"],
     ", %s in the queue": [", %s na fila"],
@@ -16,7 +16,7 @@
     "Common games": ["Jogos em comum"],
     "Most popular games!": ["Os jogos mais populares!"],
     "Most played games of the last %d days:": ["Os jogos mais jogados nos últimos %d dias:"],
-    "Top 10 by player count:": ["Top 10 por número de jogadores:"],
+    "Top 10 by player count:": ["Top 10 por número de pessoas que o jogam:"],
     "The most played games of last week:": ["Os jogos mais jogados da semana passada:"],
     "The most played games of last month:": ["Os jogos mais jogados do mês passado:"],
     "Happy new year! These have been the highlights of last year:": [
@@ -68,7 +68,7 @@
     "Ping me only, when I am online.": ["Marca-me só quando eu estiver online."],
     "Please, never ping me.": ["Por favor, nunca me marques."],
     "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
-        "És notificado se ambos jogaram pelo menos um jogo multijogador em comum nos últimos 100 dias. Se não quiseres receber essas notificações, podes alterar isso agora.\n\nA tua configuração atual:\n> %s"
+        "Recebes uma notificação se tu e essa pessoa tiverem jogado pelo menos um jogo multijogador em comum nos últimos 100 dias. Se não quiseres receber essas notificações, podes alterar isso agora.\n\nA tua configuração atual:\n> %s"
     ],
     "Notifications...": ["Notificações..."],
     "Also notify myself that someone wants to game, even when I am offline.": [
@@ -218,7 +218,7 @@
         "Está bem, \"%s\" continua a ser registado como jogo. Vou continuar a procurá-lo no IGDB e só volto a perguntar se o IGDB encontrar alguma coisa."
     ],
     "up to %d": ["até %d"],
-    "Players": ["Jogadores"],
+    "Players": ["Quem o joga"],
     "Who here played it recently, only in /gameinfo": [
         "Quem aqui o jogou recentemente, só em /gameinfo"
     ],
@@ -231,10 +231,10 @@
         "Terá o seu próprio canal da próxima vez que alguém o jogar."
     ],
     "It gets its own channel once 1 more player plays it.": [
-        "Terá o seu próprio canal quando mais 1 jogador o jogar."
+        "Terá o seu próprio canal quando mais 1 pessoa o jogar."
     ],
     "It gets its own channel once %d more players play it.": [
-        "Terá o seu próprio canal quando mais %d jogadores o jogarem."
+        "Terá o seu próprio canal quando mais %d pessoas o jogarem."
     ],
     "Played here": ["Jogado aqui"],
     "No game found for \"%s\".": ["Nenhum jogo encontrado para \"%s\"."],

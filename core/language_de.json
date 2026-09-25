@@ -16,7 +16,7 @@
     "Common games": ["Gemeinsame Spiele"],
     "Most popular games!": ["Die beliebtesten Spiele!"],
     "Most played games of the last %d days:": ["Meistgespielte Spiele der letzten %d Tage:"],
-    "Top 10 by player count:": ["Top 10 nach Anzahl der Spieler:"],
+    "Top 10 by player count:": ["Top 10 nach Anzahl der Spielenden:"],
     "The most played games of last week:": ["Die meistgespielten Spiele der letzten Woche:"],
     "The most played games of last month:": ["Die meistgespielten Spiele des letzten Monats:"],
     "Happy new year! These have been the highlights of last year:": [
@@ -57,7 +57,7 @@
     "The ical-settings for this server are incomplete.": [
         "Die ical-Einstellungen für diesen Server sind unvollständig."
     ],
-    "%s found %d more to game with.": ["%s hat %d Mitspieler zum zocken gefunden."],
+    "%s found %d more to game with.": ["%s hat %d Leute zum Zocken gefunden."],
     "Unfortunately, nobody was found. Maybe next time.": [
         "Leider hat sich niemand gefunden. Vielleicht beim nächsten Mal."
     ],
@@ -220,7 +220,7 @@
         "Okay, \"%s\" bleibt als Spiel erfasst. Ich schaue weiter bei IGDB nach und frage nur noch einmal, falls IGDB etwas findet."
     ],
     "up to %d": ["bis zu %d"],
-    "Players": ["Spieler"],
+    "Players": ["Wer es spielt"],
     "Who here played it recently, only in /gameinfo": [
         "Wer hier es kürzlich gespielt hat, nur in /gameinfo"
     ],

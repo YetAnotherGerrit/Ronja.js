@@ -3,11 +3,11 @@
     "Please be patient.": ["Encore un peu de patience."],
     "A new text channel was created": ["Un nouveau salon textuel a été créé"],
     "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
-        "Certains d'entre vous ont joué récemment à un nouveau jeu. Pour vous donner un salon où en discuter, #%s a été créé.\n\nLes autres seront ajoutés à ce salon dès que je les verrai jouer au même jeu."
+        "Quelques personnes parmi vous ont joué récemment à un nouveau jeu. Pour vous donner un salon où en discuter, #%s a été créé.\n\nLes autres personnes seront ajoutées à ce salon dès que je les verrai jouer au même jeu."
     ],
     "A text channel was re-activated": ["Un salon textuel a été réactivé"],
     "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.": [
-        "Certains d'entre vous ont redécouvert %s récemment. #%s a été réactivé depuis les archives.\n\nLes autres seront ajoutés à ce salon dès que je les verrai y jouer."
+        "Quelques personnes parmi vous ont redécouvert %s récemment. #%s a été réactivé depuis les archives.\n\nLes autres personnes seront ajoutées à ce salon dès que je les verrai y jouer."
     ],
     " active players": [" joueurs actifs"],
     ", %s in the queue": [", %s en attente"],
@@ -16,7 +16,7 @@
     "Common games": ["Jeux en commun"],
     "Most popular games!": ["Les jeux les plus populaires !"],
     "Most played games of the last %d days:": ["Les jeux les plus joués des %d derniers jours :"],
-    "Top 10 by player count:": ["Top 10 par nombre de joueurs :"],
+    "Top 10 by player count:": ["Top 10 par nombre de personnes qui y jouent :"],
     "The most played games of last week:": ["Les jeux les plus joués de la semaine dernière :"],
     "The most played games of last month:": ["Les jeux les plus joués du mois dernier :"],
     "Happy new year! These have been the highlights of last year:": [
@@ -53,11 +53,11 @@
     "#%s via /lfg by %s (%s)": ["#%s via /lfg par %s (%s)"],
     "#%s via /lfg for %s by %s (%s)": ["#%s via /lfg pour %s par %s (%s)"],
     "%s wants to play %s. Who wants to join?": ["%s veut jouer à %s. Qui veut se joindre ?"],
-    "Hey%s and everyone else! (%s)": ["Salut%s et tous les autres ! (%s)"],
+    "Hey%s and everyone else! (%s)": ["Salut%s, et salut à tout le monde ! (%s)"],
     "The ical-settings for this server are incomplete.": [
         "Les paramètres ical de ce serveur sont incomplets."
     ],
-    "%s found %d more to game with.": ["%s a trouvé %d joueurs supplémentaires pour jouer."],
+    "%s found %d more to game with.": ["%s a trouvé %d personnes de plus pour jouer."],
     "Unfortunately, nobody was found. Maybe next time.": [
         "Malheureusement, personne n'a été trouvé. Peut-être la prochaine fois."
     ],
@@ -68,7 +68,7 @@
     "Ping me only, when I am online.": ["Mentionne-moi seulement quand je suis en ligne."],
     "Please, never ping me.": ["S'il te plaît, ne me mentionne jamais."],
     "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s": [
-        "Tu es notifié(e) si vous avez tous les deux joué à au moins un jeu multijoueur en commun au cours des 100 derniers jours. Si tu ne veux pas recevoir ces notifications, tu peux le changer maintenant.\n\nTon réglage actuel :\n> %s"
+        "Tu reçois une notification si toi et l'autre personne avez joué à au moins un jeu multijoueur en commun au cours des 100 derniers jours. Si tu ne veux pas recevoir ces notifications, tu peux le changer maintenant.\n\nTon réglage actuel :\n> %s"
     ],
     "Notifications...": ["Notifications..."],
     "Also notify myself that someone wants to game, even when I am offline.": [
@@ -216,7 +216,7 @@
         "D'accord, \"%s\" reste suivi comme un jeu. Je continuerai à le chercher sur IGDB et ne redemanderai que si IGDB trouve quelque chose."
     ],
     "up to %d": ["jusqu'à %d"],
-    "Players": ["Joueurs"],
+    "Players": ["Qui y joue"],
     "Who here played it recently, only in /gameinfo": [
         "Qui l'a joué récemment ici, uniquement dans /gameinfo"
     ],
@@ -231,10 +231,10 @@
         "Il aura son propre salon la prochaine fois que quelqu'un y jouera."
     ],
     "It gets its own channel once 1 more player plays it.": [
-        "Il aura son propre salon dès qu'un joueur de plus y jouera."
+        "Il aura son propre salon dès qu'une personne de plus y jouera."
     ],
     "It gets its own channel once %d more players play it.": [
-        "Il aura son propre salon dès que %d joueurs de plus y joueront."
+        "Il aura son propre salon dès que %d personnes de plus y joueront."
     ],
     "Played here": ["Joué ici"],
     "No game found for \"%s\".": ["Aucun jeu trouvé pour « %s »."],
@@ -248,7 +248,7 @@
         "Impossible de modifier qui peut voir #%s : j'ai besoin de la permission « Gérer les permissions » dans ce salon."
     ],
     "Sorry, I couldn't change your access to #%s.": [
-        "Pardon, je n'ai pas pu modifier ton accès à #%s."
+        "Désolée, je n'ai pas pu modifier ton accès à #%s."
     ],
     "You joined %s.": ["Tu as rejoint %s."],
     "You left #%s. I'll add you back when I see you playing %s again.": [
