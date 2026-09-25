@@ -11,7 +11,6 @@
     ],
     "Profile of %s": ["Profilo de %s"],
     "%s is on this discord server since %s.": ["%s estas sur ĉi tiu discord-servilo ekde %s."],
-    "Common games": ["Komunaj ludoj"],
     "Recently played": ["Lastatempe luditaj"],
     "The server's top 10!": ["La supraj 10 de la servilo!"],
     "The last %d days at a glance:": ["La lastaj %d tagoj unuavide:"],
@@ -277,5 +276,7 @@
     "Arcade": ["Arkado"],
     "Visual Novel": ["Vida romano"],
     "Card & Board Game": ["Kart- kaj tabulludo"],
-    "MOBA": ["MOBA"]
+    "MOBA": ["MOBA"],
+    "You both play it": ["Vi ambaŭ ludas ĝin"],
+    "You both play it (single-player)": ["Vi ambaŭ ludas ĝin (unuludanta)"]
 }
