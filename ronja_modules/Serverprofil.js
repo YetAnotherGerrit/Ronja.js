@@ -108,16 +108,18 @@ const myServerprofil = {
             include: [{ model: this.client.db.Game, where: gameWhere }],
         });
 
+        // Grouped by the joined game's id, not s.GameId: older databases named
+        // that column "gameId", which SQLite then returns instead.
         let games = new Map();
         for (let s of statuses) {
-            let g = games.get(s.GameId) ?? {
+            let g = games.get(s.Game.id) ?? {
                 game: s.Game,
                 lastplayed: s.lastplayed,
                 members: new Set(),
             };
             if (s.lastplayed > g.lastplayed) g.lastplayed = s.lastplayed;
             g.members.add(s.member);
-            games.set(s.GameId, g);
+            games.set(s.Game.id, g);
         }
 
         return [...games.values()]
