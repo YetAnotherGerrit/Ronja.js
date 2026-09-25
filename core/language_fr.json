@@ -217,5 +217,25 @@
     "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
         "D'accord, \"%s\" reste suivi comme un jeu. Je continuerai à le chercher sur IGDB et ne redemanderai que si IGDB trouve quelque chose."
     ],
-    "up to %d": ["jusqu'à %d"]
+    "up to %d": ["jusqu'à %d"],
+    "Players": ["Joueurs"],
+    "Who here played it recently, only in /gameinfo": [
+        "Qui l'a joué récemment ici, uniquement dans /gameinfo"
+    ],
+    "Text channel": ["Salon textuel"],
+    "Its game text channel, only in /gameinfo": [
+        "Son salon textuel de jeu, uniquement dans /gameinfo"
+    ],
+    "Recently played by": ["Joué récemment par"],
+    "Nobody here has played it recently.": ["Personne ici n'y a joué récemment."],
+    "#%s is archived.": ["#%s est archivé."],
+    "It gets its own channel the next time someone plays it.": [
+        "Il aura son propre salon la prochaine fois que quelqu'un y jouera."
+    ],
+    "It gets its own channel once 1 more player plays it.": [
+        "Il aura son propre salon dès qu'un joueur de plus y jouera."
+    ],
+    "It gets its own channel once %d more players play it.": [
+        "Il aura son propre salon dès que %d joueurs de plus y joueront."
+    ]
 }

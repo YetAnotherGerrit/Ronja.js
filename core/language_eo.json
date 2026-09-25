@@ -211,5 +211,23 @@
     "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
         "Bone, \"%s\" restas registrata kiel ludo. Mi daŭre kontrolos IGDB por ĝi kaj demandos denove nur se IGDB trovos ion."
     ],
-    "up to %d": ["ĝis %d"]
+    "up to %d": ["ĝis %d"],
+    "Players": ["Ludantoj"],
+    "Who here played it recently, only in /gameinfo": [
+        "Kiu ĉi tie lastatempe ludis ĝin, nur en /gameinfo"
+    ],
+    "Text channel": ["Tekstkanalo"],
+    "Its game text channel, only in /gameinfo": ["Ĝia luda tekstkanalo, nur en /gameinfo"],
+    "Recently played by": ["Lastatempe ludita de"],
+    "Nobody here has played it recently.": ["Neniu ĉi tie lastatempe ludis ĝin."],
+    "#%s is archived.": ["#%s estas arkivita."],
+    "It gets its own channel the next time someone plays it.": [
+        "Ĝi ricevos propran kanalon, kiam iu venontfoje ludos ĝin."
+    ],
+    "It gets its own channel once 1 more player plays it.": [
+        "Ĝi ricevos propran kanalon, kiam ankoraŭ 1 ludanto ludos ĝin."
+    ],
+    "It gets its own channel once %d more players play it.": [
+        "Ĝi ricevos propran kanalon, kiam ankoraŭ %d ludantoj ludos ĝin."
+    ]
 }

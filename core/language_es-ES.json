@@ -217,5 +217,23 @@
     "Okay, \"%s\" stays tracked as a game. I'll keep checking IGDB for it and only ask again if IGDB finds something.": [
         "Vale, \"%s\" se sigue registrando como juego. Seguiré buscándolo en IGDB y solo volveré a preguntar si IGDB encuentra algo."
     ],
-    "up to %d": ["hasta %d"]
+    "up to %d": ["hasta %d"],
+    "Players": ["Jugadores"],
+    "Who here played it recently, only in /gameinfo": [
+        "Quién lo ha jugado aquí recientemente, solo en /gameinfo"
+    ],
+    "Text channel": ["Canal de texto"],
+    "Its game text channel, only in /gameinfo": ["Su canal de texto del juego, solo en /gameinfo"],
+    "Recently played by": ["Jugado recientemente por"],
+    "Nobody here has played it recently.": ["Nadie aquí lo ha jugado recientemente."],
+    "#%s is archived.": ["#%s está archivado."],
+    "It gets its own channel the next time someone plays it.": [
+        "Tendrá su propio canal la próxima vez que alguien lo juegue."
+    ],
+    "It gets its own channel once 1 more player plays it.": [
+        "Tendrá su propio canal cuando lo juegue 1 jugador más."
+    ],
+    "It gets its own channel once %d more players play it.": [
+        "Tendrá su propio canal cuando lo jueguen %d jugadores más."
+    ]
 }
