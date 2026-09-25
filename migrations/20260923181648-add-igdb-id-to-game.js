@@ -19,7 +19,7 @@ module.exports = {
     async down(queryInterface, Sequelize) {
         await queryInterface.removeIndex("Games", "games_igdb_id_unique");
         // SQLite rebuilds the table to drop a column, which trips FK
-        // enforcement against GameStatuses.gameId unless briefly disabled.
+        // enforcement against GameStatuses' foreign key to Games unless briefly disabled.
         await queryInterface.sequelize.query("PRAGMA foreign_keys = OFF;");
         try {
             await queryInterface.removeColumn("Games", "igdbId");
