@@ -176,7 +176,7 @@ const myDynamicTextChannels = {
         } catch (err) {
             let message = this.l(
                 locale,
-                "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.",
+                "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.",
                 channel.name
             );
             if (!this.client.myNotifyOwnerOnPermissionError(guild, err, message)) {

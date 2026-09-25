@@ -196,8 +196,8 @@
     "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
         "Impossibile fissare la scheda del gioco in #%s: lì mi serve il permesso \"Fissare messaggi\"."
     ],
-    "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.": [
-        "Impossibile rimuovere l'avviso di messaggio fissato di Discord in #%s: lì mi servono i permessi \"Leggere la cronologia dei messaggi\" e \"Gestire i messaggi\"."
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.": [
+        "Impossibile rimuovere l'avviso di messaggio fissato di Discord in #%s: lì mi serve il permesso \"Leggere la cronologia dei messaggi\"."
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "Impossibile verificare se qualcuno ha scritto in #%s, quindi lo archivio invece di eliminarlo: lì mi serve il permesso \"Leggere la cronologia dei messaggi\"."

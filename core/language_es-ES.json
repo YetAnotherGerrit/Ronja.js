@@ -194,8 +194,8 @@
     "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
         "No se pudo fijar la ficha del juego en #%s: necesito allí el permiso «Fijar mensajes»."
     ],
-    "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.": [
-        "No se pudo eliminar el aviso de mensaje fijado de Discord en #%s: necesito allí los permisos «Leer el historial de mensajes» y «Gestionar mensajes»."
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.": [
+        "No se pudo eliminar el aviso de mensaje fijado de Discord en #%s: necesito allí el permiso «Leer el historial de mensajes»."
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "No se pudo comprobar si alguien ha escrito en #%s, así que lo archivo en lugar de eliminarlo: necesito allí el permiso «Leer el historial de mensajes»."

@@ -188,8 +188,8 @@
     "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
         "Ne povis fiksi la ludkarton en #%s: mi bezonas tie la permeson „Fiksi mesaĝojn“."
     ],
-    "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.": [
-        "Ne povis forigi la fiksan sciigon de Discord en #%s: mi bezonas tie la permesojn „Legi mesaĝhistorion“ kaj „Administri mesaĝojn“."
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.": [
+        "Ne povis forigi la fiksan sciigon de Discord en #%s: mi bezonas tie la permeson „Legi mesaĝhistorion“."
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "Ne povis kontroli, ĉu iu afiŝis en #%s, do mi arĥivas ĝin anstataŭ forigi ĝin: mi bezonas tie la permeson „Legi mesaĝhistorion“."

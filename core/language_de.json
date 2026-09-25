@@ -198,8 +198,8 @@
     "Could not pin the game card in #%s: I need the Pin Messages permission there.": [
         "Konnte die Spielkarte in #%s nicht anpinnen: Ich brauche dort die Berechtigung „Nachrichten anpinnen“."
     ],
-    "Could not remove Discord's pin notice in #%s: I need the Read Message History and Manage Messages permissions there.": [
-        "Konnte Discords Anpinn-Hinweis in #%s nicht entfernen: Ich brauche dort die Berechtigungen „Nachrichtenverlauf anzeigen“ und „Nachrichten verwalten“."
+    "Could not remove Discord's pin notice in #%s: I need the Read Message History permission there.": [
+        "Konnte Discords Anpinn-Hinweis in #%s nicht entfernen: Ich brauche dort die Berechtigung „Nachrichtenverlauf anzeigen“."
     ],
     "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.": [
         "Konnte nicht prüfen, ob jemand in #%s geschrieben hat, deshalb archiviere ich den Kanal, statt ihn zu löschen: Ich brauche dort die Berechtigung „Nachrichtenverlauf anzeigen“."
