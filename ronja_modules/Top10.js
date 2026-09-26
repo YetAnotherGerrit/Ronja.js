@@ -8,6 +8,13 @@ const TOP = 10;
 // The columns are narrow - longer names would wrap over several lines.
 const NAME_LENGTH = 32;
 
+// One ranking line: `number` in bold, unless the top10HideNumbers setting
+// hides it (the order stays the same).
+function rankLine(hideNumbers, number, emoji, name) {
+    let line = `${emoji}  ${truncate(name, NAME_LENGTH)}`;
+    return hideNumbers ? line : `**${number}**  ${line}`;
+}
+
 const myTop10 = {
     commands: [
         new SlashCommandBuilder()
@@ -152,7 +159,7 @@ const myTop10 = {
         );
     },
 
-    topGames: async function (since) {
+    topGames: async function (since, hideNumbers) {
         let g = await this.client.db.Game.findAll({
             raw: true,
             attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
@@ -171,9 +178,7 @@ const myTop10 = {
 
         return g
             .slice(0, TOP)
-            .map(
-                (gg) => `**${gg.cName}**  :busts_in_silhouette:  ${truncate(gg.name, NAME_LENGTH)}`
-            );
+            .map((gg) => rankLine(hideNumbers, gg.cName, ":busts_in_silhouette:", gg.name));
     },
 
     // Sums a daily counter per key since the day `since` falls on, ranked. All
@@ -188,7 +193,7 @@ const myTop10 = {
         });
     },
 
-    topVoiceMembers: async function (guild, lng, since) {
+    topVoiceMembers: async function (guild, lng, since, hideNumbers) {
         await this.flushVoiceTime();
         let rows = await this.sumPerKey(this.client.db.VoiceTime, "member", "seconds", since);
 
@@ -198,14 +203,13 @@ const myTop10 = {
             // Members who left the guild are skipped.
             if (!(await isMember(guild, row.member))) continue;
             let name = guild.members.cache.get(row.member).displayName;
-            lines.push(
-                `**${duration((...a) => this.l(lng, ...a), row.total)}**  :loud_sound:  ${truncate(name, NAME_LENGTH)}`
-            );
+            let time = hideNumbers ? null : duration((...a) => this.l(lng, ...a), row.total);
+            lines.push(rankLine(hideNumbers, time, ":loud_sound:", name));
         }
         return lines;
     },
 
-    topGameChannels: async function (guild, lng, since) {
+    topGameChannels: async function (guild, lng, since, hideNumbers) {
         let rows = await this.sumPerKey(
             this.client.db.ChannelMessages,
             "channel",
@@ -219,9 +223,8 @@ const myTop10 = {
             .map((row) => [row, guild.channels.cache.get(row.channel)])
             .filter(([, channel]) => channel) // deleted channels are skipped
             .slice(0, TOP)
-            .map(
-                ([row, channel]) =>
-                    `**${row.total}**  :speech_balloon:  #${truncate(channel.name, NAME_LENGTH)}`
+            .map(([row, channel]) =>
+                rankLine(hideNumbers, row.total, ":speech_balloon:", `#${channel.name}`)
             );
     },
 
@@ -233,10 +236,11 @@ const myTop10 = {
             .setTitle(this.l(lng, "The server's top 10!"))
             .setDescription(this.l(lng, "The last %d days at a glance:", pDays));
 
+        let hideNumbers = this.cfg("top10HideNumbers") === "true";
         let [games, voice, channels] = await Promise.all([
-            this.topGames(since),
-            this.topVoiceMembers(guild, lng, since),
-            this.topGameChannels(guild, lng, since),
+            this.topGames(since, hideNumbers),
+            this.topVoiceMembers(guild, lng, since, hideNumbers),
+            this.topGameChannels(guild, lng, since, hideNumbers),
         ]);
 
         e.addFields([
