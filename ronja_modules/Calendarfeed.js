@@ -116,14 +116,22 @@ const myICalFeed = {
 
         let buff = Buffer.from(iCalendar.toString(), "utf-8");
 
-        await myFtp.connect({
-            host: this.cfg("icalFtpServer"),
-            port: this.cfg("icalFtpPort") || 22,
-            username: this.cfg("icalFtpUsername"),
-            password: this.cfg("icalFtpPassword"),
-        });
+        // Every event (un)subscription uploads a feed, so the connection must
+        // be closed again - also when connecting or uploading fails.
+        try {
+            await myFtp.connect({
+                host: this.cfg("icalFtpServer"),
+                port: this.cfg("icalFtpPort") || 22,
+                username: this.cfg("icalFtpUsername"),
+                password: this.cfg("icalFtpPassword"),
+            });
 
-        await myFtp.put(buff, user.id + ".ics");
+            await myFtp.put(buff, user.id + ".ics");
+        } finally {
+            await myFtp
+                .end()
+                .catch((err) => console.error("Could not close the SFTP connection:", err));
+        }
     },
 
     isIcalConfigured: function () {
