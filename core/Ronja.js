@@ -1,4 +1,4 @@
-const { Client, REST, Routes, RESTJSONErrorCodes } = require("discord.js");
+const { Client, REST, Routes, RESTJSONErrorCodes, ButtonBuilder } = require("discord.js");
 const Sequelize = require("sequelize");
 
 const fs = require("node:fs");
@@ -86,6 +86,14 @@ class Ronja extends Client {
             name: name,
             value: value,
         });
+    }
+
+    // Every button starts here: a ButtonBuilder with `emoji` in front of its
+    // label, unless admins turned button emojis off (buttonEmojis setting).
+    myButton(emoji) {
+        let button = new ButtonBuilder();
+        if (this.myConfigGet("buttonEmojis") !== "false") button.setEmoji(emoji);
+        return button;
     }
 
     // GeForce NOW reports every streamed game under the fixed activity name

@@ -5,7 +5,6 @@ const {
     PermissionFlagsBits,
     MessageFlags,
     ActionRowBuilder,
-    ButtonBuilder,
     ButtonStyle,
     StringSelectMenuBuilder,
     ChannelSelectMenuBuilder,
@@ -265,7 +264,8 @@ const mySettings = {
         let buttons = [...categories.keys()]
             .sort((a, b) => a.localeCompare(b))
             .map((category) =>
-                new ButtonBuilder()
+                this.client
+                    .myButton("📁")
                     .setCustomId(`settingsCategory:${category}`)
                     .setLabel(category)
                     .setStyle(ButtonStyle.Primary)
@@ -328,7 +328,8 @@ const mySettings = {
                         .addOptions(options)
                 ),
                 new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
+                    this.client
+                        .myButton("↩️")
                         .setCustomId("settingsHome")
                         .setLabel(this.l(locale, "Back"))
                         .setStyle(ButtonStyle.Secondary)
@@ -349,7 +350,8 @@ const mySettings = {
                 { name: this.l(locale, "Current value"), value: embedValue(plain, setting) },
             ]);
 
-        let backButton = new ButtonBuilder()
+        let backButton = this.client
+            .myButton("↩️")
             .setCustomId(`settingsCategory:${category}`)
             .setLabel(this.l(locale, "Back"))
             .setStyle(ButtonStyle.Secondary);
@@ -359,11 +361,13 @@ const mySettings = {
         if (setting.type === "boolean") {
             rows = [
                 new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
+                    this.client
+                        .myButton("✅")
                         .setCustomId(`settingsBool:${category}:${setting.name}:true`)
                         .setLabel(this.l(locale, "True"))
                         .setStyle(ButtonStyle.Success),
-                    new ButtonBuilder()
+                    this.client
+                        .myButton("❌")
                         .setCustomId(`settingsBool:${category}:${setting.name}:false`)
                         .setLabel(this.l(locale, "False"))
                         .setStyle(ButtonStyle.Danger),
@@ -402,7 +406,8 @@ const mySettings = {
         } else {
             rows = [
                 new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
+                    this.client
+                        .myButton("✏️")
                         .setCustomId(`settingsEdit:${category}:${setting.name}`)
                         .setLabel(this.l(locale, "Edit"))
                         .setStyle(ButtonStyle.Primary),

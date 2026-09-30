@@ -3,7 +3,6 @@ const {
     Colors,
     ActionRowBuilder,
     StringSelectMenuBuilder,
-    ButtonBuilder,
     ButtonStyle,
 } = require("discord.js");
 const { DateTime } = require("luxon");
@@ -942,8 +941,9 @@ const myIgdb = {
     askOwnerIfGame: async function (game, guild, report) {
         if (report.ownerUnreachable) return;
         let locale = guild.preferredLocale;
-        let button = (action, style, label) =>
-            new ButtonBuilder()
+        let button = (action, style, emoji, label) =>
+            this.client
+                .myButton(emoji)
                 .setCustomId(`${SYNC_UNKNOWN_PREFIX}${action}:${game.id}`)
                 .setStyle(style)
                 .setLabel(this.l(locale, label));
@@ -964,8 +964,18 @@ const myIgdb = {
                 ],
                 components: [
                     new ActionRowBuilder().addComponents(
-                        button(SYNC_UNKNOWN_KEEP, ButtonStyle.Primary, "It's a game, keep it"),
-                        button(SYNC_UNKNOWN_IGNORE, ButtonStyle.Secondary, "Not a game, ignore it")
+                        button(
+                            SYNC_UNKNOWN_KEEP,
+                            ButtonStyle.Primary,
+                            "🎮",
+                            "It's a game, keep it"
+                        ),
+                        button(
+                            SYNC_UNKNOWN_IGNORE,
+                            ButtonStyle.Secondary,
+                            "🚫",
+                            "Not a game, ignore it"
+                        )
                     ),
                 ],
             });
@@ -1165,7 +1175,7 @@ const myIgdb = {
 
         // Nothing to change: the game stays tracked, and the sync keeps retrying it.
         await reply(
-            Colors.Green,
+            Colors.Blue,
             this.l(
                 locale,
                 'Okay, "%s" stays tracked as a game. I\'ll keep checking IGDB for it and only ask again if IGDB finds something.',

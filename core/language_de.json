@@ -292,5 +292,12 @@
     "Card & Board Game": ["Karten- & Brettspiel"],
     "MOBA": ["MOBA"],
     "You both play it": ["Ihr spielt es beide"],
-    "You both play it (single-player)": ["Ihr spielt es beide (Einzelspieler)"]
+    "You both play it (single-player)": ["Ihr spielt es beide (Einzelspieler)"],
+    "Show to channel": ["Im Kanal zeigen"],
+    "%s shared this:": ["%s hat das geteilt:"],
+    "Sorry, I couldn't show this to the channel.": ["Das konnte ich leider nicht im Kanal zeigen."],
+    "Your ical feed couldn't be updated right now, please try again later.": [
+        "Dein ical-Feed konnte gerade nicht aktualisiert werden, bitte versuche es später noch einmal."
+    ],
+    "%s shared this (created %s):": ["%s hat das geteilt (erstellt %s):"]
 }

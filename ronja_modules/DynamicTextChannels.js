@@ -6,7 +6,6 @@ const {
     RESTJSONErrorCodes,
     MessageType,
     ActionRowBuilder,
-    ButtonBuilder,
     ButtonStyle,
     MessageFlags,
     OverwriteType,
@@ -414,11 +413,13 @@ const myDynamicTextChannels = {
 
     channelButton: function (game, joined, locale) {
         return joined
-            ? new ButtonBuilder()
+            ? this.client
+                  .myButton("➖")
                   .setCustomId(`${LEAVE_PREFIX}${game.id}`)
                   .setLabel(this.l(locale, "Leave channel"))
                   .setStyle(ButtonStyle.Secondary)
-            : new ButtonBuilder()
+            : this.client
+                  .myButton("➕")
                   .setCustomId(`${JOIN_PREFIX}${game.id}`)
                   .setLabel(this.l(locale, "Join channel"))
                   .setStyle(ButtonStyle.Primary);

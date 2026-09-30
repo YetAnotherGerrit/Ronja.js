@@ -290,5 +290,14 @@
     "Card & Board Game": ["Jeux de cartes et de société"],
     "MOBA": ["MOBA"],
     "You both play it": ["Vous l'avez en commun"],
-    "You both play it (single-player)": ["Vous l'avez en commun (solo)"]
+    "You both play it (single-player)": ["Vous l'avez en commun (solo)"],
+    "Show to channel": ["Montrer dans le salon"],
+    "%s shared this:": ["%s a partagé ceci :"],
+    "Sorry, I couldn't show this to the channel.": [
+        "Désolée, je n'ai pas pu montrer ceci dans le salon."
+    ],
+    "Your ical feed couldn't be updated right now, please try again later.": [
+        "Ton flux ical n'a pas pu être mis à jour pour le moment, réessaie plus tard."
+    ],
+    "%s shared this (created %s):": ["%s a partagé ceci (créé %s) :"]
 }

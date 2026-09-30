@@ -1,4 +1,6 @@
 const {
+    EmbedBuilder,
+    Colors,
     SlashCommandBuilder,
     MessageFlags,
     GuildScheduledEventRecurrenceRuleFrequency,
@@ -114,14 +116,22 @@ const myICalFeed = {
 
         let buff = Buffer.from(iCalendar.toString(), "utf-8");
 
-        await myFtp.connect({
-            host: this.cfg("icalFtpServer"),
-            port: this.cfg("icalFtpPort") || 22,
-            username: this.cfg("icalFtpUsername"),
-            password: this.cfg("icalFtpPassword"),
-        });
+        // Every event (un)subscription uploads a feed, so the connection must
+        // be closed again - also when connecting or uploading fails.
+        try {
+            await myFtp.connect({
+                host: this.cfg("icalFtpServer"),
+                port: this.cfg("icalFtpPort") || 22,
+                username: this.cfg("icalFtpUsername"),
+                password: this.cfg("icalFtpPassword"),
+            });
 
-        await myFtp.put(buff, user.id + ".ics");
+            await myFtp.put(buff, user.id + ".ics");
+        } finally {
+            await myFtp
+                .end()
+                .catch((err) => console.error("Could not close the SFTP connection:", err));
+        }
     },
 
     isIcalConfigured: function () {
@@ -137,20 +147,42 @@ const myICalFeed = {
         if (interaction.commandName == "ical") {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            if (this.isIcalConfigured()) {
-                await this.updateICalFile(interaction.guild, interaction.user);
-                interaction.editReply({
-                    content: this.cfg("icalUrl") + interaction.user.id + ".ics",
-                });
-            } else {
-                interaction.editReply({
-                    content: this.l(
-                        interaction.locale,
-                        "The ical-settings for this server are incomplete."
-                    ),
-                });
+            if (!this.isIcalConfigured()) {
+                await this.reply(
+                    interaction,
+                    Colors.Red,
+                    this.l(interaction.locale, "The ical-settings for this server are incomplete.")
+                );
+                return;
             }
+
+            try {
+                await this.updateICalFile(interaction.guild, interaction.user);
+            } catch (err) {
+                console.error(`Could not update the ical feed of ${interaction.user.id}:`, err);
+                await this.reply(
+                    interaction,
+                    Colors.Red,
+                    this.l(
+                        interaction.locale,
+                        "Your ical feed couldn't be updated right now, please try again later."
+                    )
+                );
+                return;
+            }
+
+            await this.reply(
+                interaction,
+                Colors.Blue,
+                this.cfg("icalUrl") + interaction.user.id + ".ics"
+            );
         }
+    },
+
+    reply: async function (interaction, color, message) {
+        await interaction.editReply({
+            embeds: [new EmbedBuilder().setColor(color).setDescription(message)],
+        });
     },
 
     hookForEventUserUpdate: async function (oGuildScheduledEvent, oUser) {

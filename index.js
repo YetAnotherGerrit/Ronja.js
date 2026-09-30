@@ -29,6 +29,7 @@ ronja_modules.push(require("./ronja_modules/Serverprofil.js"));
 ronja_modules.push(require("./ronja_modules/SetLanguage.js"));
 ronja_modules.push(require("./ronja_modules/SteamNews.js"));
 ronja_modules.push(require("./ronja_modules/Settings.js"));
+ronja_modules.push(require("./ronja_modules/Share.js"));
 ronja_modules.push(require("./ronja_modules/Top10.js"));
 ronja_modules.push(require("./ronja_modules/Zocken.js"));
 

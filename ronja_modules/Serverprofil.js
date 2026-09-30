@@ -10,6 +10,7 @@ const {
 const { DateTime } = require("luxon");
 const { Op } = require("sequelize");
 const { playerLimit } = require("../core/gameList.js");
+const { withShareButton } = require("../core/share.js");
 
 // A profile lists the member's top genres of the games they played in the
 // last 100 days, and their games played in the last 30 days - plus, on
@@ -89,7 +90,10 @@ const myServerprofil = {
                 if (legend) e.setFooter({ text: legend });
             }
 
-            interaction.editReply({ embeds: [e] });
+            interaction.editReply({
+                embeds: [e],
+                components: withShareButton(this.client, locale),
+            });
         }
     },
 

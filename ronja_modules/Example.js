@@ -1,7 +1,6 @@
 const {
     EmbedBuilder,
     ActionRowBuilder,
-    ButtonBuilder,
     StringSelectMenuBuilder,
     ButtonStyle,
     Colors,
@@ -156,11 +155,13 @@ const myExample = {
     // Not fanned out from a Discord event: /gameinfo (ronja_modules/GameInfo.js)
     // asks every module for buttons to put under a game's card, shown to
     // `member` only. Return an array of ButtonBuilders (all modules together
-    // get one row of 5) and handle their clicks in hookForButtonInteraction -
+    // get 4 buttons, the row's 5th is the share button - start each one with
+    // this.client.myButton(emoji)) and handle their clicks in hookForButtonInteraction -
     // or return [] (see the Join/Leave channel buttons in DynamicTextChannels.js).
     hookForGameCardButtons: async function (game, member, locale) {
         return [
-            new ButtonBuilder()
+            this.client
+                .myButton("🧩")
                 .setCustomId(`exampleCardButton:${game.id}`)
                 .setLabel(this.l(locale, "Example"))
                 .setStyle(ButtonStyle.Secondary),

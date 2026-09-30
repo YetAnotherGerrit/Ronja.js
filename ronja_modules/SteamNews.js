@@ -9,6 +9,7 @@ const {
 } = require("discord.js");
 const { truncate } = require("../core/gameCard.js");
 const { normalizeGameName } = require("../core/gameList.js");
+const { withShareButton } = require("../core/share.js");
 
 const NEWS_SHOWN = 3;
 const EXCERPT_LENGTH = 300;
@@ -115,7 +116,10 @@ const mySteamNews = {
             }))
         );
 
-        await interaction.editReply({ embeds: [e] });
+        await interaction.editReply({
+            embeds: [e],
+            components: withShareButton(this.client, locale),
+        });
     },
 
     reply: async function (interaction, color, message) {
