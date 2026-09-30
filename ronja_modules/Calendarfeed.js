@@ -139,30 +139,42 @@ const myICalFeed = {
         if (interaction.commandName == "ical") {
             await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            if (this.isIcalConfigured()) {
-                await this.updateICalFile(interaction.guild, interaction.user);
-                interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor(Colors.Blue)
-                            .setDescription(this.cfg("icalUrl") + interaction.user.id + ".ics"),
-                    ],
-                });
-            } else {
-                interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor(Colors.Red)
-                            .setDescription(
-                                this.l(
-                                    interaction.locale,
-                                    "The ical-settings for this server are incomplete."
-                                )
-                            ),
-                    ],
-                });
+            if (!this.isIcalConfigured()) {
+                await this.reply(
+                    interaction,
+                    Colors.Red,
+                    this.l(interaction.locale, "The ical-settings for this server are incomplete.")
+                );
+                return;
             }
+
+            try {
+                await this.updateICalFile(interaction.guild, interaction.user);
+            } catch (err) {
+                console.error(`Could not update the ical feed of ${interaction.user.id}:`, err);
+                await this.reply(
+                    interaction,
+                    Colors.Red,
+                    this.l(
+                        interaction.locale,
+                        "Your ical feed couldn't be updated right now, please try again later."
+                    )
+                );
+                return;
+            }
+
+            await this.reply(
+                interaction,
+                Colors.Blue,
+                this.cfg("icalUrl") + interaction.user.id + ".ics"
+            );
         }
+    },
+
+    reply: async function (interaction, color, message) {
+        await interaction.editReply({
+            embeds: [new EmbedBuilder().setColor(color).setDescription(message)],
+        });
     },
 
     hookForEventUserUpdate: async function (oGuildScheduledEvent, oUser) {
