@@ -296,5 +296,6 @@
     ],
     "Your ical feed couldn't be updated right now, please try again later.": [
         "Não foi possível atualizar o teu feed ical neste momento, tenta novamente mais tarde."
-    ]
+    ],
+    "%s shared this (created %s):": ["%s partilhou isto (criado %s):"]
 }
