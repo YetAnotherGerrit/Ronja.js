@@ -1,4 +1,6 @@
 const {
+    EmbedBuilder,
+    Colors,
     SlashCommandBuilder,
     MessageFlags,
     GuildScheduledEventRecurrenceRuleFrequency,
@@ -140,14 +142,24 @@ const myICalFeed = {
             if (this.isIcalConfigured()) {
                 await this.updateICalFile(interaction.guild, interaction.user);
                 interaction.editReply({
-                    content: this.cfg("icalUrl") + interaction.user.id + ".ics",
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Blue)
+                            .setDescription(this.cfg("icalUrl") + interaction.user.id + ".ics"),
+                    ],
                 });
             } else {
                 interaction.editReply({
-                    content: this.l(
-                        interaction.locale,
-                        "The ical-settings for this server are incomplete."
-                    ),
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(
+                                this.l(
+                                    interaction.locale,
+                                    "The ical-settings for this server are incomplete."
+                                )
+                            ),
+                    ],
                 });
             }
         }
