@@ -278,5 +278,10 @@
     "Card & Board Game": ["Kart- kaj tabulludo"],
     "MOBA": ["MOBA"],
     "You both play it": ["Vi ambaŭ ludas ĝin"],
-    "You both play it (single-player)": ["Vi ambaŭ ludas ĝin (unuludanta)"]
+    "You both play it (single-player)": ["Vi ambaŭ ludas ĝin (unuludanta)"],
+    "Show to channel": ["Montri en la kanalo"],
+    "%s shared this:": ["%s kundividis ĉi tion:"],
+    "Sorry, I couldn't show this to the channel.": [
+        "Bedaŭrinde mi ne povis montri ĉi tion en la kanalo."
+    ]
 }

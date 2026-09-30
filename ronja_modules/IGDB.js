@@ -1165,7 +1165,7 @@ const myIgdb = {
 
         // Nothing to change: the game stays tracked, and the sync keeps retrying it.
         await reply(
-            Colors.Green,
+            Colors.Blue,
             this.l(
                 locale,
                 'Okay, "%s" stays tracked as a game. I\'ll keep checking IGDB for it and only ask again if IGDB finds something.',

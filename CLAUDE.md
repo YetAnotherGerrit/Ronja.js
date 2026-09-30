@@ -63,6 +63,8 @@ Discord gateway events in `index.js` are fanned out to _every_ module by checkin
 
 `hookForGameSearch(name, limit)` works the same way via `client.myGameSearch(name, limit)`: the first implementing module (just `IGDB.js`) returns games named like `name` as `[{ igdbId, name, releaseYear }]`; it resolves to `null` if nothing can search right now (IGDB unconfigured, or the search failed) and never throws. `/gameinfo` lives in its own module, `ronja_modules/GameInfo.js`, so it works without IGDB: it searches Ronja's own games (names and `GameAlias`es, without the ones marked "not a game") and adds what `myGameSearch` finds for other games, autocompletes the name from Ronja's games (most recently played first), and shows the card with IGDB details when there are any — or just the name and the guild info. Under the card it puts the buttons every module returns from `hookForGameCardButtons(game, member, locale)` (not fanned out from an event either); `DynamicTextChannels` returns a Join or Leave channel button there for games with an active channel and handles the clicks itself (`hookForButtonInteraction`). Joining creates the same member permission overwrite as being seen playing, but doesn't count as playing; leaving deletes it until Ronja sees the member play again.
 
+Ephemeral replies worth sharing (`/top10`, `/gameinfo`'s card, `/news`, the Serverprofile — not personal settings, admin-only commands or error messages) end with a "Show to channel" button: pass the reply's `components` through `withShareButton(client, locale, rows)` (`core/share.js`), which appends it to the last button row or a row of its own. `ronja_modules/Share.js` handles its clicks: it posts the reply's embeds (not its other buttons) publicly in the channel, naming who shared it, and deletes the ephemeral reply (Discord can't make an ephemeral message visible after the fact).
+
 `hookForSettingOptions(name, locale)` is likewise not fanned out from an event: `/settings` (`ronja_modules/Settings.js`) calls it on every module to get the choices of a `multiselect` setting (shown as a multi-select menu, stored as a comma-separated list of the picked values) and uses the first non-empty answer. `GameInfo.js` answers it for `gameCardDetails`, which picks the details `core/gameCard.js` shows on the game card.
 
 Modules dispatch on `interaction.commandName` / `customId` themselves (see the pattern in `ronja_modules/Example.js`, which is a documented template — it is excluded from most lint rules and not meant to be treated as production code). Adding a new slash/context-menu command requires **both**: implementing the matching `hookFor*` in a module, and adding a `discord.js` builder instance (`SlashCommandBuilder`/`ContextMenuCommandBuilder`) to that module's `commands` array — deployment then happens automatically (see below).
@@ -90,3 +92,13 @@ Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-
 ### Code style
 
 ESLint (flat config in `eslint.config.mjs`) + Prettier (`.prettierrc.json`: 4-space tabs, double quotes, semicolons, 100-char width) with `eslint-config-prettier` disabling stylistic conflicts. `no-unused-vars` is currently a `warn`, not an `error`; `migrations/**` and `ronja_modules/Example.js` have relaxed/disabled rules — see `TODO.md` for the planned tightening path.
+
+### Reply design
+
+Interaction replies (commands, buttons, menus) and Ronja's posts are always embeds (`EmbedBuilder`), never plain `content` — except text carrying a guild scheduled event URL (`/lfg`), since Discord doesn't render the event's preview inside an embed. The embed color says what kind of message it is:
+
+- `Colors.Green` — only to confirm that something was saved or changed (a setting, a permission, a database change).
+- `Colors.Red` — errors.
+- `Colors.Blue` — everything else: information and results that save nothing (e.g. the `/gameinfo` card, `/top10`, "nothing was changed" answers), questions and in-progress messages.
+
+Ephemeral replies get the "Show to channel" button described above (`withShareButton`), unless they're personal settings, admin-only commands or errors.

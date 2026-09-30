@@ -451,7 +451,7 @@ const myZocken = {
                             content: "",
                             embeds: [
                                 new EmbedBuilder()
-                                    .setColor(Colors.Green)
+                                    .setColor(Colors.Blue)
                                     .setDescription(
                                         this.l(
                                             interaction.locale,

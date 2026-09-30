@@ -288,5 +288,8 @@
     "Card & Board Game": ["Jogos de cartas e de tabuleiro"],
     "MOBA": ["MOBA"],
     "You both play it": ["Têm-no em comum"],
-    "You both play it (single-player)": ["Têm-no em comum (um jogador)"]
+    "You both play it (single-player)": ["Têm-no em comum (um jogador)"],
+    "Show to channel": ["Mostrar no canal"],
+    "%s shared this:": ["%s partilhou isto:"],
+    "Sorry, I couldn't show this to the channel.": ["Desculpa, não consegui mostrar isto no canal."]
 }

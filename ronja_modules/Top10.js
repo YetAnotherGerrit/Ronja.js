@@ -3,6 +3,7 @@ const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const { duration, isMember, truncate } = require("../core/gameCard.js");
+const { withShareButton } = require("../core/share.js");
 
 const TOP = 10;
 // The columns are narrow - longer names would wrap over several lines.
@@ -290,7 +291,10 @@ const myTop10 = {
                 interaction.options.getInteger("days") || 14
             );
 
-            interaction.editReply({ embeds: [e] });
+            interaction.editReply({
+                embeds: [e],
+                components: withShareButton(this.client, interaction.locale),
+            });
         }
     },
 

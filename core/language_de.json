@@ -292,5 +292,8 @@
     "Card & Board Game": ["Karten- & Brettspiel"],
     "MOBA": ["MOBA"],
     "You both play it": ["Ihr spielt es beide"],
-    "You both play it (single-player)": ["Ihr spielt es beide (Einzelspieler)"]
+    "You both play it (single-player)": ["Ihr spielt es beide (Einzelspieler)"],
+    "Show to channel": ["Im Kanal zeigen"],
+    "%s shared this:": ["%s hat das geteilt:"],
+    "Sorry, I couldn't show this to the channel.": ["Das konnte ich leider nicht im Kanal zeigen."]
 }

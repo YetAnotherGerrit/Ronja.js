@@ -9,11 +9,13 @@ const {
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const { buildGameCard, gameCardDetailOptions, loadGuildInfo } = require("../core/gameCard.js");
+const { withShareButton } = require("../core/share.js");
 
 const LOCAL_CANDIDATE_LIMIT = 10;
 const SEARCH_CANDIDATE_LIMIT = 5;
 const CHOICES_LIMIT = 25; // Discord's limit for autocomplete choices and select menu options.
-const BUTTONS_LIMIT = 5; // Discord's limit for buttons in one row.
+// Discord's limit for buttons in one row, minus the share button.
+const BUTTONS_LIMIT = 4;
 
 // What /gameinfo's name option (when picked from its autocomplete) and its
 // pick menu send: "game:<Game id>" for a game Ronja tracks, "igdb:<IGDB id>"
@@ -205,9 +207,13 @@ const myGameInfo = {
                     details ?? { name: game.name },
                     locale,
                     guildInfo
-                ).setColor(Colors.Green),
+                ).setColor(Colors.Blue),
             ],
-            components: buttons.length ? [new ActionRowBuilder().addComponents(buttons)] : [],
+            components: withShareButton(
+                this.client,
+                locale,
+                buttons.length ? [new ActionRowBuilder().addComponents(buttons)] : []
+            ),
         });
     },
 

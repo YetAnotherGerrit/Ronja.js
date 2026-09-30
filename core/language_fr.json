@@ -290,5 +290,10 @@
     "Card & Board Game": ["Jeux de cartes et de société"],
     "MOBA": ["MOBA"],
     "You both play it": ["Vous l'avez en commun"],
-    "You both play it (single-player)": ["Vous l'avez en commun (solo)"]
+    "You both play it (single-player)": ["Vous l'avez en commun (solo)"],
+    "Show to channel": ["Montrer dans le salon"],
+    "%s shared this:": ["%s a partagé ceci :"],
+    "Sorry, I couldn't show this to the channel.": [
+        "Désolée, je n'ai pas pu montrer ceci dans le salon."
+    ]
 }
