@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require("discord.js");
+const { ActionRowBuilder, ButtonStyle, ComponentType } = require("discord.js");
 
 // The "Show to channel" button under ephemeral replies that are worth sharing
 // (not personal settings, not admin-only commands). ronja_modules/Share.js
@@ -7,10 +7,10 @@ const SHARE_BUTTON_ID = "shareReply";
 const BUTTONS_PER_ROW = 5; // Discord's limit for buttons in one row.
 
 function shareButton(client, locale) {
-    return new ButtonBuilder()
+    return client
+        .myButton("📢")
         .setCustomId(SHARE_BUTTON_ID)
         .setLabel(client.myTranslator(locale, "Show to channel"))
-        .setEmoji("📢")
         .setStyle(ButtonStyle.Secondary);
 }
 

@@ -1,7 +1,6 @@
 const {
     EmbedBuilder,
     ActionRowBuilder,
-    ButtonBuilder,
     StringSelectMenuBuilder,
     ButtonStyle,
     Colors,
@@ -431,7 +430,8 @@ const myZocken = {
                 embeds: [],
                 components: [
                     new ActionRowBuilder().addComponents(
-                        new ButtonBuilder()
+                        this.client
+                            .myButton("🔔")
                             .setCustomId("zockenSelect")
                             .setLabel(this.l(interaction.locale, "Why is my name (not) in here?"))
                             .setStyle(ButtonStyle.Secondary)
