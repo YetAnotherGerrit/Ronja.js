@@ -82,6 +82,17 @@ Pick whichever install guide matches how you want to run Ronja:
 - [Install with Node.js and systemd](docs/install-npm-systemd.md)
 - [Install with Docker](docs/install-docker.md)
 
+### Development
+
+The easiest way to work on Ronja is the included devcontainer
+(`.devcontainer/`): it sets `NODE_ENV=development`, so the bot and
+`npm run migrate` use a separate database, `.data/dev-database.sqlite`.
+
+To develop on your host instead, run `npm install` (including the
+devDependencies for linting and formatting) and add `NODE_ENV=development`
+to your `.env`. Without it, Ronja uses the production database path,
+`.data/database.sqlite`. On startup, Ronja logs which database it uses.
+
 ## Upgrading from 1.x to 2.0
 
 2.0 is not a drop-in update — see

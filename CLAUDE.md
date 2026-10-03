@@ -13,9 +13,8 @@ Ronja.js is a single-guild Discord bot (discord.js v14) for a friend group's gam
 # Slash/context-menu commands are (re-)deployed to Discord automatically on startup.
 npm start
 
-# Database migrations (sequelize-cli)
-npm run migrate                  # what admins and docker-compose run: --env production, always
-npm run dev:migrate              # local dev: NODE_ENV-driven, apply all pending migrations
+# Database migrations (sequelize-cli), on the same database the bot uses (NODE_ENV, see below)
+npm run migrate                  # apply all pending migrations
 npm run dev:migrate:new <name>   # scaffold a new migration file under migrations/
 
 # One-time import of a pre-2.0 (pre-migrations) database, see migrate-legacy-database.js
@@ -30,7 +29,7 @@ npm run dev:format:check
 
 There is no test suite in this repo currently.
 
-`NODE_ENV` selects the Sequelize config block in `config/config.json` (`development` or `production`), which in turn picks the SQLite file path. It defaults to `production` when unset — only local dev (this devcontainer sets `NODE_ENV=development` via `.devcontainer/devcontainer.json`) uses `.data/dev-database.sqlite`; everything else, including the Docker image, uses `.data/database.sqlite`. `npm run migrate` (`sequelize-cli db:migrate --env production`) is what admins and `docker-compose.yml` both run; `npm run dev:migrate` is the `NODE_ENV`-driven variant for local development.
+`NODE_ENV` selects the Sequelize config block in `config/config.json` (`development` or `production`), which in turn picks the SQLite file path; the bot logs which one on startup. It defaults to `production` when unset, for the bot (`models/index.js`) and for `npm run migrate` alike — `.sequelizerc` sets that default for sequelize-cli, whose own fallback would be `development`. Both also read `.env` first (`index.js` loads it before the models), so a developer on the host can put `NODE_ENV=development` there; a `NODE_ENV` already set in the environment wins over `.env`. Only local dev uses `.data/dev-database.sqlite`: this devcontainer sets `NODE_ENV=development` via `containerEnv` in `.devcontainer/devcontainer.json`, so every process in it gets it. Everything else, including the Docker image and the systemd unit (both set `NODE_ENV=production` explicitly), uses `.data/database.sqlite`. Don't add `omit=dev` to an `.npmrc`: whenever npm's `omit` config includes `dev`, npm forces `NODE_ENV=production` onto every script it runs (`npm start`, `npm run migrate`, `npx`), so the devcontainer would silently use the production-path database. Pass `--omit=dev` to `npm install` where devDependencies aren't wanted instead (the Dockerfile and the systemd install guide do).
 
 ## Architecture
 
