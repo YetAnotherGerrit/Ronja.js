@@ -9,7 +9,7 @@ const TOP = 10;
 // The columns are narrow - longer names would wrap over several lines.
 const NAME_LENGTH = 32;
 
-// One ranking line: `number` in bold, unless the top10HideNumbers setting
+// One ranking line: `number` in bold, unless the column's top10Hide* setting
 // hides it (the order stays the same).
 function rankLine(hideNumbers, number, emoji, name) {
     let line = `${emoji}  ${truncate(name, NAME_LENGTH)}`;
@@ -237,11 +237,11 @@ const myTop10 = {
             .setTitle(this.l(lng, "The server's top 10!"))
             .setDescription(this.l(lng, "The last %d days at a glance:", pDays));
 
-        let hideNumbers = this.cfg("top10HideNumbers") === "true";
+        let hide = (setting) => this.cfg(setting) === "true";
         let [games, voice, channels] = await Promise.all([
-            this.topGames(since, hideNumbers),
-            this.topVoiceMembers(guild, lng, since, hideNumbers),
-            this.topGameChannels(guild, lng, since, hideNumbers),
+            this.topGames(since, hide("top10HideGamePlayers")),
+            this.topVoiceMembers(guild, lng, since, hide("top10HideVoiceTime")),
+            this.topGameChannels(guild, lng, since, hide("top10HideChannelMessages")),
         ]);
 
         e.addFields([
