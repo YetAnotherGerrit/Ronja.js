@@ -8,7 +8,7 @@
 // Usage:
 //   npm run migrate-legacy -- /path/to/old/database.sqlite
 //
-// Run this AFTER `npm run dev:migrate` (the new tables must already exist).
+// Run this AFTER `npm run migrate` (the new tables must already exist).
 // Safe to re-run: games/game-status keep their original ids (upserted), and
 // member settings are matched on memberid+name, so re-running just re-applies
 // the same values instead of duplicating rows.

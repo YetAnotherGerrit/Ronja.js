@@ -5,8 +5,13 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-trixie",
 
+	// Set on the container itself rather than via remoteEnv, so every process in it sees
+	// NODE_ENV=development, not only the terminals and extensions VS Code starts.
+	"containerEnv": {
+		"NODE_ENV": "development"
+	},
+
 	"remoteEnv": {
-		"NODE_ENV": "development",
 		"PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/node_modules/.bin"
 	},
 

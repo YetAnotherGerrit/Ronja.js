@@ -1,8 +1,10 @@
+// Load .env first, so a NODE_ENV set there also picks the database below
+require("dotenv").config();
+
 console.log("Ronja.js Discord Bot");
 console.log("====================");
 
 // Load database models
-console.debug("Connecting to database...");
 const db = require("./models/index.js");
 
 // Load general modules
@@ -12,8 +14,6 @@ const {
     ActivityType,
     GuildScheduledEventStatus,
 } = require("discord.js");
-
-require("dotenv").config();
 
 const { Ronja } = require("./core/Ronja.js");
 const cron = require("node-cron");

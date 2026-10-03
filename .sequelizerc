@@ -1,0 +1,7 @@
+// Loaded by sequelize-cli before it picks its environment. Its own fallback for an unset
+// NODE_ENV is "development", while the bot's (models/index.js) is "production" — default it
+// here the same way, so `npm run migrate` always migrates the database the bot uses.
+require("dotenv").config();
+process.env.NODE_ENV ??= "production";
+
+module.exports = {};

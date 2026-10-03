@@ -53,7 +53,8 @@ Intent, are not used by Ronja and don't need to be enabled.
       folder you want to use:
       https://github.com/YetAnotherGerrit/Ronja.js/releases/latest
 
-5. Run `npm install` to install dependencies.
+5. Run `npm install --omit=dev` to install dependencies (`--omit=dev` skips
+   the tools only needed for developing Ronja).
 
 6. Set the `RONJA_TOKEN` environment variable.
 
@@ -97,7 +98,7 @@ shuts down more reliably.
    (`git pull`, or download and extract a new release ZIP over the old
    files).
 
-3. Run `npm install` to update dependencies.
+3. Run `npm install --omit=dev` to update dependencies.
 
 4. Run `npm run migrate` to apply any new database migrations. This is safe
    to run even if there are none pending.
