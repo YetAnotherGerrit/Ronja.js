@@ -10,6 +10,7 @@ const {
     ChannelType,
     SlashCommandBuilder,
     MessageFlags,
+    RESTJSONErrorCodes,
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
@@ -401,7 +402,7 @@ const myZocken = {
                 });
             } catch (err) {
                 console.error(err);
-                interaction.editReply({
+                await interaction.editReply({
                     embeds: [
                         new EmbedBuilder()
                             .setColor(Colors.Red)
@@ -418,7 +419,7 @@ const myZocken = {
 
             let channelMemberPing = await this.createChannelMemberPing(interaction);
 
-            interaction.editReply({
+            await interaction.editReply({
                 // The event URL must stay in a plain message, not an embed: Discord does not
                 // render the event link preview correctly when it's inside embed content.
                 content: this.l(
@@ -443,59 +444,79 @@ const myZocken = {
                 .createMessageComponentCollector({
                     time: this.collectorTimeout,
                 })
-                .on("end", async (collected) => {
-                    if (newEvent.isActive()) {
-                        let eventSubcribers = await newEvent.fetchSubscribers();
+                .on("end", async (collected, reason) => {
+                    // The reply (or its channel) is gone, so there's nothing left to edit.
+                    if (reason !== "time") return;
 
-                        interaction.editReply({
-                            content: "",
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Blue)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            "%s found %d more to game with.",
-                                            interaction.member.displayName,
-                                            eventSubcribers.size - 1
-                                        )
-                                    ),
-                            ],
-                            components: [],
-                        });
-                    }
-                    if (newEvent.isCompleted() || newEvent.isCanceled()) {
-                        interaction.editReply({
-                            content: "",
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Red)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            "Unfortunately, nobody was found. Maybe next time."
-                                        )
-                                    ),
-                            ],
-                            components: [],
-                        });
-                    }
-                    if (newEvent.isScheduled()) {
-                        interaction.editReply({
-                            content: newEvent.url,
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Blue)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            '%s wants hang out later, click "Interested" to join.',
-                                            interaction.member.displayName
-                                        )
-                                    ),
-                            ],
-                            components: [],
-                        });
+                    // Not awaited by anyone, so errors must be caught here: an unhandled
+                    // rejection would end the process.
+                    try {
+                        // newEvent is a snapshot from creating the event and doesn't notice
+                        // its deletion; fetch its current state. A deleted event counts as
+                        // canceled.
+                        let event = await interaction.guild.scheduledEvents
+                            .fetch({ guildScheduledEvent: newEvent.id, force: true })
+                            .catch((err) => {
+                                if (err.code !== RESTJSONErrorCodes.UnknownGuildScheduledEvent)
+                                    throw err;
+                                return null;
+                            });
+
+                        if (event?.isActive()) {
+                            let eventSubcribers = await event.fetchSubscribers();
+
+                            await interaction.editReply({
+                                content: "",
+                                embeds: [
+                                    new EmbedBuilder()
+                                        .setColor(Colors.Blue)
+                                        .setDescription(
+                                            this.l(
+                                                interaction.locale,
+                                                "%s found %d more to game with.",
+                                                interaction.member.displayName,
+                                                eventSubcribers.size - 1
+                                            )
+                                        ),
+                                ],
+                                components: [],
+                            });
+                        }
+                        if (!event || event.isCompleted() || event.isCanceled()) {
+                            await interaction.editReply({
+                                content: "",
+                                embeds: [
+                                    new EmbedBuilder()
+                                        .setColor(Colors.Red)
+                                        .setDescription(
+                                            this.l(
+                                                interaction.locale,
+                                                "Unfortunately, nobody was found. Maybe next time."
+                                            )
+                                        ),
+                                ],
+                                components: [],
+                            });
+                        }
+                        if (event?.isScheduled()) {
+                            await interaction.editReply({
+                                content: event.url,
+                                embeds: [
+                                    new EmbedBuilder()
+                                        .setColor(Colors.Blue)
+                                        .setDescription(
+                                            this.l(
+                                                interaction.locale,
+                                                '%s wants hang out later, click "Interested" to join.',
+                                                interaction.member.displayName
+                                            )
+                                        ),
+                                ],
+                                components: [],
+                            });
+                        }
+                    } catch (err) {
+                        console.error(err);
                     }
                 });
         }
@@ -610,17 +631,20 @@ const myZocken = {
 
             collector.on("end", async (c) => {
                 if (c.size == 0) {
-                    await interaction.editReply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setColor(Colors.Blue)
-                                .setTitle(this.l(interaction.locale, "Expired!"))
-                                .setDescription(
-                                    this.l(interaction.locale, "No changes have been saved.")
-                                ),
-                        ],
-                        components: [],
-                    });
+                    // Not awaited by anyone: catch, or a failed edit would end the process.
+                    await interaction
+                        .editReply({
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Blue)
+                                    .setTitle(this.l(interaction.locale, "Expired!"))
+                                    .setDescription(
+                                        this.l(interaction.locale, "No changes have been saved.")
+                                    ),
+                            ],
+                            components: [],
+                        })
+                        .catch(console.error);
                 }
             });
         }
