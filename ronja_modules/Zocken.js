@@ -15,7 +15,7 @@ const {
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
-const { multiplayerGamesWhere, playerLimit } = require("../core/gameList.js");
+const { multiplayerGamesWhere, countDistinctPlayers, playerLimit } = require("../core/gameList.js");
 
 const myZocken = {
     commands: [
@@ -122,7 +122,7 @@ const myZocken = {
 
         let gamesPlayed = await this.client.db.Game.findAll({
             raw: true,
-            attributes: ["name", "onlineMaxPlayers", [Sequelize.fn("COUNT", "*"), "playerCount"]],
+            attributes: ["name", "onlineMaxPlayers", [countDistinctPlayers, "playerCount"]],
             where: multiplayerGamesWhere,
             include: [
                 {
@@ -133,7 +133,7 @@ const myZocken = {
                 },
             ],
             order: [
-                [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
+                [countDistinctPlayers, "DESC"],
                 [this.client.db.GameStatus, "lastplayed", "DESC"],
             ],
             group: "Game.name",
@@ -174,7 +174,7 @@ const myZocken = {
 
                 let gamesPlayed = await this.client.db.Game.findAll({
                     raw: true,
-                    attributes: ["name", [Sequelize.fn("COUNT", "*"), "playerCount"]],
+                    attributes: ["name", [countDistinctPlayers, "playerCount"]],
                     where: multiplayerGamesWhere,
                     include: [
                         {
@@ -192,6 +192,8 @@ const myZocken = {
                     ],
                     group: "Game.name",
                 });
+                // playerCount is how many of the two members played the game in the last 100
+                // days, so 2 means both did: ping only if they have a game in common.
                 if (!gamesPlayed.some((gamePlayed) => gamePlayed.playerCount === 2)) return;
 
                 channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
