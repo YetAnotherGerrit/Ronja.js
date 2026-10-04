@@ -316,87 +316,77 @@ const myDynamicTextChannels = {
     },
 
     hookForStartedPlaying: async function (oldPresence, newPresence, newActivity, game) {
-        if (this.cfg("dtcArchivedGamesCategory")) {
-            // TODO: Check if member has access right for parent-category dtcGamesCategory
-            let gameChannel = null;
-            if (game.channel) {
-                try {
-                    gameChannel = await this.client.channels.fetch(game.channel);
-                } catch (err) {
-                    if (err.code !== RESTJSONErrorCodes.UnknownChannel) throw err;
-                    // Someone deleted the channel manually (e.g. while the bot was offline, so
-                    // hookForChannelDelete never ran for it). Forget it and fall through to the
-                    // same path as a game that never had a channel.
-                    await game.update({ channel: null });
-                }
-            }
-
-            if (gameChannel) {
-                if (gameChannel.parentId == this.cfg("dtcArchivedGamesCategory")) {
-                    if ((await this.countPlayersForGame(game, this.cfg("dtcDaysTarget"))) > 1) {
-                        let dtcGamesCategory = await this.client.channels.fetch(
-                            this.cfg("dtcGamesCategory")
-                        );
-                        try {
-                            await gameChannel.setParent(dtcGamesCategory);
-                        } catch (err) {
-                            if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached)
-                                throw err;
-                            this.client.myNotifyOwner(
-                                gameChannel.guild,
-                                this.l(
-                                    gameChannel.guild.preferredLocale,
-                                    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.",
-                                    gameChannel.name,
-                                    dtcGamesCategory.name
-                                )
-                            );
-                            return;
-                        }
-                        await gameChannel.permissionOverwrites.set(
-                            await this.defaultOverrides(gameChannel.guild)
-                        );
-                        this.assignAllPlayersToChannel(
-                            gameChannel,
-                            game,
-                            this.cfg("dtcDaysTarget")
-                        );
-
-                        console.log(`Moved #${gameChannel.name} from archive to active.`);
-
-                        this.sortTextChannelCategoryByName(dtcGamesCategory);
-                        this.notifyChannel(
-                            this.l(
-                                newPresence.guild.preferredLocale,
-                                "A text channel was re-activated"
-                            ),
-                            this.l(
-                                newPresence.guild.preferredLocale,
-                                "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.",
-                                game.name,
-                                gameChannel.name
-                            ),
-                            game
-                        );
-                    }
-                } else {
-                    gameChannel.permissionOverwrites.create(newPresence.member.user, {
-                        ViewChannel: true,
-                    });
-                }
-            } else {
-                if (
-                    (await this.countPlayersForGame(
-                        game,
-                        this.cfg("dtcDaysRelevantForCreation")
-                    )) >= this.cfg("dtcMinimumPlayersForCreation")
-                ) {
-                    this.createTextChannel(game, newPresence);
-                }
-            }
-        } else {
+        if (!this.cfg("dtcArchivedGamesCategory")) {
             console.warn("WARNING: no dtcArchivedGamesCategory set in config file!");
+            return;
         }
+
+        // TODO: Check if member has access right for parent-category dtcGamesCategory
+        let gameChannel = null;
+        if (game.channel) {
+            try {
+                gameChannel = await this.client.channels.fetch(game.channel);
+            } catch (err) {
+                if (err.code !== RESTJSONErrorCodes.UnknownChannel) throw err;
+                // Someone deleted the channel manually (e.g. while the bot was offline, so
+                // hookForChannelDelete never ran for it). Forget it and fall through to the
+                // same path as a game that never had a channel.
+                await game.update({ channel: null });
+            }
+        }
+
+        if (!gameChannel) {
+            if (
+                (await this.countPlayersForGame(game, this.cfg("dtcDaysRelevantForCreation"))) >=
+                this.cfg("dtcMinimumPlayersForCreation")
+            ) {
+                this.createTextChannel(game, newPresence);
+            }
+            return;
+        }
+
+        if (gameChannel.parentId != this.cfg("dtcArchivedGamesCategory")) {
+            gameChannel.permissionOverwrites.create(newPresence.member.user, {
+                ViewChannel: true,
+            });
+            return;
+        }
+
+        // The channel is archived: re-activate it once more than one member played the game.
+        if ((await this.countPlayersForGame(game, this.cfg("dtcDaysTarget"))) <= 1) return;
+
+        let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
+        try {
+            await gameChannel.setParent(dtcGamesCategory);
+        } catch (err) {
+            if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached) throw err;
+            this.client.myNotifyOwner(
+                gameChannel.guild,
+                this.l(
+                    gameChannel.guild.preferredLocale,
+                    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.",
+                    gameChannel.name,
+                    dtcGamesCategory.name
+                )
+            );
+            return;
+        }
+        await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
+        this.assignAllPlayersToChannel(gameChannel, game, this.cfg("dtcDaysTarget"));
+
+        console.log(`Moved #${gameChannel.name} from archive to active.`);
+
+        this.sortTextChannelCategoryByName(dtcGamesCategory);
+        this.notifyChannel(
+            this.l(newPresence.guild.preferredLocale, "A text channel was re-activated"),
+            this.l(
+                newPresence.guild.preferredLocale,
+                "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.",
+                game.name,
+                gameChannel.name
+            ),
+            game
+        );
     },
 
     // The game's text channel if it's active (not archived) - or null, also
