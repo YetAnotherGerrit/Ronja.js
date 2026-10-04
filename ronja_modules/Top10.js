@@ -161,9 +161,9 @@ const myTop10 = {
     },
 
     topGames: async function (since, hideNumbers) {
-        let g = await this.client.db.Game.findAll({
+        let gamesPlayed = await this.client.db.Game.findAll({
             raw: true,
-            attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
+            attributes: ["name", [Sequelize.fn("COUNT", "*"), "playerCount"]],
             include: [
                 {
                     model: this.client.db.GameStatus,
@@ -177,9 +177,16 @@ const myTop10 = {
             group: "Game.name",
         });
 
-        return g
+        return gamesPlayed
             .slice(0, TOP)
-            .map((gg) => rankLine(hideNumbers, gg.cName, ":busts_in_silhouette:", gg.name));
+            .map((gamePlayed) =>
+                rankLine(
+                    hideNumbers,
+                    gamePlayed.playerCount,
+                    ":busts_in_silhouette:",
+                    gamePlayed.name
+                )
+            );
     },
 
     // Sums a daily counter per key since the day `since` falls on, ranked. All
