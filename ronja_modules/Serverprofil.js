@@ -38,63 +38,63 @@ const myServerprofil = {
     ],
 
     hookForContextMenuInteraction: async function (interaction) {
-        if (interaction.commandName == "Serverprofile") {
-            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        if (interaction.commandName !== "Serverprofile") return;
 
-            let m = await interaction.guild.members.fetch(interaction.options.getUser("user").id);
-            let locale = interaction.locale;
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            let e = new EmbedBuilder()
-                .setColor(Colors.Blue)
-                .setTitle(this.l(locale, "Profile of %s", m.displayName))
-                .setThumbnail(m.displayAvatarURL())
-                .setDescription(
-                    this.l(
-                        locale,
-                        `%s is on this discord server since %s.`,
-                        m.displayName,
-                        time(m.joinedAt, TimestampStyles.LongDate)
-                    )
-                );
+        let m = await interaction.guild.members.fetch(interaction.options.getUser("user").id);
+        let locale = interaction.locale;
 
-            let played = await this.playedGames(
-                m.id,
-                Math.max(GENRES_DAYS, RECENT_GAMES_DAYS, SHARED_GAMES_DAYS)
+        let e = new EmbedBuilder()
+            .setColor(Colors.Blue)
+            .setTitle(this.l(locale, "Profile of %s", m.displayName))
+            .setThumbnail(m.displayAvatarURL())
+            .setDescription(
+                this.l(
+                    locale,
+                    `%s is on this discord server since %s.`,
+                    m.displayName,
+                    time(m.joinedAt, TimestampStyles.LongDate)
+                )
             );
 
-            let genres = this.favoriteGenres(
-                played.filter((g) => g.lastplayed >= this.daysAgo(GENRES_DAYS))
-            );
-            if (genres.length) {
-                e.addFields([
-                    {
-                        name: this.l(locale, "Favorite genres"),
-                        value: genres.map((genre) => this.l(locale, genre)).join(", "),
-                    },
-                ]);
-            }
+        let played = await this.playedGames(
+            m.id,
+            Math.max(GENRES_DAYS, RECENT_GAMES_DAYS, SHARED_GAMES_DAYS)
+        );
 
-            let shared = new Set();
-            if (interaction.member.id != m.id) {
-                let own = await this.playedGames(interaction.member.id, SHARED_GAMES_DAYS);
-                shared = new Set(own.map((g) => g.game.id));
-            }
-            let games = played.filter((g) =>
-                shared.has(g.game.id)
-                    ? g.lastplayed >= this.daysAgo(SHARED_GAMES_DAYS)
-                    : g.lastplayed >= this.daysAgo(RECENT_GAMES_DAYS)
-            );
-            if (games.length) {
-                e.addFields(this.gameFields(locale, games, shared));
-                let legend = this.sharedLegend(locale, games.slice(0, GAMES_SHOWN), shared);
-                if (legend) e.setFooter({ text: legend });
-            }
-
-            interaction.editReply({
-                embeds: [e],
-                components: withShareButton(this.client, locale),
-            });
+        let genres = this.favoriteGenres(
+            played.filter((g) => g.lastplayed >= this.daysAgo(GENRES_DAYS))
+        );
+        if (genres.length) {
+            e.addFields([
+                {
+                    name: this.l(locale, "Favorite genres"),
+                    value: genres.map((genre) => this.l(locale, genre)).join(", "),
+                },
+            ]);
         }
+
+        let shared = new Set();
+        if (interaction.member.id != m.id) {
+            let own = await this.playedGames(interaction.member.id, SHARED_GAMES_DAYS);
+            shared = new Set(own.map((g) => g.game.id));
+        }
+        let games = played.filter((g) =>
+            shared.has(g.game.id)
+                ? g.lastplayed >= this.daysAgo(SHARED_GAMES_DAYS)
+                : g.lastplayed >= this.daysAgo(RECENT_GAMES_DAYS)
+        );
+        if (games.length) {
+            e.addFields(this.gameFields(locale, games, shared));
+            let legend = this.sharedLegend(locale, games.slice(0, GAMES_SHOWN), shared);
+            if (legend) e.setFooter({ text: legend });
+        }
+
+        interaction.editReply({
+            embeds: [e],
+            components: withShareButton(this.client, locale),
+        });
     },
 
     daysAgo: function (days) {
