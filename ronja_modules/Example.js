@@ -55,8 +55,10 @@ const myExample = {
     },
 
     hookForButtonInteraction: async function (interaction) {
-        // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
-        if (interaction.commandName !== "ping") return;
+        // https://discord.js.org/#/docs/discord.js/stable/class/ButtonInteraction
+        // Buttons have no commandName: dispatch on customId, here the game card
+        // button from hookForGameCardButtons ("exampleCardButton:<game id>").
+        if (!interaction.customId.startsWith("exampleCardButton:")) return;
 
         interaction.reply("Pong!");
     },
