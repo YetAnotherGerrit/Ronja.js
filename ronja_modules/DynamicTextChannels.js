@@ -34,25 +34,33 @@ const myDynamicTextChannels = {
         ];
     },
 
-    getPlayersForGame: async function (game, pDays) {
-        let players = await this.client.db.GameStatus.findAndCountAll({
-            where: {
-                GameId: game.id,
-                lastplayed: {
-                    [Op.gte]: DateTime.now()
-                        .setZone(this.cfg("timezone"))
-                        .minus({ days: pDays })
-                        .toJSDate(),
-                },
+    // The GameStatus rows of whoever played `game` in the last `pDays` days.
+    recentlyPlayedWhere: function (game, pDays) {
+        return {
+            GameId: game.id,
+            lastplayed: {
+                [Op.gte]: DateTime.now()
+                    .setZone(this.cfg("timezone"))
+                    .minus({ days: pDays })
+                    .toJSDate(),
             },
-        });
-
-        return players;
+        };
     },
 
+    getPlayersForGame: async function (game, pDays) {
+        return this.client.db.GameStatus.findAndCountAll({
+            where: this.recentlyPlayedWhere(game, pDays),
+        });
+    },
+
+    // Counts members, not rows, so a duplicate GameStatus row can't make one
+    // member count twice.
     countPlayersForGame: async function (game, pDays) {
-        let returnValue = await this.getPlayersForGame(game, pDays);
-        return returnValue.count;
+        return this.client.db.GameStatus.count({
+            where: this.recentlyPlayedWhere(game, pDays),
+            distinct: true,
+            col: "member",
+        });
     },
 
     hasGameBeenPlayedForChannel: async function (channel, pDays) {

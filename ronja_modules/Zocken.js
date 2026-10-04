@@ -15,16 +15,7 @@ const {
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
-const { multiplayerGamesWhere, playerLimit } = require("../core/gameList.js");
-
-// TODO: Noch ein eine eigene Befehlsbibliothek packen. Brauch ich öfters. Vielleicht gibt es auch einen eleganteren Weg.
-function multiChar(a, c) {
-    let s = "";
-    for (let i = 0; i < a; i++) {
-        s += c;
-    }
-    return s;
-}
+const { multiplayerGamesWhere, countDistinctPlayers, playerLimit } = require("../core/gameList.js");
 
 const myZocken = {
     commands: [
@@ -127,47 +118,37 @@ const myZocken = {
     // The multiplayer games the members played, most played by them first.
     // With `players`, games whose player limit is lower than that are flagged.
     createZockenText: async function (lng, zockenMembers, players = 0) {
-        let maxGames = 10;
+        if (zockenMembers.length === 0) return null;
 
-        if (zockenMembers.length > 0) {
-            let zockenText = "";
-
-            let gamesPlayed = await this.client.db.Game.findAll({
-                raw: true,
-                attributes: ["name", "onlineMaxPlayers", [Sequelize.fn("COUNT", "*"), "cName"]],
-                where: multiplayerGamesWhere,
-                include: [
-                    {
-                        model: this.client.db.GameStatus,
-                        where: {
-                            member: zockenMembers,
-                        },
+        let gamesPlayed = await this.client.db.Game.findAll({
+            raw: true,
+            attributes: ["name", "onlineMaxPlayers", [countDistinctPlayers, "playerCount"]],
+            where: multiplayerGamesWhere,
+            include: [
+                {
+                    model: this.client.db.GameStatus,
+                    where: {
+                        member: zockenMembers,
                     },
-                ],
-                order: [
-                    [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
-                    [this.client.db.GameStatus, "lastplayed", "DESC"],
-                ],
-                group: "Game.name",
-            });
+                },
+            ],
+            order: [
+                [countDistinctPlayers, "DESC"],
+                [this.client.db.GameStatus, "lastplayed", "DESC"],
+            ],
+            group: "Game.name",
+        });
 
-            gamesPlayed.forEach((gamePlayed) => {
-                if (maxGames > 0) {
-                    zockenText = zockenText.concat(
-                        multiChar(gamePlayed.cName, ":bust_in_silhouette:"),
-                        " ",
-                        gamePlayed.name,
-                        playerLimit(this.client, lng, gamePlayed.onlineMaxPlayers, players),
-                        "\n"
-                    );
-                    maxGames = maxGames - 1;
-                }
-            });
-
-            return zockenText;
-        } else {
-            return null;
-        }
+        return gamesPlayed
+            .slice(0, 10)
+            .map(
+                (gamePlayed) =>
+                    ":bust_in_silhouette:".repeat(gamePlayed.playerCount) +
+                    " " +
+                    gamePlayed.name +
+                    playerLimit(this.client, lng, gamePlayed.onlineMaxPlayers, players)
+            )
+            .join("\n");
     },
 
     createChannelMemberPing: async function (interaction) {
@@ -175,15 +156,25 @@ const myZocken = {
 
         await Promise.all(
             interaction.channel.members.map(async (channelMember) => {
+                // The command's member never has a game in common with themselves.
+                if (channelMember.user.bot || channelMember.id === interaction.member.id) return;
+
                 let result = await this.client.db.MemberSetting.findOne({
                     where: { memberid: channelMember.id, name: "zockenmention" },
                 });
                 let statusChannelMember = result ? parseInt(result.value) : 1;
 
-                let commonGames = 0;
-                let g = await this.client.db.Game.findAll({
+                // 0: never ping, 1: only while online or idle, 2: also while offline.
+                // Members without a presence are offline; do not disturb is never pinged.
+                let presence = channelMember.presence?.status ?? "offline";
+                let wantsPing =
+                    ((presence === "online" || presence === "idle") && statusChannelMember > 0) ||
+                    (presence === "offline" && statusChannelMember > 1);
+                if (!wantsPing) return;
+
+                let gamesPlayed = await this.client.db.Game.findAll({
                     raw: true,
-                    attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
+                    attributes: ["name", [countDistinctPlayers, "playerCount"]],
                     where: multiplayerGamesWhere,
                     include: [
                         {
@@ -199,31 +190,13 @@ const myZocken = {
                             },
                         },
                     ],
-                    order: [
-                        [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
-                        ["name", "ASC"],
-                    ],
                     group: "Game.name",
                 });
+                // playerCount is how many of the two members played the game in the last 100
+                // days, so 2 means both did: ping only if they have a game in common.
+                if (!gamesPlayed.some((gamePlayed) => gamePlayed.playerCount === 2)) return;
 
-                g.forEach((gg) => {
-                    if (gg.cName === 2) {
-                        commonGames = commonGames + 1;
-                    }
-                });
-
-                if (
-                    !channelMember.user.bot &&
-                    commonGames > 0 &&
-                    ((channelMember.presence &&
-                        ((channelMember.presence.status == "online" && statusChannelMember > 0) ||
-                            (channelMember.presence.status == "idle" && statusChannelMember > 0) ||
-                            (channelMember.presence.status == "offline" &&
-                                statusChannelMember > 1))) ||
-                        (!channelMember.presence && statusChannelMember > 1))
-                ) {
-                    channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
-                }
+                channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
             })
         );
 
@@ -608,14 +581,14 @@ const myZocken = {
                 time: this.collectorTimeout,
             });
 
-            collector.on("collect", async (i) => {
-                if (i.customId === "zockenSelected") {
+            collector.on("collect", async (selectInteraction) => {
+                if (selectInteraction.customId === "zockenSelected") {
                     await this.client.db.MemberSetting.update(
-                        { value: i.values[0] },
-                        { where: { memberid: i.member.id, name: "zockenmention" } }
+                        { value: selectInteraction.values[0] },
+                        { where: { memberid: selectInteraction.member.id, name: "zockenmention" } }
                     );
 
-                    await i.update({
+                    await selectInteraction.update({
                         embeds: [
                             new EmbedBuilder()
                                 .setColor(Colors.Green)
@@ -629,8 +602,8 @@ const myZocken = {
                 }
             });
 
-            collector.on("end", async (c) => {
-                if (c.size == 0) {
+            collector.on("end", async (collected) => {
+                if (collected.size == 0) {
                     // Not awaited by anyone: catch, or a failed edit would end the process.
                     await interaction
                         .editReply({

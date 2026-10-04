@@ -3,6 +3,7 @@ const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const { duration, isMember, truncate } = require("../core/gameCard.js");
+const { countDistinctPlayers } = require("../core/gameList.js");
 const { withShareButton } = require("../core/share.js");
 
 const TOP = 10;
@@ -161,9 +162,9 @@ const myTop10 = {
     },
 
     topGames: async function (since, hideNumbers) {
-        let g = await this.client.db.Game.findAll({
+        let gamesPlayed = await this.client.db.Game.findAll({
             raw: true,
-            attributes: ["name", [Sequelize.fn("COUNT", "*"), "cName"]],
+            attributes: ["name", [countDistinctPlayers, "playerCount"]],
             include: [
                 {
                     model: this.client.db.GameStatus,
@@ -171,15 +172,22 @@ const myTop10 = {
                 },
             ],
             order: [
-                [Sequelize.fn("count", Sequelize.col("*")), "DESC"],
+                [countDistinctPlayers, "DESC"],
                 [this.client.db.GameStatus, "lastplayed", "DESC"],
             ],
             group: "Game.name",
         });
 
-        return g
+        return gamesPlayed
             .slice(0, TOP)
-            .map((gg) => rankLine(hideNumbers, gg.cName, ":busts_in_silhouette:", gg.name));
+            .map((gamePlayed) =>
+                rankLine(
+                    hideNumbers,
+                    gamePlayed.playerCount,
+                    ":busts_in_silhouette:",
+                    gamePlayed.name
+                )
+            );
     },
 
     // Sums a daily counter per key since the day `since` falls on, ranked. All
