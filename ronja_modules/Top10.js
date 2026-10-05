@@ -290,20 +290,20 @@ const myTop10 = {
     },
 
     hookForCommandInteraction: async function (interaction) {
-        if (interaction.commandName == "top10") {
-            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        if (interaction.commandName !== "top10") return;
 
-            let e = await this.createTop10Embed(
-                interaction.guild,
-                interaction.locale,
-                interaction.options.getInteger("days") || 14
-            );
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            interaction.editReply({
-                embeds: [e],
-                components: withShareButton(this.client, interaction.locale),
-            });
-        }
+        let e = await this.createTop10Embed(
+            interaction.guild,
+            interaction.locale,
+            interaction.options.getInteger("days") || 14
+        );
+
+        interaction.editReply({
+            embeds: [e],
+            components: withShareButton(this.client, interaction.locale),
+        });
     },
 
     // Whoever is already in voice with others counts from now on.

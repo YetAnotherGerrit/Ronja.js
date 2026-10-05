@@ -204,70 +204,34 @@ const myZocken = {
     },
 
     hookForCommandInteraction: async function (interaction) {
-        if (interaction.commandName == "lfg") {
-            if (interaction.options.getString("day") && !interaction.options.getString("time")) {
-                interaction.reply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor(Colors.Red)
-                            .setDescription(
-                                this.l(
-                                    interaction.locale,
-                                    "When you choose a day, you'll also need to specify a time!"
-                                )
-                            ),
-                    ],
-                    flags: MessageFlags.Ephemeral,
-                });
-                return;
-            }
+        if (interaction.commandName !== "lfg") return;
 
-            let startTime = DateTime.now().setZone(this.cfg("timezone"));
+        if (interaction.options.getString("day") && !interaction.options.getString("time")) {
+            interaction.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setDescription(
+                            this.l(
+                                interaction.locale,
+                                "When you choose a day, you'll also need to specify a time!"
+                            )
+                        ),
+                ],
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
 
-            if (interaction.options.getString("time")) {
-                let regex = new RegExp(/(\d{2}):(\d{2})/);
+        let startTime = DateTime.now().setZone(this.cfg("timezone"));
 
-                let regexResult = interaction.options.getString("time").match(regex);
+        if (interaction.options.getString("time")) {
+            let regex = new RegExp(/(\d{2}):(\d{2})/);
 
-                if (regexResult) {
-                    if (regexResult[1] < 0 || regexResult[1] > 23) {
-                        interaction.reply({
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Red)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            "Please choose a valid time: HH:MM. Hour needs to be within 0-23."
-                                        )
-                                    ),
-                            ],
-                            flags: MessageFlags.Ephemeral,
-                        });
-                        return;
-                    }
-                    if (regexResult[2] < 0 || regexResult[2] > 59) {
-                        interaction.reply({
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Red)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            "Please choose a valid time: HH:MM. Minute needs to be within 0-59."
-                                        )
-                                    ),
-                            ],
-                            flags: MessageFlags.Ephemeral,
-                        });
-                        return;
-                    }
+            let regexResult = interaction.options.getString("time").match(regex);
 
-                    startTime = DateTime.fromObject(
-                        { hour: regexResult[1], minute: regexResult[2] },
-                        { zone: this.cfg("timezone") }
-                    );
-                } else {
+            if (regexResult) {
+                if (regexResult[1] < 0 || regexResult[1] > 23) {
                     interaction.reply({
                         embeds: [
                             new EmbedBuilder()
@@ -275,7 +239,7 @@ const myZocken = {
                                 .setDescription(
                                     this.l(
                                         interaction.locale,
-                                        "Please choose a valid time: HH:MM (24-hour time format)."
+                                        "Please choose a valid time: HH:MM. Hour needs to be within 0-23."
                                     )
                                 ),
                         ],
@@ -283,17 +247,28 @@ const myZocken = {
                     });
                     return;
                 }
-            }
+                if (regexResult[2] < 0 || regexResult[2] > 59) {
+                    interaction.reply({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setColor(Colors.Red)
+                                .setDescription(
+                                    this.l(
+                                        interaction.locale,
+                                        "Please choose a valid time: HH:MM. Minute needs to be within 0-59."
+                                    )
+                                ),
+                        ],
+                        flags: MessageFlags.Ephemeral,
+                    });
+                    return;
+                }
 
-            if (interaction.options.getString("day") == "tomorrow") {
-                startTime = startTime.plus({ days: 1 });
-            }
-
-            if (!interaction.options.getString("day") && !interaction.options.getString("time")) {
-                startTime = startTime.plus({ minutes: 10 });
-            }
-
-            if (startTime.diff(DateTime.now(), "minutes").minutes < 5) {
+                startTime = DateTime.fromObject(
+                    { hour: regexResult[1], minute: regexResult[2] },
+                    { zone: this.cfg("timezone") }
+                );
+            } else {
                 interaction.reply({
                     embeds: [
                         new EmbedBuilder()
@@ -301,7 +276,7 @@ const myZocken = {
                             .setDescription(
                                 this.l(
                                     interaction.locale,
-                                    "The chosen time and day need to be at least 5 minutes in the future."
+                                    "Please choose a valid time: HH:MM (24-hour time format)."
                                 )
                             ),
                     ],
@@ -309,318 +284,341 @@ const myZocken = {
                 });
                 return;
             }
-
-            let myReply = await interaction.reply({
-                embeds: [
-                    new EmbedBuilder()
-                        .setColor(Colors.Blue)
-                        .setDescription(
-                            this.l(
-                                interaction.locale,
-                                "%s would like to game! An event will be created...",
-                                interaction.member.displayName
-                            )
-                        ),
-                ],
-            });
-
-            let channelGame = await this.client.db.Game.findOne({
-                where: { channel: interaction.channel.id },
-            });
-
-            let newEvent;
-            try {
-                newEvent = await interaction.guild.scheduledEvents.create({
-                    name:
-                        interaction.options.getString("title") ||
-                        this.l(
-                            interaction.locale,
-                            "%s's gaming session",
-                            interaction.member.displayName
-                        ),
-                    scheduledStartTime: startTime.toJSDate(),
-                    scheduledEndTime: startTime.plus({ hours: 1 }).toJSDate(), // Optional, but not for EXTERNAL
-                    privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
-                    entityType: GuildScheduledEventEntityType.External,
-                    description: channelGame
-                        ? this.l(
-                              interaction.locale,
-                              "%s wants to play %s. Who wants to join?",
-                              interaction.member.displayName,
-                              channelGame.name
-                          )
-                        : await this.createZockenTextForEvent(
-                              interaction.locale,
-                              null,
-                              interaction.member.id
-                          ), // Optional
-                    entityMetadata: {
-                        location: channelGame
-                            ? this.l(
-                                  interaction.locale,
-                                  "#%s via /lfg for %s by %s (%s)",
-                                  interaction.channel.name,
-                                  channelGame.name,
-                                  interaction.member.displayName,
-                                  interaction.member.id
-                              ) + this.gameSpecificMarker
-                            : this.l(
-                                  interaction.locale,
-                                  "#%s via /lfg by %s (%s)",
-                                  interaction.channel.name,
-                                  interaction.member.displayName,
-                                  interaction.member.id
-                              ),
-                    }, // Optional, but not for EXTERNAL,
-                });
-            } catch (err) {
-                console.error(err);
-                await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor(Colors.Red)
-                            .setDescription(
-                                this.l(
-                                    interaction.locale,
-                                    "Something went wrong while creating the event. Please try again."
-                                )
-                            ),
-                    ],
-                });
-                return;
-            }
-
-            let channelMemberPing = await this.createChannelMemberPing(interaction);
-
-            await interaction.editReply({
-                // The event URL must stay in a plain message, not an embed: Discord does not
-                // render the event link preview correctly when it's inside embed content.
-                content: this.l(
-                    interaction.locale,
-                    "Hey%s and everyone else! (%s)",
-                    channelMemberPing,
-                    newEvent.url
-                ),
-                embeds: [],
-                components: [
-                    new ActionRowBuilder().addComponents(
-                        this.client
-                            .myButton("🔔")
-                            .setCustomId("zockenSelect")
-                            .setLabel(this.l(interaction.locale, "Why is my name (not) in here?"))
-                            .setStyle(ButtonStyle.Secondary)
-                    ),
-                ],
-            });
-
-            myReply
-                .createMessageComponentCollector({
-                    time: this.collectorTimeout,
-                })
-                .on("end", async (collected, reason) => {
-                    // The reply (or its channel) is gone, so there's nothing left to edit.
-                    if (reason !== "time") return;
-
-                    // Not awaited by anyone, so errors must be caught here: an unhandled
-                    // rejection would end the process.
-                    try {
-                        // newEvent is a snapshot from creating the event and doesn't notice
-                        // its deletion; fetch its current state. A deleted event counts as
-                        // canceled.
-                        let event = await interaction.guild.scheduledEvents
-                            .fetch({ guildScheduledEvent: newEvent.id, force: true })
-                            .catch((err) => {
-                                if (err.code !== RESTJSONErrorCodes.UnknownGuildScheduledEvent)
-                                    throw err;
-                                return null;
-                            });
-
-                        if (event?.isActive()) {
-                            let eventSubcribers = await event.fetchSubscribers();
-
-                            await interaction.editReply({
-                                content: "",
-                                embeds: [
-                                    new EmbedBuilder()
-                                        .setColor(Colors.Blue)
-                                        .setDescription(
-                                            this.l(
-                                                interaction.locale,
-                                                "%s found %d more to game with.",
-                                                interaction.member.displayName,
-                                                eventSubcribers.size - 1
-                                            )
-                                        ),
-                                ],
-                                components: [],
-                            });
-                        }
-                        if (!event || event.isCompleted() || event.isCanceled()) {
-                            await interaction.editReply({
-                                content: "",
-                                embeds: [
-                                    new EmbedBuilder()
-                                        .setColor(Colors.Red)
-                                        .setDescription(
-                                            this.l(
-                                                interaction.locale,
-                                                "Unfortunately, nobody was found. Maybe next time."
-                                            )
-                                        ),
-                                ],
-                                components: [],
-                            });
-                        }
-                        if (event?.isScheduled()) {
-                            await interaction.editReply({
-                                content: event.url,
-                                embeds: [
-                                    new EmbedBuilder()
-                                        .setColor(Colors.Blue)
-                                        .setDescription(
-                                            this.l(
-                                                interaction.locale,
-                                                '%s wants hang out later, click "Interested" to join.',
-                                                interaction.member.displayName
-                                            )
-                                        ),
-                                ],
-                                components: [],
-                            });
-                        }
-                    } catch (err) {
-                        console.error(err);
-                    }
-                });
         }
-    },
 
-    hookForButtonInteraction: async function (interaction) {
-        if (interaction.customId === "zockenSelect") {
-            let [mem] = await this.client.myFindOrCreate(this.client.db.MemberSetting, {
-                where: { memberid: interaction.member.id, name: "zockenmention" },
-                defaults: { value: "1" },
-            });
+        if (interaction.options.getString("day") == "tomorrow") {
+            startTime = startTime.plus({ days: 1 });
+        }
 
-            let statusZockenSelect = parseInt(mem.value);
-            let statusZockenSelectText = "";
+        if (!interaction.options.getString("day") && !interaction.options.getString("time")) {
+            startTime = startTime.plus({ minutes: 10 });
+        }
 
-            switch (statusZockenSelect) {
-                case 2:
-                    statusZockenSelectText = this.l(interaction.locale, "Ping me also offline.");
-                    break;
-
-                case 1:
-                    statusZockenSelectText = this.l(
-                        interaction.locale,
-                        "Ping me only, when I am online."
-                    );
-                    break;
-
-                case 0:
-                    statusZockenSelectText = this.l(interaction.locale, "Please, never ping me.");
-                    break;
-            }
-
-            await interaction.reply({
+        if (startTime.diff(DateTime.now(), "minutes").minutes < 5) {
+            interaction.reply({
                 embeds: [
                     new EmbedBuilder()
-                        .setColor(Colors.Blue)
-                        .setTitle(this.l(interaction.locale, "Why is my name (not) in here?"))
+                        .setColor(Colors.Red)
                         .setDescription(
                             this.l(
                                 interaction.locale,
-                                "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s",
-                                statusZockenSelectText
+                                "The chosen time and day need to be at least 5 minutes in the future."
                             )
                         ),
-                ],
-                components: [
-                    new ActionRowBuilder().addComponents(
-                        new StringSelectMenuBuilder()
-                            .setCustomId("zockenSelected")
-                            .setPlaceholder(this.l(interaction.locale, "Notifications..."))
-                            .addOptions([
-                                {
-                                    label: this.l(interaction.locale, "Ping me also offline."),
-                                    description: this.l(
-                                        interaction.locale,
-                                        "Also notify myself that someone wants to game, even when I am offline."
-                                    ),
-                                    value: "2",
-                                },
-                                {
-                                    label:
-                                        this.l(
-                                            interaction.locale,
-                                            "Ping me only, when I am online."
-                                        ) + this.l(interaction.locale, " (Default)"),
-                                    description: this.l(
-                                        interaction.locale,
-                                        "Notify myself only when I am also online in Discord."
-                                    ),
-                                    value: "1",
-                                },
-                                {
-                                    label: this.l(interaction.locale, "Please, never ping me."),
-                                    description: this.l(
-                                        interaction.locale,
-                                        "I am not interested in this kind of gaming requests."
-                                    ),
-                                    value: "0",
-                                },
-                            ])
-                    ),
                 ],
                 flags: MessageFlags.Ephemeral,
             });
+            return;
+        }
 
-            let myReply = await interaction.fetchReply();
+        let myReply = await interaction.reply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setDescription(
+                        this.l(
+                            interaction.locale,
+                            "%s would like to game! An event will be created...",
+                            interaction.member.displayName
+                        )
+                    ),
+            ],
+        });
 
-            let collector = myReply.createMessageComponentCollector({
+        let channelGame = await this.client.db.Game.findOne({
+            where: { channel: interaction.channel.id },
+        });
+
+        let newEvent;
+        try {
+            newEvent = await interaction.guild.scheduledEvents.create({
+                name:
+                    interaction.options.getString("title") ||
+                    this.l(
+                        interaction.locale,
+                        "%s's gaming session",
+                        interaction.member.displayName
+                    ),
+                scheduledStartTime: startTime.toJSDate(),
+                scheduledEndTime: startTime.plus({ hours: 1 }).toJSDate(), // Optional, but not for EXTERNAL
+                privacyLevel: GuildScheduledEventPrivacyLevel.GuildOnly,
+                entityType: GuildScheduledEventEntityType.External,
+                description: channelGame
+                    ? this.l(
+                          interaction.locale,
+                          "%s wants to play %s. Who wants to join?",
+                          interaction.member.displayName,
+                          channelGame.name
+                      )
+                    : await this.createZockenTextForEvent(
+                          interaction.locale,
+                          null,
+                          interaction.member.id
+                      ), // Optional
+                entityMetadata: {
+                    location: channelGame
+                        ? this.l(
+                              interaction.locale,
+                              "#%s via /lfg for %s by %s (%s)",
+                              interaction.channel.name,
+                              channelGame.name,
+                              interaction.member.displayName,
+                              interaction.member.id
+                          ) + this.gameSpecificMarker
+                        : this.l(
+                              interaction.locale,
+                              "#%s via /lfg by %s (%s)",
+                              interaction.channel.name,
+                              interaction.member.displayName,
+                              interaction.member.id
+                          ),
+                }, // Optional, but not for EXTERNAL,
+            });
+        } catch (err) {
+            console.error(err);
+            await interaction.editReply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setDescription(
+                            this.l(
+                                interaction.locale,
+                                "Something went wrong while creating the event. Please try again."
+                            )
+                        ),
+                ],
+            });
+            return;
+        }
+
+        let channelMemberPing = await this.createChannelMemberPing(interaction);
+
+        await interaction.editReply({
+            // The event URL must stay in a plain message, not an embed: Discord does not
+            // render the event link preview correctly when it's inside embed content.
+            content: this.l(
+                interaction.locale,
+                "Hey%s and everyone else! (%s)",
+                channelMemberPing,
+                newEvent.url
+            ),
+            embeds: [],
+            components: [
+                new ActionRowBuilder().addComponents(
+                    this.client
+                        .myButton("🔔")
+                        .setCustomId("zockenSelect")
+                        .setLabel(this.l(interaction.locale, "Why is my name (not) in here?"))
+                        .setStyle(ButtonStyle.Secondary)
+                ),
+            ],
+        });
+
+        myReply
+            .createMessageComponentCollector({
                 time: this.collectorTimeout,
-            });
+            })
+            .on("end", async (collected, reason) => {
+                // The reply (or its channel) is gone, so there's nothing left to edit.
+                if (reason !== "time") return;
 
-            collector.on("collect", async (selectInteraction) => {
-                if (selectInteraction.customId === "zockenSelected") {
-                    await this.client.db.MemberSetting.update(
-                        { value: selectInteraction.values[0] },
-                        { where: { memberid: selectInteraction.member.id, name: "zockenmention" } }
-                    );
+                // Not awaited by anyone, so errors must be caught here: an unhandled
+                // rejection would end the process.
+                try {
+                    // newEvent is a snapshot from creating the event and doesn't notice
+                    // its deletion; fetch its current state. A deleted event counts as
+                    // canceled.
+                    let event = await interaction.guild.scheduledEvents
+                        .fetch({ guildScheduledEvent: newEvent.id, force: true })
+                        .catch((err) => {
+                            if (err.code !== RESTJSONErrorCodes.UnknownGuildScheduledEvent)
+                                throw err;
+                            return null;
+                        });
 
-                    await selectInteraction.update({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setColor(Colors.Green)
-                                .setTitle(this.l(interaction.locale, "Succesful!"))
-                                .setDescription(
-                                    this.l(interaction.locale, "Your settings have been saved.")
-                                ),
-                        ],
-                        components: [],
-                    });
-                }
-            });
+                    if (event?.isActive()) {
+                        let eventSubcribers = await event.fetchSubscribers();
 
-            collector.on("end", async (collected) => {
-                if (collected.size == 0) {
-                    // Not awaited by anyone: catch, or a failed edit would end the process.
-                    await interaction
-                        .editReply({
+                        await interaction.editReply({
+                            content: "",
                             embeds: [
                                 new EmbedBuilder()
                                     .setColor(Colors.Blue)
-                                    .setTitle(this.l(interaction.locale, "Expired!"))
                                     .setDescription(
-                                        this.l(interaction.locale, "No changes have been saved.")
+                                        this.l(
+                                            interaction.locale,
+                                            "%s found %d more to game with.",
+                                            interaction.member.displayName,
+                                            eventSubcribers.size - 1
+                                        )
                                     ),
                             ],
                             components: [],
-                        })
-                        .catch(console.error);
+                        });
+                    }
+                    if (!event || event.isCompleted() || event.isCanceled()) {
+                        await interaction.editReply({
+                            content: "",
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Red)
+                                    .setDescription(
+                                        this.l(
+                                            interaction.locale,
+                                            "Unfortunately, nobody was found. Maybe next time."
+                                        )
+                                    ),
+                            ],
+                            components: [],
+                        });
+                    }
+                    if (event?.isScheduled()) {
+                        await interaction.editReply({
+                            content: event.url,
+                            embeds: [
+                                new EmbedBuilder()
+                                    .setColor(Colors.Blue)
+                                    .setDescription(
+                                        this.l(
+                                            interaction.locale,
+                                            '%s wants hang out later, click "Interested" to join.',
+                                            interaction.member.displayName
+                                        )
+                                    ),
+                            ],
+                            components: [],
+                        });
+                    }
+                } catch (err) {
+                    console.error(err);
                 }
             });
+    },
+
+    hookForButtonInteraction: async function (interaction) {
+        if (interaction.customId !== "zockenSelect") return;
+
+        let [mem] = await this.client.myFindOrCreate(this.client.db.MemberSetting, {
+            where: { memberid: interaction.member.id, name: "zockenmention" },
+            defaults: { value: "1" },
+        });
+
+        let statusZockenSelect = parseInt(mem.value);
+        let statusZockenSelectText = "";
+
+        switch (statusZockenSelect) {
+            case 2:
+                statusZockenSelectText = this.l(interaction.locale, "Ping me also offline.");
+                break;
+
+            case 1:
+                statusZockenSelectText = this.l(
+                    interaction.locale,
+                    "Ping me only, when I am online."
+                );
+                break;
+
+            case 0:
+                statusZockenSelectText = this.l(interaction.locale, "Please, never ping me.");
+                break;
         }
+
+        await interaction.reply({
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setTitle(this.l(interaction.locale, "Why is my name (not) in here?"))
+                    .setDescription(
+                        this.l(
+                            interaction.locale,
+                            "You are notified if you both played at least one mutual multiplayer game within the last 100 days. If you don't want to receive those notifications, you can change that now.\n\nYour current setting:\n> %s",
+                            statusZockenSelectText
+                        )
+                    ),
+            ],
+            components: [
+                new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId("zockenSelected")
+                        .setPlaceholder(this.l(interaction.locale, "Notifications..."))
+                        .addOptions([
+                            {
+                                label: this.l(interaction.locale, "Ping me also offline."),
+                                description: this.l(
+                                    interaction.locale,
+                                    "Also notify myself that someone wants to game, even when I am offline."
+                                ),
+                                value: "2",
+                            },
+                            {
+                                label:
+                                    this.l(interaction.locale, "Ping me only, when I am online.") +
+                                    this.l(interaction.locale, " (Default)"),
+                                description: this.l(
+                                    interaction.locale,
+                                    "Notify myself only when I am also online in Discord."
+                                ),
+                                value: "1",
+                            },
+                            {
+                                label: this.l(interaction.locale, "Please, never ping me."),
+                                description: this.l(
+                                    interaction.locale,
+                                    "I am not interested in this kind of gaming requests."
+                                ),
+                                value: "0",
+                            },
+                        ])
+                ),
+            ],
+            flags: MessageFlags.Ephemeral,
+        });
+
+        let myReply = await interaction.fetchReply();
+
+        let collector = myReply.createMessageComponentCollector({
+            time: this.collectorTimeout,
+        });
+
+        collector.on("collect", async (selectInteraction) => {
+            if (selectInteraction.customId === "zockenSelected") {
+                await this.client.db.MemberSetting.update(
+                    { value: selectInteraction.values[0] },
+                    { where: { memberid: selectInteraction.member.id, name: "zockenmention" } }
+                );
+
+                await selectInteraction.update({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Green)
+                            .setTitle(this.l(interaction.locale, "Succesful!"))
+                            .setDescription(
+                                this.l(interaction.locale, "Your settings have been saved.")
+                            ),
+                    ],
+                    components: [],
+                });
+            }
+        });
+
+        collector.on("end", async (collected) => {
+            if (collected.size == 0) {
+                // Not awaited by anyone: catch, or a failed edit would end the process.
+                await interaction
+                    .editReply({
+                        embeds: [
+                            new EmbedBuilder()
+                                .setColor(Colors.Blue)
+                                .setTitle(this.l(interaction.locale, "Expired!"))
+                                .setDescription(
+                                    this.l(interaction.locale, "No changes have been saved.")
+                                ),
+                        ],
+                        components: [],
+                    })
+                    .catch(console.error);
+            }
+        });
     },
 
     hookForEventUserUpdate: async function (guildScheduledEvent, user) {
@@ -659,42 +657,43 @@ const myZocken = {
 
     updateChannelVoiceStatus: async function (channel) {
         if (
-            channel &&
-            channel.type === ChannelType.GuildVoice &&
-            channel.userLimit === 0 &&
-            channel.members.size > 0
-        ) {
-            if (!this.dbVoiceStatus[channel.id]) {
-                this.dbVoiceStatus[channel.id] = await channel.send(
-                    this.l(
-                        channel.guild.preferredLocale,
-                        "Open the voice channel's text channel to see what games the members can play..."
-                    )
-                );
-            }
+            !channel ||
+            channel.type !== ChannelType.GuildVoice ||
+            channel.userLimit !== 0 ||
+            channel.members.size === 0
+        )
+            return;
 
-            let myMsg = this.dbVoiceStatus[channel.id];
-            let voiceMembers = [];
-
-            channel.members.forEach((member) => {
-                voiceMembers.push(member.id);
-            });
-            let players = channel.members.filter((member) => !member.user.bot).size;
-
-            myMsg
-                .edit(
-                    this.l(
-                        channel.guild.preferredLocale,
-                        "This games are played by the channel members:\n"
-                    ) +
-                        (await this.createZockenText(
-                            channel.guild.preferredLocale,
-                            voiceMembers,
-                            players
-                        ))
+        if (!this.dbVoiceStatus[channel.id]) {
+            this.dbVoiceStatus[channel.id] = await channel.send(
+                this.l(
+                    channel.guild.preferredLocale,
+                    "Open the voice channel's text channel to see what games the members can play..."
                 )
-                .catch(console.error);
+            );
         }
+
+        let myMsg = this.dbVoiceStatus[channel.id];
+        let voiceMembers = [];
+
+        channel.members.forEach((member) => {
+            voiceMembers.push(member.id);
+        });
+        let players = channel.members.filter((member) => !member.user.bot).size;
+
+        myMsg
+            .edit(
+                this.l(
+                    channel.guild.preferredLocale,
+                    "This games are played by the channel members:\n"
+                ) +
+                    (await this.createZockenText(
+                        channel.guild.preferredLocale,
+                        voiceMembers,
+                        players
+                    ))
+            )
+            .catch(console.error);
     },
 };
 

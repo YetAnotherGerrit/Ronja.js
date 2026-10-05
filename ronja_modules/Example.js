@@ -40,23 +40,27 @@ const myExample = {
     // and they'll be created/updated/removed on Discord as needed.
     hookForCommandInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
-        if (interaction.commandName == "ping") {
-            interaction.reply("Pong!");
-        }
+        // Every module gets every interaction: return early for the ones that aren't
+        // yours, instead of wrapping the whole handler in an if.
+        if (interaction.commandName !== "ping") return;
+
+        interaction.reply("Pong!");
     },
 
     hookForContextMenuInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
-        if (interaction.commandName == "ping") {
-            interaction.reply("Pong!");
-        }
+        if (interaction.commandName !== "ping") return;
+
+        interaction.reply("Pong!");
     },
 
     hookForButtonInteraction: async function (interaction) {
-        // https://discord.js.org/#/docs/discord.js/stable/class/Interaction
-        if (interaction.commandName == "ping") {
-            interaction.reply("Pong!");
-        }
+        // https://discord.js.org/#/docs/discord.js/stable/class/ButtonInteraction
+        // Buttons have no commandName: dispatch on customId, here the game card
+        // button from hookForGameCardButtons ("exampleCardButton:<game id>").
+        if (!interaction.customId.startsWith("exampleCardButton:")) return;
+
+        interaction.reply("Pong!");
     },
 
     // String select menus, including ones in DMs (where interaction.member and
@@ -64,9 +68,9 @@ const myExample = {
     // collector reach this hook too, so always dispatch on customId.
     hookForSelectMenuInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/StringSelectMenuInteraction
-        if (interaction.customId == "examplePick") {
-            interaction.reply(`You picked ${interaction.values[0]}!`);
-        }
+        if (interaction.customId !== "examplePick") return;
+
+        interaction.reply(`You picked ${interaction.values[0]}!`);
     },
 
     // Autocomplete for a command option declared with .setAutocomplete(true),
@@ -74,9 +78,9 @@ const myExample = {
     // choices; dispatch on commandName (see /gameinfo in GameInfo.js).
     hookForAutocompleteInteraction: async function (interaction) {
         // https://discord.js.org/#/docs/discord.js/stable/class/AutocompleteInteraction
-        if (interaction.commandName == "ping") {
-            await interaction.respond([{ name: "Pong!", value: "pong" }]);
-        }
+        if (interaction.commandName !== "ping") return;
+
+        await interaction.respond([{ name: "Pong!", value: "pong" }]);
     },
 
     hookForVoiceUpdate: async function (oldState, newState) {

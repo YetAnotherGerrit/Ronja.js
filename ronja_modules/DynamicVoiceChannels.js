@@ -5,35 +5,31 @@ const myDynamicVoiceChannels = {
         voiceChannelBitrate: 96000,
     },
 
-    setGameAsChannelName: async function (ch) {
-        // Only set for Voice-Channels without UserLimit
-        if (ch.type === ChannelType.GuildVoice && ch.userLimit === 0) {
-            let Spiele = {};
-            let MaxSpiel = null;
-            let CountSpiel = 0;
+    setGameAsChannelName: async function (channel) {
+        // Only set for voice channels without a user limit
+        if (channel.type !== ChannelType.GuildVoice || channel.userLimit !== 0) return;
 
-            await Promise.all(
-                ch.members.map(async (m) => {
-                    if (m.presence)
-                        m.presence.activities.forEach((a) => {
-                            if (a.type === ActivityType.Playing) {
-                                const gameName = this.client.myResolveGameName(a);
-                                if (gameName) Spiele[gameName] = (Spiele[gameName] || 0) + 1;
-                            }
-                        });
-                })
-            );
-
-            Object.entries(Spiele).forEach((e) => {
-                let [key, value] = e;
-                if (value > CountSpiel) {
-                    CountSpiel = value;
-                    MaxSpiel = key;
-                }
+        // How many of the channel's members are playing each game right now.
+        let playerCounts = {};
+        channel.members.forEach((member) => {
+            member.presence?.activities.forEach((activity) => {
+                if (activity.type !== ActivityType.Playing) return;
+                const gameName = this.client.myResolveGameName(activity);
+                if (gameName) playerCounts[gameName] = (playerCounts[gameName] || 0) + 1;
             });
+        });
 
-            if (MaxSpiel) ch.setName(MaxSpiel);
+        // The game most members are playing.
+        let mostPlayedGame = null;
+        let mostPlayers = 0;
+        for (const [gameName, players] of Object.entries(playerCounts)) {
+            if (players > mostPlayers) {
+                mostPlayers = players;
+                mostPlayedGame = gameName;
+            }
         }
+
+        if (mostPlayedGame) channel.setName(mostPlayedGame);
     },
 
     hookForVoiceUpdate: async function (oldState, newState) {

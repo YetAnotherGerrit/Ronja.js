@@ -144,39 +144,39 @@ const myICalFeed = {
     },
 
     hookForCommandInteraction: async function (interaction) {
-        if (interaction.commandName == "ical") {
-            await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        if (interaction.commandName !== "ical") return;
 
-            if (!this.isIcalConfigured()) {
-                await this.reply(
-                    interaction,
-                    Colors.Red,
-                    this.l(interaction.locale, "The ical-settings for this server are incomplete.")
-                );
-                return;
-            }
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-            try {
-                await this.updateICalFile(interaction.guild, interaction.user);
-            } catch (err) {
-                console.error(`Could not update the ical feed of ${interaction.user.id}:`, err);
-                await this.reply(
-                    interaction,
-                    Colors.Red,
-                    this.l(
-                        interaction.locale,
-                        "Your ical feed couldn't be updated right now, please try again later."
-                    )
-                );
-                return;
-            }
-
+        if (!this.isIcalConfigured()) {
             await this.reply(
                 interaction,
-                Colors.Blue,
-                this.cfg("icalUrl") + interaction.user.id + ".ics"
+                Colors.Red,
+                this.l(interaction.locale, "The ical-settings for this server are incomplete.")
             );
+            return;
         }
+
+        try {
+            await this.updateICalFile(interaction.guild, interaction.user);
+        } catch (err) {
+            console.error(`Could not update the ical feed of ${interaction.user.id}:`, err);
+            await this.reply(
+                interaction,
+                Colors.Red,
+                this.l(
+                    interaction.locale,
+                    "Your ical feed couldn't be updated right now, please try again later."
+                )
+            );
+            return;
+        }
+
+        await this.reply(
+            interaction,
+            Colors.Blue,
+            this.cfg("icalUrl") + interaction.user.id + ".ics"
+        );
     },
 
     reply: async function (interaction, color, message) {

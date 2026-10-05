@@ -112,31 +112,31 @@ const myDynamicTextChannels = {
     // Posts to the notification channel. With details for `game` (see
     // client.myGameDetails), its game card goes along as a second embed.
     notifyChannel: async function (myTitle, myDescription, game) {
-        if (this.cfg("dtcNotificationChannel")) {
-            let details = await this.client.myGameDetails(game);
-            this.client.channels
-                .fetch(this.cfg("dtcNotificationChannel"))
-                .then((notificationChannel) => {
-                    let embeds = [
-                        new EmbedBuilder()
-                            .setColor(Colors.Blue)
-                            .setTitle(myTitle)
-                            .setDescription(myDescription),
-                    ];
-                    if (details) {
-                        embeds.push(
-                            buildGameCard(
-                                this.client,
-                                details,
-                                notificationChannel.guild.preferredLocale
-                            ).setColor(Colors.Blue)
-                        );
-                    }
+        if (!this.cfg("dtcNotificationChannel")) return;
 
-                    notificationChannel.send({ embeds }).catch(console.error);
-                })
-                .catch(console.warn);
-        }
+        let details = await this.client.myGameDetails(game);
+        this.client.channels
+            .fetch(this.cfg("dtcNotificationChannel"))
+            .then((notificationChannel) => {
+                let embeds = [
+                    new EmbedBuilder()
+                        .setColor(Colors.Blue)
+                        .setTitle(myTitle)
+                        .setDescription(myDescription),
+                ];
+                if (details) {
+                    embeds.push(
+                        buildGameCard(
+                            this.client,
+                            details,
+                            notificationChannel.guild.preferredLocale
+                        ).setColor(Colors.Blue)
+                    );
+                }
+
+                notificationChannel.send({ embeds }).catch(console.error);
+            })
+            .catch(console.warn);
     },
 
     // Posts and pins the game card as the first message of a new game channel.
@@ -216,187 +216,178 @@ const myDynamicTextChannels = {
     },
 
     createTextChannel: async function (game, newPresence) {
-        if (this.cfg("dtcGamesCategory")) {
-            let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
-            let newChannel;
-            try {
-                newChannel = await dtcGamesCategory.children.create({
-                    name: game.name,
-                    type: ChannelType.GuildText,
-                    permissionOverwrites: await this.defaultOverrides(newPresence.guild),
-                });
-            } catch (err) {
-                if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached) throw err;
-                this.client.myNotifyOwner(
-                    newPresence.guild,
-                    this.l(
-                        newPresence.guild.preferredLocale,
-                        "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.",
-                        game.name,
-                        dtcGamesCategory.name
-                    )
-                );
-                return;
-            }
+        if (!this.cfg("dtcGamesCategory")) {
+            console.warn("WARNING: no dtcGamesCategory set in config file!");
+            return;
+        }
 
-            this.assignAllPlayersToChannel(newChannel, game, this.cfg("dtcDaysTarget"));
-            game.update({ channel: newChannel.id });
-            // Only after linking the channel - fetching the details can take a
-            // moment, and meanwhile the game must not look channel-less.
-            this.postGameCard(newChannel, game);
-
-            console.log(`Created new text channel #${newChannel.name}.`);
-            this.sortTextChannelCategoryByName(dtcGamesCategory);
-
-            this.notifyChannel(
-                this.l(newPresence.guild.preferredLocale, "A new text channel was created"),
+        let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
+        let newChannel;
+        try {
+            newChannel = await dtcGamesCategory.children.create({
+                name: game.name,
+                type: ChannelType.GuildText,
+                permissionOverwrites: await this.defaultOverrides(newPresence.guild),
+            });
+        } catch (err) {
+            if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached) throw err;
+            this.client.myNotifyOwner(
+                newPresence.guild,
                 this.l(
                     newPresence.guild.preferredLocale,
-                    "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.",
-                    newChannel.name
-                ),
-                game
+                    "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.",
+                    game.name,
+                    dtcGamesCategory.name
+                )
             );
-        } else {
-            console.warn("WARNING: no dtcGamesCategory set in config file!");
+            return;
         }
+
+        this.assignAllPlayersToChannel(newChannel, game, this.cfg("dtcDaysTarget"));
+        game.update({ channel: newChannel.id });
+        // Only after linking the channel - fetching the details can take a
+        // moment, and meanwhile the game must not look channel-less.
+        this.postGameCard(newChannel, game);
+
+        console.log(`Created new text channel #${newChannel.name}.`);
+        this.sortTextChannelCategoryByName(dtcGamesCategory);
+
+        this.notifyChannel(
+            this.l(newPresence.guild.preferredLocale, "A new text channel was created"),
+            this.l(
+                newPresence.guild.preferredLocale,
+                "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.",
+                newChannel.name
+            ),
+            game
+        );
     },
 
     checkActiveTextChannel: async function (channel) {
-        if (this.cfg("dtcArchivedGamesCategory")) {
-            if (!(await this.hasGameBeenPlayedForChannel(channel, this.cfg("dtcDaysToArchive")))) {
-                let hasMemberPosts = true;
-                try {
-                    hasMemberPosts = await this.hasMemberPosts(channel);
-                } catch (err) {
-                    let message = this.l(
-                        channel.guild.preferredLocale,
-                        "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.",
-                        channel.name
-                    );
-                    if (!this.client.myNotifyOwnerOnPermissionError(channel.guild, err, message)) {
-                        console.error(
-                            `Could not read the history of #${channel.name}, archiving it rather than deleting it:`,
-                            err
-                        );
-                    }
-                }
-                if (!hasMemberPosts) {
-                    console.log(`Deleted empty #${channel.name} instead of archiving it.`);
-                    await channel.delete();
-                    return;
-                }
-
-                let dtcArchivedGamesCategory = await this.client.channels.fetch(
-                    this.cfg("dtcArchivedGamesCategory")
-                );
-                try {
-                    await channel.setParent(dtcArchivedGamesCategory);
-                } catch (err) {
-                    if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached)
-                        throw err;
-                    this.client.myNotifyOwner(
-                        channel.guild,
-                        this.l(
-                            channel.guild.preferredLocale,
-                            "Could not move #%s to the archive category #%s: it has reached Discord's limit of 50 channels.",
-                            channel.name,
-                            dtcArchivedGamesCategory.name
-                        )
-                    );
-                    return;
-                }
-                channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
-
-                console.log(`Moved #${channel.name} to archive.`);
-            }
-        } else {
+        if (!this.cfg("dtcArchivedGamesCategory")) {
             console.warn("WARNING: no dtcArchivedGamesCategory set in config file!");
+            return;
         }
+
+        if (await this.hasGameBeenPlayedForChannel(channel, this.cfg("dtcDaysToArchive"))) return;
+
+        let hasMemberPosts = true;
+        try {
+            hasMemberPosts = await this.hasMemberPosts(channel);
+        } catch (err) {
+            let message = this.l(
+                channel.guild.preferredLocale,
+                "Could not check whether anyone posted in #%s, so I'm archiving it instead of deleting it: I need the Read Message History permission there.",
+                channel.name
+            );
+            if (!this.client.myNotifyOwnerOnPermissionError(channel.guild, err, message)) {
+                console.error(
+                    `Could not read the history of #${channel.name}, archiving it rather than deleting it:`,
+                    err
+                );
+            }
+        }
+        if (!hasMemberPosts) {
+            console.log(`Deleted empty #${channel.name} instead of archiving it.`);
+            await channel.delete();
+            return;
+        }
+
+        let dtcArchivedGamesCategory = await this.client.channels.fetch(
+            this.cfg("dtcArchivedGamesCategory")
+        );
+        try {
+            await channel.setParent(dtcArchivedGamesCategory);
+        } catch (err) {
+            if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached) throw err;
+            this.client.myNotifyOwner(
+                channel.guild,
+                this.l(
+                    channel.guild.preferredLocale,
+                    "Could not move #%s to the archive category #%s: it has reached Discord's limit of 50 channels.",
+                    channel.name,
+                    dtcArchivedGamesCategory.name
+                )
+            );
+            return;
+        }
+        channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
+
+        console.log(`Moved #${channel.name} to archive.`);
     },
 
     hookForStartedPlaying: async function (oldPresence, newPresence, newActivity, game) {
-        if (this.cfg("dtcArchivedGamesCategory")) {
-            // TODO: Check if member has access right for parent-category dtcGamesCategory
-            let gameChannel = null;
-            if (game.channel) {
-                try {
-                    gameChannel = await this.client.channels.fetch(game.channel);
-                } catch (err) {
-                    if (err.code !== RESTJSONErrorCodes.UnknownChannel) throw err;
-                    // Someone deleted the channel manually (e.g. while the bot was offline, so
-                    // hookForChannelDelete never ran for it). Forget it and fall through to the
-                    // same path as a game that never had a channel.
-                    await game.update({ channel: null });
-                }
-            }
-
-            if (gameChannel) {
-                if (gameChannel.parentId == this.cfg("dtcArchivedGamesCategory")) {
-                    if ((await this.countPlayersForGame(game, this.cfg("dtcDaysTarget"))) > 1) {
-                        let dtcGamesCategory = await this.client.channels.fetch(
-                            this.cfg("dtcGamesCategory")
-                        );
-                        try {
-                            await gameChannel.setParent(dtcGamesCategory);
-                        } catch (err) {
-                            if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached)
-                                throw err;
-                            this.client.myNotifyOwner(
-                                gameChannel.guild,
-                                this.l(
-                                    gameChannel.guild.preferredLocale,
-                                    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.",
-                                    gameChannel.name,
-                                    dtcGamesCategory.name
-                                )
-                            );
-                            return;
-                        }
-                        await gameChannel.permissionOverwrites.set(
-                            await this.defaultOverrides(gameChannel.guild)
-                        );
-                        this.assignAllPlayersToChannel(
-                            gameChannel,
-                            game,
-                            this.cfg("dtcDaysTarget")
-                        );
-
-                        console.log(`Moved #${gameChannel.name} from archive to active.`);
-
-                        this.sortTextChannelCategoryByName(dtcGamesCategory);
-                        this.notifyChannel(
-                            this.l(
-                                newPresence.guild.preferredLocale,
-                                "A text channel was re-activated"
-                            ),
-                            this.l(
-                                newPresence.guild.preferredLocale,
-                                "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.",
-                                game.name,
-                                gameChannel.name
-                            ),
-                            game
-                        );
-                    }
-                } else {
-                    gameChannel.permissionOverwrites.create(newPresence.member.user, {
-                        ViewChannel: true,
-                    });
-                }
-            } else {
-                if (
-                    (await this.countPlayersForGame(
-                        game,
-                        this.cfg("dtcDaysRelevantForCreation")
-                    )) >= this.cfg("dtcMinimumPlayersForCreation")
-                ) {
-                    this.createTextChannel(game, newPresence);
-                }
-            }
-        } else {
+        if (!this.cfg("dtcArchivedGamesCategory")) {
             console.warn("WARNING: no dtcArchivedGamesCategory set in config file!");
+            return;
         }
+
+        // TODO: Check if member has access right for parent-category dtcGamesCategory
+        let gameChannel = null;
+        if (game.channel) {
+            try {
+                gameChannel = await this.client.channels.fetch(game.channel);
+            } catch (err) {
+                if (err.code !== RESTJSONErrorCodes.UnknownChannel) throw err;
+                // Someone deleted the channel manually (e.g. while the bot was offline, so
+                // hookForChannelDelete never ran for it). Forget it and fall through to the
+                // same path as a game that never had a channel.
+                await game.update({ channel: null });
+            }
+        }
+
+        if (!gameChannel) {
+            if (
+                (await this.countPlayersForGame(game, this.cfg("dtcDaysRelevantForCreation"))) >=
+                this.cfg("dtcMinimumPlayersForCreation")
+            ) {
+                this.createTextChannel(game, newPresence);
+            }
+            return;
+        }
+
+        if (gameChannel.parentId != this.cfg("dtcArchivedGamesCategory")) {
+            gameChannel.permissionOverwrites.create(newPresence.member.user, {
+                ViewChannel: true,
+            });
+            return;
+        }
+
+        // The channel is archived: re-activate it once more than one member played the game.
+        if ((await this.countPlayersForGame(game, this.cfg("dtcDaysTarget"))) <= 1) return;
+
+        let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
+        try {
+            await gameChannel.setParent(dtcGamesCategory);
+        } catch (err) {
+            if (err.code !== RESTJSONErrorCodes.MaximumNumberOfGuildChannelsReached) throw err;
+            this.client.myNotifyOwner(
+                gameChannel.guild,
+                this.l(
+                    gameChannel.guild.preferredLocale,
+                    "Could not move #%s back to the active category #%s: it has reached Discord's limit of 50 channels.",
+                    gameChannel.name,
+                    dtcGamesCategory.name
+                )
+            );
+            return;
+        }
+        await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
+        this.assignAllPlayersToChannel(gameChannel, game, this.cfg("dtcDaysTarget"));
+
+        console.log(`Moved #${gameChannel.name} from archive to active.`);
+
+        this.sortTextChannelCategoryByName(dtcGamesCategory);
+        this.notifyChannel(
+            this.l(newPresence.guild.preferredLocale, "A text channel was re-activated"),
+            this.l(
+                newPresence.guild.preferredLocale,
+                "Some of you guys re-discovered %s recently. #%s has been re-activated from the archive.\n\nOthers will be added to that channel once I see them playing it.",
+                game.name,
+                gameChannel.name
+            ),
+            game
+        );
     },
 
     // The game's text channel if it's active (not archived) - or null, also
@@ -533,23 +524,24 @@ const myDynamicTextChannels = {
             {
                 schedule: "0 5 * * *", // https://crontab.guru/
                 action: async () => {
-                    if (this.cfg("dtcGamesCategory")) {
-                        let dtcGamesCategory = await this.client.channels.fetch(
-                            this.cfg("dtcGamesCategory")
-                        );
-                        await Promise.all(
-                            dtcGamesCategory.children.cache.map(async (gameChannel) => {
-                                await this.checkActiveTextChannel(gameChannel);
-                            })
-                        );
-
-                        let dtcArchivedGamesCategory = await this.client.channels.fetch(
-                            this.cfg("dtcArchivedGamesCategory")
-                        );
-                        this.sortTextChannelCategoryByName(dtcArchivedGamesCategory);
-                    } else {
+                    if (!this.cfg("dtcGamesCategory")) {
                         console.warn("WARNING: no dtcGamesCategory set in config file!");
+                        return;
                     }
+
+                    let dtcGamesCategory = await this.client.channels.fetch(
+                        this.cfg("dtcGamesCategory")
+                    );
+                    await Promise.all(
+                        dtcGamesCategory.children.cache.map(async (gameChannel) => {
+                            await this.checkActiveTextChannel(gameChannel);
+                        })
+                    );
+
+                    let dtcArchivedGamesCategory = await this.client.channels.fetch(
+                        this.cfg("dtcArchivedGamesCategory")
+                    );
+                    this.sortTextChannelCategoryByName(dtcArchivedGamesCategory);
                 },
             },
         ];
