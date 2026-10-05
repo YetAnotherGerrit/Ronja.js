@@ -320,19 +320,9 @@ const myZocken = {
             return;
         }
 
-        await interaction.reply({
-            embeds: [
-                new EmbedBuilder()
-                    .setColor(Colors.Blue)
-                    .setDescription(
-                        this.l(
-                            interaction.locale,
-                            "%s would like to game! An event will be created...",
-                            interaction.member.displayName
-                        )
-                    ),
-            ],
-        });
+        // Deferred instead of replying right away: the reply that replaces the deferral
+        // notifies the pings in its text, while mentions added by a later edit don't.
+        await interaction.deferReply();
 
         let newEvent;
         try {
@@ -407,7 +397,6 @@ const myZocken = {
                 channelMemberPing,
                 newEvent.url
             ),
-            embeds: [],
             components: [
                 new ActionRowBuilder().addComponents(this.pingInfoButton(interaction.locale)),
             ],

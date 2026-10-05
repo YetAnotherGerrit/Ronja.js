@@ -40,9 +40,6 @@
     "The chosen time and day need to be at least 5 minutes in the future.": [
         "A hora e o dia escolhidos têm de estar pelo menos 5 minutos no futuro."
     ],
-    "%s would like to game! An event will be created...": [
-        "%s quer jogar! Um evento vai ser criado..."
-    ],
     "Something went wrong while creating the event. Please try again.": [
         "Algo correu mal ao criar o evento. Por favor, tenta novamente."
     ],
