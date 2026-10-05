@@ -397,9 +397,6 @@ const myZocken = {
                 channelMemberPing,
                 newEvent.url
             ),
-            // Not redundant: without an explicit empty list, Discord doesn't show the
-            // event's preview card under the link.
-            embeds: [],
             components: [
                 new ActionRowBuilder().addComponents(this.pingInfoButton(interaction.locale)),
             ],
