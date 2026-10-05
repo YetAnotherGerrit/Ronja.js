@@ -57,13 +57,6 @@
     "The ical-settings for this server are incomplete.": [
         "Les paramètres ical de ce serveur sont incomplets."
     ],
-    "%s found %d more to game with.": ["%s a trouvé %d personnes de plus pour jouer."],
-    "Unfortunately, nobody was found. Maybe next time.": [
-        "Malheureusement, personne n'a été trouvé. Peut-être la prochaine fois."
-    ],
-    "%s wants hang out later, click \"Interested\" to join.": [
-        "%s veut se retrouver plus tard, clique sur \"Intéressé(e)\" pour te joindre."
-    ],
     "Ping me also offline.": ["Mentionne-moi aussi hors ligne."],
     "Ping me only, when I am online.": ["Mentionne-moi seulement quand je suis en ligne."],
     "Please, never ping me.": ["S'il te plaît, ne me mentionne jamais."],
@@ -86,6 +79,9 @@
     "Expired!": ["Expiré !"],
     "No changes have been saved.": ["Aucune modification n'a été enregistrée."],
     "Why is my name (not) in here?": ["Pourquoi mon nom est-il (ou pas) ici ?"],
+    "I'm in!": ["J'en suis !"],
+    "Not now": ["Pas maintenant"],
+    "Who's in": ["Qui est de la partie"],
     "Open the voice channel's text channel to see what games the members can play...": [
         "Ouvre le salon textuel du salon vocal pour voir à quels jeux les membres peuvent jouer..."
     ],

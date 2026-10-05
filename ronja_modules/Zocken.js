@@ -73,7 +73,12 @@ const myZocken = {
             .setDMPermission(false),
     ],
 
-    collectorTimeout: 14 * 60 * 1000,
+    // How long a quick session's post stays up and the ping settings menu stays usable.
+    // Below 15 minutes, as the menu's interaction token expires then.
+    timeout: 10 * 60 * 1000,
+    // The collectors of the open quick sessions (/lfg without a day or time), by their
+    // host's ID. In memory only: after a restart, a click on a leftover post removes it.
+    quickSessions: new Map(),
     dbVoiceStatus: {},
     // A zero-width marker appended to the location of game-specific /lfg events, so they can be
     // told apart later regardless of guild locale: the translated location text (e.g. "for"/"für"/
@@ -151,13 +156,15 @@ const myZocken = {
             .join("\n");
     },
 
-    createChannelMemberPing: async function (interaction) {
+    // Members of the channel to ping: who has a game in common with the command's
+    // member and wants a ping right now. Nobody in `alreadyIn` is pinged; it always
+    // includes the command's member, who never has a game in common with themselves.
+    createChannelMemberPing: async function (interaction, alreadyIn = [interaction.member.id]) {
         let channelMemberPing = "";
 
         await Promise.all(
             interaction.channel.members.map(async (channelMember) => {
-                // The command's member never has a game in common with themselves.
-                if (channelMember.user.bot || channelMember.id === interaction.member.id) return;
+                if (channelMember.user.bot || alreadyIn.includes(channelMember.id)) return;
 
                 let result = await this.client.db.MemberSetting.findOne({
                     where: { memberid: channelMember.id, name: "zockenmention" },
@@ -223,75 +230,77 @@ const myZocken = {
             return;
         }
 
-        let startTime = DateTime.now().setZone(this.cfg("timezone"));
+        let channelGame = await this.client.db.Game.findOne({
+            where: { channel: interaction.channel.id },
+        });
 
-        if (interaction.options.getString("time")) {
-            let regex = new RegExp(/(\d{2}):(\d{2})/);
-
-            let regexResult = interaction.options.getString("time").match(regex);
-
-            if (regexResult) {
-                if (regexResult[1] < 0 || regexResult[1] > 23) {
-                    interaction.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setColor(Colors.Red)
-                                .setDescription(
-                                    this.l(
-                                        interaction.locale,
-                                        "Please choose a valid time: HH:MM. Hour needs to be within 0-23."
-                                    )
-                                ),
-                        ],
-                        flags: MessageFlags.Ephemeral,
-                    });
-                    return;
-                }
-                if (regexResult[2] < 0 || regexResult[2] > 59) {
-                    interaction.reply({
-                        embeds: [
-                            new EmbedBuilder()
-                                .setColor(Colors.Red)
-                                .setDescription(
-                                    this.l(
-                                        interaction.locale,
-                                        "Please choose a valid time: HH:MM. Minute needs to be within 0-59."
-                                    )
-                                ),
-                        ],
-                        flags: MessageFlags.Ephemeral,
-                    });
-                    return;
-                }
-
-                startTime = DateTime.fromObject(
-                    { hour: regexResult[1], minute: regexResult[2] },
-                    { zone: this.cfg("timezone") }
-                );
-            } else {
-                interaction.reply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setColor(Colors.Red)
-                            .setDescription(
-                                this.l(
-                                    interaction.locale,
-                                    "Please choose a valid time: HH:MM (24-hour time format)."
-                                )
-                            ),
-                    ],
-                    flags: MessageFlags.Ephemeral,
-                });
-                return;
-            }
+        // No time, and so no day (a day alone was rejected above): a quick session.
+        if (!interaction.options.getString("time")) {
+            await this.startQuickSession(interaction, channelGame);
+            return;
         }
+
+        let regex = new RegExp(/(\d{2}):(\d{2})/);
+
+        let regexResult = interaction.options.getString("time").match(regex);
+
+        if (!regexResult) {
+            interaction.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setDescription(
+                            this.l(
+                                interaction.locale,
+                                "Please choose a valid time: HH:MM (24-hour time format)."
+                            )
+                        ),
+                ],
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
+
+        if (regexResult[1] < 0 || regexResult[1] > 23) {
+            interaction.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setDescription(
+                            this.l(
+                                interaction.locale,
+                                "Please choose a valid time: HH:MM. Hour needs to be within 0-23."
+                            )
+                        ),
+                ],
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
+        if (regexResult[2] < 0 || regexResult[2] > 59) {
+            interaction.reply({
+                embeds: [
+                    new EmbedBuilder()
+                        .setColor(Colors.Red)
+                        .setDescription(
+                            this.l(
+                                interaction.locale,
+                                "Please choose a valid time: HH:MM. Minute needs to be within 0-59."
+                            )
+                        ),
+                ],
+                flags: MessageFlags.Ephemeral,
+            });
+            return;
+        }
+
+        let startTime = DateTime.fromObject(
+            { hour: regexResult[1], minute: regexResult[2] },
+            { zone: this.cfg("timezone") }
+        );
 
         if (interaction.options.getString("day") == "tomorrow") {
             startTime = startTime.plus({ days: 1 });
-        }
-
-        if (!interaction.options.getString("day") && !interaction.options.getString("time")) {
-            startTime = startTime.plus({ minutes: 10 });
         }
 
         if (startTime.diff(DateTime.now(), "minutes").minutes < 5) {
@@ -311,7 +320,7 @@ const myZocken = {
             return;
         }
 
-        let myReply = await interaction.reply({
+        await interaction.reply({
             embeds: [
                 new EmbedBuilder()
                     .setColor(Colors.Blue)
@@ -323,10 +332,6 @@ const myZocken = {
                         )
                     ),
             ],
-        });
-
-        let channelGame = await this.client.db.Game.findOne({
-            where: { channel: interaction.channel.id },
         });
 
         let newEvent;
@@ -404,98 +409,141 @@ const myZocken = {
             ),
             embeds: [],
             components: [
+                new ActionRowBuilder().addComponents(this.pingInfoButton(interaction.locale)),
+            ],
+        });
+    },
+
+    // The 🔔 button under /lfg's posts, answered with the ping settings menu.
+    pingInfoButton: function (locale) {
+        return this.client
+            .myButton("🔔")
+            .setCustomId("zockenSelect")
+            .setLabel(this.l(locale, "Why is my name (not) in here?"))
+            .setStyle(ButtonStyle.Secondary);
+    },
+
+    // /lfg without a day or time: a post that members join or leave with its
+    // buttons, instead of an event. It's removed without a word after the timeout.
+    startQuickSession: async function (interaction, channelGame) {
+        let hostId = interaction.member.id;
+        // One quick session per member: a new one replaces the previous one.
+        this.quickSessions.get(hostId)?.stop();
+
+        // The host is in, and so is everyone in their voice channel.
+        let participants = new Set([hostId]);
+        interaction.member.voice.channel?.members.forEach((member) => {
+            if (!member.user.bot) participants.add(member.id);
+        });
+
+        let session = {
+            hostName: interaction.member.displayName,
+            participants,
+            locale: interaction.locale,
+            title: interaction.options.getString("title"),
+            gameName: channelGame?.name,
+        };
+
+        // Deferred, as finding whom to ping can take a while. The reply that replaces
+        // the deferral still notifies the mentions in its text (embeds never do).
+        await interaction.deferReply();
+        let ping = await this.createChannelMemberPing(interaction, [...participants]);
+        let message = await interaction.editReply({
+            content: ping.trim() || null,
+            embeds: [await this.quickSessionEmbed(session)],
+            components: [
                 new ActionRowBuilder().addComponents(
                     this.client
-                        .myButton("🔔")
-                        .setCustomId("zockenSelect")
-                        .setLabel(this.l(interaction.locale, "Why is my name (not) in here?"))
-                        .setStyle(ButtonStyle.Secondary)
+                        .myButton("✅")
+                        .setCustomId("zockenIn")
+                        .setLabel(this.l(session.locale, "I'm in!"))
+                        .setStyle(ButtonStyle.Success),
+                    this.client
+                        .myButton("👋")
+                        .setCustomId("zockenOut")
+                        .setLabel(this.l(session.locale, "Not now"))
+                        .setStyle(ButtonStyle.Secondary),
+                    this.pingInfoButton(session.locale)
                 ),
             ],
         });
 
-        myReply
-            .createMessageComponentCollector({
-                time: this.collectorTimeout,
-            })
-            .on("end", async (collected, reason) => {
-                // The reply (or its channel) is gone, so there's nothing left to edit.
-                if (reason !== "time") return;
+        let collector = message.createMessageComponentCollector({
+            filter: (i) => i.customId === "zockenIn" || i.customId === "zockenOut",
+            time: this.timeout,
+        });
+        this.quickSessions.set(hostId, collector);
 
-                // Not awaited by anyone, so errors must be caught here: an unhandled
-                // rejection would end the process.
-                try {
-                    // newEvent is a snapshot from creating the event and doesn't notice
-                    // its deletion; fetch its current state. A deleted event counts as
-                    // canceled.
-                    let event = await interaction.guild.scheduledEvents
-                        .fetch({ guildScheduledEvent: newEvent.id, force: true })
-                        .catch((err) => {
-                            if (err.code !== RESTJSONErrorCodes.UnknownGuildScheduledEvent)
-                                throw err;
-                            return null;
-                        });
-
-                    if (event?.isActive()) {
-                        let eventSubcribers = await event.fetchSubscribers();
-
-                        await interaction.editReply({
-                            content: "",
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Blue)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            "%s found %d more to game with.",
-                                            interaction.member.displayName,
-                                            eventSubcribers.size - 1
-                                        )
-                                    ),
-                            ],
-                            components: [],
-                        });
-                    }
-                    if (!event || event.isCompleted() || event.isCanceled()) {
-                        await interaction.editReply({
-                            content: "",
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Red)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            "Unfortunately, nobody was found. Maybe next time."
-                                        )
-                                    ),
-                            ],
-                            components: [],
-                        });
-                    }
-                    if (event?.isScheduled()) {
-                        await interaction.editReply({
-                            content: event.url,
-                            embeds: [
-                                new EmbedBuilder()
-                                    .setColor(Colors.Blue)
-                                    .setDescription(
-                                        this.l(
-                                            interaction.locale,
-                                            '%s wants hang out later, click "Interested" to join.',
-                                            interaction.member.displayName
-                                        )
-                                    ),
-                            ],
-                            components: [],
-                        });
-                    }
-                } catch (err) {
-                    console.error(err);
+        collector.on("collect", async (buttonInteraction) => {
+            // Not awaited by anyone: catch, or an error would end the process.
+            try {
+                // The host calls it off.
+                if (
+                    buttonInteraction.customId === "zockenOut" &&
+                    buttonInteraction.user.id === hostId
+                ) {
+                    await buttonInteraction.deferUpdate();
+                    collector.stop();
+                    return;
                 }
+                if (buttonInteraction.customId === "zockenIn")
+                    participants.add(buttonInteraction.user.id);
+                else participants.delete(buttonInteraction.user.id);
+                await buttonInteraction.update({ embeds: [await this.quickSessionEmbed(session)] });
+            } catch (err) {
+                console.error(err);
+            }
+        });
+
+        collector.on("end", (collected, reason) => {
+            if (this.quickSessions.get(hostId) === collector) this.quickSessions.delete(hostId);
+            // After the timeout, or stopped as the host left or started a new session -
+            // otherwise the post (or its channel) is gone already.
+            if (reason !== "time" && reason !== "user") return;
+            message.delete().catch((err) => {
+                // Someone deleted it in the meantime.
+                if (err.code !== RESTJSONErrorCodes.UnknownMessage) console.error(err);
+            });
+        });
+    },
+
+    quickSessionEmbed: async function (session) {
+        let participants = [...session.participants];
+        return new EmbedBuilder()
+            .setColor(Colors.Blue)
+            .setTitle(
+                session.title || this.l(session.locale, "%s's gaming session", session.hostName)
+            )
+            .setDescription(
+                session.gameName
+                    ? this.l(
+                          session.locale,
+                          "%s wants to play %s. Who wants to join?",
+                          session.hostName,
+                          session.gameName
+                      )
+                    : (await this.createZockenText(
+                          session.locale,
+                          participants,
+                          participants.length
+                      )) || null
+            )
+            .addFields({
+                name: this.l(session.locale, "Who's in"),
+                value: participants.map((id) => `<@${id}>`).join(", "),
             });
     },
 
     hookForButtonInteraction: async function (interaction) {
+        if (interaction.customId === "zockenIn" || interaction.customId === "zockenOut") {
+            // The session's collector handles the click. Without one, the post is left
+            // over from before a restart: remove it.
+            let messageId = interaction.message.id;
+            if ([...this.quickSessions.values()].some((c) => c.messageId === messageId)) return;
+            await interaction.deferUpdate();
+            await interaction.deleteReply();
+            return;
+        }
         if (interaction.customId !== "zockenSelect") return;
 
         let [mem] = await this.client.myFindOrCreate(this.client.db.MemberSetting, {
@@ -577,7 +625,7 @@ const myZocken = {
         let myReply = await interaction.fetchReply();
 
         let collector = myReply.createMessageComponentCollector({
-            time: this.collectorTimeout,
+            time: this.timeout,
         });
 
         collector.on("collect", async (selectInteraction) => {
