@@ -28,6 +28,9 @@
     "When you choose a day, you'll also need to specify a time!": [
         "Se escolheres um dia, também vais precisar de indicar uma hora!"
     ],
+    "To start a quick session, join a voice channel first. Or choose a day and time to create an event instead.": [
+        "Para começar uma sessão rápida, entra primeiro num canal de voz. Ou escolhe um dia e uma hora para criar um evento em vez disso."
+    ],
     "Please choose a valid time: HH:MM. Hour needs to be within 0-23.": [
         "Escolhe uma hora válida: HH:MM. A hora tem de estar entre 0 e 23."
     ],
@@ -39,9 +42,6 @@
     ],
     "The chosen time and day need to be at least 5 minutes in the future.": [
         "A hora e o dia escolhidos têm de estar pelo menos 5 minutos no futuro."
-    ],
-    "%s would like to game! An event will be created...": [
-        "%s quer jogar! Um evento vai ser criado..."
     ],
     "Something went wrong while creating the event. Please try again.": [
         "Algo correu mal ao criar o evento. Por favor, tenta novamente."
@@ -56,13 +56,6 @@
     "Hey%s and everyone else! (%s)": ["Olá%s e toda a gente! (%s)"],
     "The ical-settings for this server are incomplete.": [
         "As configurações de ical deste servidor estão incompletas."
-    ],
-    "%s found %d more to game with.": ["%s encontrou mais %d pessoas para jogar."],
-    "Unfortunately, nobody was found. Maybe next time.": [
-        "Infelizmente, não se encontrou ninguém. Talvez para a próxima."
-    ],
-    "%s wants hang out later, click \"Interested\" to join.": [
-        "%s quer encontrar-se mais tarde, clica em \"Interessado\" para participares."
     ],
     "Ping me also offline.": ["Marca-me mesmo offline."],
     "Ping me only, when I am online.": ["Marca-me só quando eu estiver online."],
@@ -86,6 +79,9 @@
     "Expired!": ["Expirado!"],
     "No changes have been saved.": ["Nenhuma alteração foi guardada."],
     "Why is my name (not) in here?": ["Porque é que o meu nome (não) está aqui?"],
+    "I'm in!": ["Alinho!"],
+    "Not now": ["Agora não"],
+    "Who's in": ["Quem alinha"],
     "Open the voice channel's text channel to see what games the members can play...": [
         "Abre o canal de texto do canal de voz para veres que jogos os membros podem jogar..."
     ],

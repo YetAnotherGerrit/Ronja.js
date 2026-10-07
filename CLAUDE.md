@@ -66,6 +66,8 @@ Ephemeral replies worth sharing (`/top10`, `/gameinfo`'s card, `/news`, the Serv
 
 `hookForSettingOptions(name, locale)` is likewise not fanned out from an event: `/settings` (`ronja_modules/Settings.js`) calls it on every module to get the choices of a `multiselect` setting (shown as a multi-select menu, stored as a comma-separated list of the picked values) and uses the first non-empty answer. `GameInfo.js` answers it for `gameCardDetails`, which picks the details `core/gameCard.js` shows on the game card.
 
+`/lfg` (`ronja_modules/Zocken.js`) creates a guild scheduled event when given a day or time. Without one it posts a quick session instead: an embed that members join or leave with its buttons (the host and everyone in their voice channel are in from the start; the AFK channel doesn't count as one, and the `lfgQuickSessionRequiresVoice` setting lets admins require hosts to be in one), kept only in memory (a message component collector per session, in `quickSessions`) and deleted without a word after 10 minutes, when its host leaves it or starts a new one, or when its buttons are clicked after a restart.
+
 Modules dispatch on `interaction.commandName` / `customId` themselves (see the pattern in `ronja_modules/Example.js`, which is a documented template — it is excluded from most lint rules and not meant to be treated as production code). Adding a new slash/context-menu command requires **both**: implementing the matching `hookFor*` in a module, and adding a `discord.js` builder instance (`SlashCommandBuilder`/`ContextMenuCommandBuilder`) to that module's `commands` array — deployment then happens automatically (see below).
 
 To register a new module, add it to the `ronja_modules` array in `index.js`.
@@ -95,7 +97,7 @@ ESLint (flat config in `eslint.config.mjs`) + Prettier (`.prettierrc.json`: 4-sp
 
 ### Reply design
 
-Interaction replies (commands, buttons, menus) and Ronja's posts are always embeds (`EmbedBuilder`), never plain `content` — except text carrying a guild scheduled event URL (`/lfg`), since Discord doesn't render the event's preview inside an embed. The embed color says what kind of message it is:
+Interaction replies (commands, buttons, menus) and Ronja's posts are always embeds (`EmbedBuilder`), never plain `content` — except text carrying a guild scheduled event URL (`/lfg`), since Discord doesn't render the event's preview inside an embed, and mentions meant to notify someone (`/lfg`'s pings), since mentions inside an embed never notify. Such mentions must be in a direct `interaction.reply()`, neither deferred nor edited in later: Discord doesn't notify mentions in the message that replaces a deferral, nor ones added by an edit. So whatever the reply needs (for `/lfg`, the pings and its event or game list) has to be ready within the 3 seconds Discord waits for it. The embed color says what kind of message it is:
 
 - `Colors.Green` — only to confirm that something was saved or changed (a setting, a permission, a database change).
 - `Colors.Red` — errors.
