@@ -236,6 +236,26 @@ const myZocken = {
 
         // No time, and so no day (a day alone was rejected above): a quick session.
         if (!interaction.options.getString("time")) {
+            // Admins can require quick session hosts to be in a voice channel.
+            if (
+                this.cfg("lfgQuickSessionRequiresVoice") === "true" &&
+                !this.voiceChannelOf(interaction.member)
+            ) {
+                await interaction.reply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setColor(Colors.Red)
+                            .setDescription(
+                                this.l(
+                                    interaction.locale,
+                                    "To start a quick session, join a voice channel first. Or choose a day and time to create an event instead."
+                                )
+                            ),
+                    ],
+                    flags: MessageFlags.Ephemeral,
+                });
+                return;
+            }
             await this.startQuickSession(interaction, channelGame);
             return;
         }
@@ -412,6 +432,12 @@ const myZocken = {
             .setStyle(ButtonStyle.Secondary);
     },
 
+    // The voice channel `member` is in, or null - also in the AFK channel, which means away.
+    voiceChannelOf: function (member) {
+        let channel = member.voice.channel;
+        return channel && channel.id !== member.guild.afkChannelId ? channel : null;
+    },
+
     // /lfg without a day or time: a post that members join or leave with its
     // buttons, instead of an event. It's removed without a word after the timeout.
     startQuickSession: async function (interaction, channelGame) {
@@ -421,7 +447,7 @@ const myZocken = {
 
         // The host is in, and so is everyone in their voice channel.
         let participants = new Set([hostId]);
-        interaction.member.voice.channel?.members.forEach((member) => {
+        this.voiceChannelOf(interaction.member)?.members.forEach((member) => {
             if (!member.user.bot) participants.add(member.id);
         });
 

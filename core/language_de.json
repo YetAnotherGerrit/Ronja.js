@@ -28,6 +28,9 @@
     "When you choose a day, you'll also need to specify a time!": [
         "Wenn du einen Tag auswählst, musst du auch eine Uhrzeit angeben!"
     ],
+    "To start a quick session, join a voice channel first. Or choose a day and time to create an event instead.": [
+        "Um eine spontane Runde zu starten, geh zuerst in einen Sprachkanal. Oder wähle einen Tag und eine Uhrzeit, um stattdessen ein Event zu erstellen."
+    ],
     "Please choose a valid time: HH:MM. Hour needs to be within 0-23.": [
         "Bitte wähle eine gültige Uhrzeit: SS:MM. Die Stunde muss zwischen 0-23 liegen."
     ],
