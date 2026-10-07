@@ -16,10 +16,18 @@ want to play with your friends and need to decide on what game to play.
     - With IGDB configured, a card with the game's key facts and links is
       pinned in each new channel.
     - Automatic archiving of channels about games that are not played anymore.
-- /lfg command to find members to game with by assisting with what common
-  games you have. With IGDB configured, single-player-only games are left out
-  and each game's online player limit is shown (in the voice channel status
-  too, flagging games too small for everyone in the channel).
+- /lfg command to find members to game with:
+    - Without a day or time, a quick session: a post the others join or leave
+      with "I'm in!"/"Not now". You and everyone in your voice channel are in
+      from the start, and it disappears after 10 minutes. Admins can require
+      hosts to be in a voice channel.
+    - With a day and/or time, a scheduled Discord event to sign up for.
+    - Either way, Ronja pings members who have recently played a game with
+      you and want to be pinged (each member can choose: always, only while
+      online, or never), and lists the games you have in common. With IGDB
+      configured, single-player-only games are left out and each game's online
+      player limit is shown (in the voice channel status too, flagging games
+      too small for everyone in the channel).
 - /top10 command to show the most popular games in the guild, next to the
   members who spent the most time in voice channels with others and the
   game channels with the most messages.
