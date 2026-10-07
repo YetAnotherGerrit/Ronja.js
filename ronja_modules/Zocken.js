@@ -320,10 +320,6 @@ const myZocken = {
             return;
         }
 
-        // Deferred instead of replying right away: the reply that replaces the deferral
-        // notifies the pings in its text, while mentions added by a later edit don't.
-        await interaction.deferReply();
-
         let newEvent;
         try {
             newEvent = await interaction.guild.scheduledEvents.create({
@@ -371,7 +367,7 @@ const myZocken = {
             });
         } catch (err) {
             console.error(err);
-            await interaction.editReply({
+            await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
                         .setColor(Colors.Red)
@@ -382,13 +378,17 @@ const myZocken = {
                             )
                         ),
                 ],
+                flags: MessageFlags.Ephemeral,
             });
             return;
         }
 
         let channelMemberPing = await this.createChannelMemberPing(interaction);
 
-        await interaction.editReply({
+        // A single reply, neither deferred nor edited later: Discord only notifies mentions
+        // in a message created with them. So everything above must fit into the 3 seconds
+        // Discord waits for a reply.
+        await interaction.reply({
             // The event URL must stay in a plain message, not an embed: Discord does not
             // render the event link preview correctly when it's inside embed content.
             content: this.l(
@@ -433,11 +433,10 @@ const myZocken = {
             gameName: channelGame?.name,
         };
 
-        // Deferred, as finding whom to ping can take a while. The reply that replaces
-        // the deferral still notifies the mentions in its text (embeds never do).
-        await interaction.deferReply();
+        // A single reply, neither deferred nor edited later: Discord only notifies the
+        // mentions in its text (never in embeds) in a message created with them.
         let ping = await this.createChannelMemberPing(interaction, [...participants]);
-        let message = await interaction.editReply({
+        let response = await interaction.reply({
             content: ping.trim() || null,
             embeds: [await this.quickSessionEmbed(session)],
             components: [
@@ -455,7 +454,9 @@ const myZocken = {
                     this.pingInfoButton(session.locale)
                 ),
             ],
+            withResponse: true,
         });
+        let message = response.resource.message;
 
         let collector = message.createMessageComponentCollector({
             filter: (i) => i.customId === "zockenIn" || i.customId === "zockenOut",

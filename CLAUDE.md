@@ -97,7 +97,7 @@ ESLint (flat config in `eslint.config.mjs`) + Prettier (`.prettierrc.json`: 4-sp
 
 ### Reply design
 
-Interaction replies (commands, buttons, menus) and Ronja's posts are always embeds (`EmbedBuilder`), never plain `content` — except text carrying a guild scheduled event URL (`/lfg`), since Discord doesn't render the event's preview inside an embed, and mentions meant to notify someone (`/lfg`'s pings), since mentions inside an embed never notify. The embed color says what kind of message it is:
+Interaction replies (commands, buttons, menus) and Ronja's posts are always embeds (`EmbedBuilder`), never plain `content` — except text carrying a guild scheduled event URL (`/lfg`), since Discord doesn't render the event's preview inside an embed, and mentions meant to notify someone (`/lfg`'s pings), since mentions inside an embed never notify. Such mentions must be in a direct `interaction.reply()`, neither deferred nor edited in later: Discord doesn't notify mentions in the message that replaces a deferral, nor ones added by an edit. So whatever the reply needs (for `/lfg`, the pings and its event or game list) has to be ready within the 3 seconds Discord waits for it. The embed color says what kind of message it is:
 
 - `Colors.Green` — only to confirm that something was saved or changed (a setting, a permission, a database change).
 - `Colors.Red` — errors.
