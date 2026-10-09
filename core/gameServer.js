@@ -14,6 +14,20 @@ function gameTypesFor(name) {
     return Object.keys(games).filter((id) => normalizeGameName(games[id].name) === normalized);
 }
 
+// The ids of the game types `text` names: a type's id, a game named like it
+// (see gameTypesFor) or, failing those, every game whose name contains it.
+function findGameTypes(text) {
+    let id = text.trim().toLowerCase();
+    if (gameType(id)) return [id];
+    let named = gameTypesFor(text);
+    if (named.length) return named;
+    let normalized = normalizeGameName(text);
+    if (!normalized) return [];
+    return Object.keys(games).filter((id) =>
+        normalizeGameName(games[id].name).includes(normalized)
+    );
+}
+
 // How a game type is shown, e.g. "Valheim (2021)" - GameDig has several
 // types for some games, like Minecraft's editions.
 function gameTypeLabel(id) {
@@ -40,4 +54,11 @@ function statusLine(l, server) {
     return `⚪ ${l("Status unknown")}`;
 }
 
-module.exports = { gameType, gameTypesFor, gameTypeLabel, connectAddress, statusLine };
+module.exports = {
+    gameType,
+    gameTypesFor,
+    findGameTypes,
+    gameTypeLabel,
+    connectAddress,
+    statusLine,
+};

@@ -287,41 +287,13 @@
     "Status unknown": ["Stato nekonata"],
     "Game server": ["Ludservilo"],
     "Its game server's status, only in /gameinfo": ["La stato de ĝia ludservilo, nur en /gameinfo"],
-    "/gameserver only works in a game's text channel": [
-        "/gameserver funkcias nur en la tekstkanalo de ludo"
-    ],
-    "None of the active game channels is for a game I know how to check. You can still run /gameserver in any game's text channel and pick the game yourself.": [
-        "Neniu el la aktivaj ludkanaloj estas por ludo, kies servilon mi scias kontroli. Vi tamen povas uzi /gameserver en la tekstkanalo de iu ajn ludo kaj elekti la ludon mem."
-    ],
-    "Run it in one of these channels, whose games I can check:": [
-        "Uzu ĝin en unu el ĉi tiuj kanaloj, kies ludojn mi povas kontroli:"
-    ],
-    "No game channel has a game server set up.": ["Neniu ludkanalo havas agorditan ludservilon."],
-    "Run it in the channel whose game server you want to remove:": [
-        "Uzu ĝin en la kanalo, kies ludservilon vi volas forigi:"
-    ],
-    "I don't know how to check a server of %s. Please pick a game from the list.": [
-        "Mi ne scias kiel kontroli servilon de %s. Bonvolu elekti ludon el la listo."
-    ],
     "%s has no usual port, please enter the server's port.": [
         "%s ne havas kutiman pordon, bonvolu entajpi la pordon de la servilo."
-    ],
-    "This channel is archived, so I'll only start checking the server once it's reactivated.": [
-        "Ĉi tiu kanalo estas arkivita, do mi komencos kontroli la servilon nur kiam ĝi estos reaktivigita."
     ],
     "The server answered: %s.": ["La servilo respondis: %s."],
     "The server didn't answer just now. If it doesn't answer the next check either, it's shown as offline.": [
         "La servilo ĵus ne respondis. Se ĝi ankaŭ ne respondos al la sekva kontrolo, ĝi estos montrata kiel eksterreta."
     ],
-    "I'll check the %s server at %s every 5 minutes and show its status in this channel's topic.": [
-        "Mi kontrolos la %s-servilon ĉe %s ĉiujn 5 minutojn kaj montros ĝian staton en la temo de ĉi tiu kanalo."
-    ],
-    "Game server saved": ["Ludservilo konservita"],
-    "This channel has no game server set up.": ["Ĉi tiu kanalo ne havas agorditan ludservilon."],
-    "I removed the game server %s and won't check it anymore. I'm clearing this channel's topic.": [
-        "Mi forigis la ludservilon %s kaj ne plu kontrolos ĝin. Mi malplenigas la temon de ĉi tiu kanalo."
-    ],
-    "Game server removed": ["Ludservilo forigita"],
     "The game server is back online": ["La ludservilo estas denove enreta"],
     "%s is answering again: %s.": ["%s denove respondas: %s."],
     "The game server is offline": ["La ludservilo estas eksterreta"],
@@ -333,5 +305,56 @@
     ],
     "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.": [
         "Ne povis montri la staton de la ludservilo en la temo de #%s: mi bezonas tie la permeson Administri kanalojn."
+    ],
+    "Not checked while archived": ["Ne kontrolata dum arkivita"],
+    "Game servers": ["Ludserviloj"],
+    "Run /gameserver in a game's text channel to set up, update or remove its server.": [
+        "Uzu /gameserver en la tekstkanalo de ludo por agordi, ŝanĝi aŭ forigi ĝian servilon."
+    ],
+    "No game channel has a game server yet, and none of the active ones is for a game I know how to check. Run /gameserver in a game's text channel to set up its server anyway.": [
+        "Ankoraŭ neniu ludkanalo havas ludservilon, kaj neniu el la aktivaj estas por ludo, kies servilon mi scias kontroli. Uzu /gameserver en la tekstkanalo de ludo por tamen agordi ĝian servilon."
+    ],
+    "Servers set up": ["Agorditaj serviloj"],
+    "Games I can check": ["Ludoj, kiujn mi povas kontroli"],
+    "Game server of #%s": ["Ludservilo de #%s"],
+    "Not checked while this channel is archived.": [
+        "Ne kontrolata dum ĉi tiu kanalo estas arkivita."
+    ],
+    "Game": ["Ludo"],
+    "Status": ["Stato"],
+    "Address Ronja checks": ["Adreso, kiun Ronja kontrolas"],
+    "Address members connect to": ["Adreso por konektiĝi"],
+    "Update": ["Ŝanĝi"],
+    "Remove": ["Forigi"],
+    "Set up": ["Agordi"],
+    "This channel has no game server set up yet.": [
+        "Ĉi tiu kanalo ankoraŭ ne havas agorditan ludservilon."
+    ],
+    "I can check servers of %s.": ["Mi povas kontroli servilojn de %s."],
+    "I don't know which game to check for %s by its name, so please enter it when setting it up. [Here are the games I can check.](%s)": [
+        "Mi ne scias, kiun ludon kontroli por %s laŭ ĝia nomo, do bonvolu entajpi ĝin dum la agordado. [Jen la ludoj, kiujn mi povas kontroli.](%s)"
+    ],
+    "This channel is archived, so I'll only start checking once it's reactivated.": [
+        "Ĉi tiu kanalo estas arkivita, do mi komencos kontroli nur kiam ĝi estos reaktivigita."
+    ],
+    "e.g. Valheim": ["ekz. Valheim"],
+    "e.g. 192.168.1.20 or valheim.example.com": ["ekz. 192.168.1.20 aŭ valheim.example.com"],
+    "Port": ["Pordo"],
+    "Empty: the game's usual port": ["Malplena: la kutima pordo de la ludo"],
+    "Empty: the address and port above": ["Malplena: la supra adreso kaj pordo"],
+    "Saved. I'll check the server every 5 minutes and show its status in this channel's topic.": [
+        "Konservita. Mi kontrolos la servilon ĉiujn 5 minutojn kaj montros ĝian staton en la temo de ĉi tiu kanalo."
+    ],
+    "I don't know a game called %s whose server I can check. [Here are the games I can check.](%s)": [
+        "Mi ne konas ludon nomatan %s, kies servilon mi povas kontroli. [Jen la ludoj, kiujn mi povas kontroli.](%s)"
+    ],
+    "%s fits several games: %s. Please enter one of them exactly.": [
+        "%s kongruas kun pluraj ludoj: %s. Bonvolu entajpi unu el ili ekzakte."
+    ],
+    "%s isn't a port. Please enter a number from 1 to 65535.": [
+        "%s ne estas pordo. Bonvolu entajpi nombron de 1 ĝis 65535."
+    ],
+    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
+        "Ludservilo forigita. Mi ne plu kontrolos ĝin kaj malplenigas la temon de ĉi tiu kanalo."
     ]
 }

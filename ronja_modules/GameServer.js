@@ -5,14 +5,22 @@ const {
     MessageFlags,
     PermissionFlagsBits,
     RESTJSONErrorCodes,
+    ActionRowBuilder,
+    ButtonStyle,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    TimestampStyles,
     channelMention,
+    time,
 } = require("discord.js");
-const { GameDig, games } = require("gamedig");
+const { GameDig } = require("gamedig");
 const { DateTime } = require("luxon");
 const { Op } = require("sequelize");
 const {
     gameType,
     gameTypesFor,
+    findGameTypes,
     gameTypeLabel,
     connectAddress,
     statusLine,
@@ -24,14 +32,24 @@ const FAILURES_FOR_OFFLINE = 2;
 // Discord allows 2 name or topic edits per channel every 10 minutes.
 const TOPIC_EDITS_PER_WINDOW = 2;
 const TOPIC_EDIT_WINDOW_MS = 10 * 60 * 1000;
-const CHOICES_LIMIT = 25; // Discord's limit for autocomplete choices.
-const LIST_MAX_LENGTH = 4000; // Below Discord's 4096 for an embed description.
+// The buttons work until shortly before the reply's interaction token expires.
+const COLLECTOR_TIMEOUT_MS = 14 * 60 * 1000;
+const FIELD_MAX_LENGTH = 1024; // Discord's limit for an embed field value.
+const AMBIGUOUS_SHOWN = 10;
+const GAMES_LIST_URL = "https://github.com/gamedig/node-gamedig/blob/master/GAMES_LIST.md";
 const PERMISSION_ERRORS = [RESTJSONErrorCodes.MissingPermissions, RESTJSONErrorCodes.MissingAccess];
+
+const SETUP_ID = "gameserverSetup";
+const REMOVE_ID = "gameserverRemove";
+const MODAL_ID = "gameserverModal";
 
 // /gameserver: the game server of a game text channel, checked every 5
 // minutes via GameDig while the channel is active. Its status is kept in the
 // channel topic (just the connect address while archived), and Ronja posts
 // when it goes offline or comes back - if someone played the game recently.
+// In a game text channel, /gameserver shows its server with buttons to set
+// it up, update or remove it; anywhere else, the channels that have one or
+// could have one.
 const myGameServer = {
     // channel id -> timestamps of Ronja's recent topic edits there
     topicEdits: new Map(),
@@ -43,73 +61,10 @@ const myGameServer = {
         new SlashCommandBuilder()
             .setName("gameserver")
             .setNameLocalizations({ de: "spielserver" })
-            .setDescription("Set up or remove the game server of this game's text channel.")
+            .setDescription("Show, set up or remove the game server of this game's text channel.")
             .setDescriptionLocalizations({
-                de: "Richte den Spielserver dieses Spiel-Textkanals ein oder entferne ihn.",
+                de: "Zeige, richte ein oder entferne den Spielserver dieses Spiel-Textkanals.",
             })
-            .addSubcommand((subcommand) =>
-                subcommand
-                    .setName("set")
-                    .setNameLocalizations({ de: "festlegen" })
-                    .setDescription("Show this game server's status in the channel topic.")
-                    .setDescriptionLocalizations({
-                        de: "Zeigt den Status dieses Spielservers im Kanalthema.",
-                    })
-                    .addStringOption((option) =>
-                        option
-                            .setName("game")
-                            .setNameLocalizations({ de: "spiel" })
-                            .setDescription("The game the server runs.")
-                            .setDescriptionLocalizations({
-                                de: "Das Spiel, das auf dem Server läuft.",
-                            })
-                            .setRequired(true)
-                            .setAutocomplete(true)
-                    )
-                    .addStringOption((option) =>
-                        option
-                            .setName("address")
-                            .setNameLocalizations({ de: "adresse" })
-                            .setDescription("The address Ronja checks the server at.")
-                            .setDescriptionLocalizations({
-                                de: "Die Adresse, unter der Ronja den Server prüft.",
-                            })
-                            .setRequired(true)
-                            .setMaxLength(200)
-                    )
-                    .addIntegerOption((option) =>
-                        option
-                            .setName("port")
-                            .setNameLocalizations({ de: "port" })
-                            .setDescription("The server's port. Default: the game's usual port.")
-                            .setDescriptionLocalizations({
-                                de: "Der Port des Servers. Standard: der übliche Port des Spiels.",
-                            })
-                            .setMinValue(1)
-                            .setMaxValue(65535)
-                    )
-                    .addStringOption((option) =>
-                        option
-                            .setName("connect-address")
-                            .setNameLocalizations({ de: "verbindungsadresse" })
-                            .setDescription(
-                                "The address members connect to, if it's not the one above."
-                            )
-                            .setDescriptionLocalizations({
-                                de: "Die Adresse, mit der sich Mitglieder verbinden, falls nicht die obige.",
-                            })
-                            .setMaxLength(200)
-                    )
-            )
-            .addSubcommand((subcommand) =>
-                subcommand
-                    .setName("remove")
-                    .setNameLocalizations({ de: "entfernen" })
-                    .setDescription("Remove this channel's game server.")
-                    .setDescriptionLocalizations({
-                        de: "Entfernt den Spielserver dieses Kanals.",
-                    })
-            )
             .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
             .setDMPermission(false),
     ],
@@ -128,239 +83,373 @@ const myGameServer = {
         return await this.client.db.Game.findOne({ where: { channel } });
     },
 
-    // The game types to pick from: the channel's game's own first, then
-    // every type whose id or name contains what was typed so far.
-    hookForAutocompleteInteraction: async function (interaction) {
-        if (interaction.commandName !== "gameserver") return;
-
-        let text = interaction.options.getFocused().trim().toLowerCase();
-        let game = await this.interactionGame(interaction);
-        let own = game ? gameTypesFor(game.name) : [];
-        let matching = Object.keys(games)
-            .filter(
-                (id) =>
-                    !own.includes(id) &&
-                    (id.includes(text) || games[id].name.toLowerCase().includes(text))
-            )
-            .sort((a, b) => games[a].name.localeCompare(games[b].name));
-
-        await interaction.respond(
-            [...own, ...matching]
-                .slice(0, CHOICES_LIMIT)
-                .map((id) => ({ name: gameTypeLabel(id).slice(0, 100), value: id }))
-        );
-    },
-
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName !== "gameserver") return;
 
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-        let set = interaction.options.getSubcommand() === "set";
         let game = await this.interactionGame(interaction);
         if (!game) {
-            await (set ? this.suggestChannels(interaction) : this.listServers(interaction));
+            await interaction.editReply(
+                await this.renderList(interaction.guild, interaction.locale)
+            );
             return;
         }
 
         let channel = await this.client.channels.fetch(game.channel);
-        await (set
-            ? this.setServer(interaction, channel)
-            : this.removeServer(interaction, channel));
+        // What the admin entered last, to fill the form in again if it was invalid.
+        let state = { input: null };
+        let message = await interaction.editReply(
+            await this.renderView(channel, game, interaction.locale)
+        );
+
+        let collector = message.createMessageComponentCollector({
+            filter: (i) => i.user.id === interaction.user.id,
+            time: COLLECTOR_TIMEOUT_MS,
+        });
+        collector.on("collect", async (i) => {
+            try {
+                if (i.customId === SETUP_ID)
+                    await this.handleSetup(interaction, i, channel, game, state);
+                if (i.customId === REMOVE_ID)
+                    await this.handleRemove(interaction, i, channel, game);
+            } catch (err) {
+                console.error("Error handling a /gameserver button:", err);
+            }
+        });
+        collector.on("end", async () => {
+            try {
+                await interaction.editReply({ components: [] });
+            } catch {
+                // The ephemeral message may already be gone (e.g. dismissed by the admin).
+            }
+        });
     },
 
-    reply: async function (interaction, color, description, title) {
-        let embed = new EmbedBuilder().setColor(color).setDescription(description);
-        if (title) embed.setTitle(title);
-        await interaction.editReply({ embeds: [embed] });
-    },
+    // Outside a game text channel: the channels with a game server, and the
+    // active ones without one whose game GameDig knows.
+    renderList: async function (guild, locale) {
+        let l = (...args) => this.l(locale, ...args);
+        let servers = await this.client.db.GameServer.findAll();
+        let withServer = new Set(servers.map((s) => s.channel));
 
-    // Outside a game text channel: the active ones whose game GameDig knows.
-    suggestChannels: async function (interaction) {
-        let locale = interaction.locale;
-        let lines = [];
+        let setUp = [];
+        for (let server of servers) {
+            let channel = await guild.channels.fetch(server.channel).catch(() => null);
+            if (!channel) continue;
+            let status = this.isArchived(channel)
+                ? l("Not checked while archived")
+                : statusLine(l, server);
+            setUp.push(`${channelMention(channel.id)} · ${gameTypeLabel(server.type)} · ${status}`);
+        }
+
+        let possible = [];
         let channelGames = await this.client.db.Game.findAll({
             where: { channel: { [Op.ne]: null } },
             order: [["name", "ASC"]],
         });
         for (let game of channelGames) {
+            if (withServer.has(game.channel)) continue;
             let types = gameTypesFor(game.name);
             if (!types.length) continue;
-            let channel = await interaction.guild.channels.fetch(game.channel).catch(() => null);
+            let channel = await guild.channels.fetch(game.channel).catch(() => null);
             if (!channel || this.isArchived(channel)) continue;
-            lines.push(`${channelMention(channel.id)} · ${types.map(gameTypeLabel).join(", ")}`);
+            possible.push(`${channelMention(channel.id)} · ${types.map(gameTypeLabel).join(", ")}`);
         }
 
-        let title = this.l(locale, "/gameserver only works in a game's text channel");
-        if (!lines.length) {
-            await this.reply(
-                interaction,
-                Colors.Blue,
-                this.l(
-                    locale,
-                    "None of the active game channels is for a game I know how to check. You can still run /gameserver in any game's text channel and pick the game yourself."
-                ),
-                title
+        let embed = new EmbedBuilder()
+            .setColor(Colors.Blue)
+            .setTitle(l("Game servers"))
+            .setDescription(
+                setUp.length || possible.length
+                    ? l(
+                          "Run /gameserver in a game's text channel to set up, update or remove its server."
+                      )
+                    : l(
+                          "No game channel has a game server yet, and none of the active ones is for a game I know how to check. Run /gameserver in a game's text channel to set up its server anyway."
+                      )
             );
-            return;
+        if (setUp.length) {
+            embed.addFields({ name: l("Servers set up"), value: this.fieldText(setUp) });
         }
-        await this.reply(
-            interaction,
-            Colors.Blue,
-            this.listText(
-                this.l(locale, "Run it in one of these channels, whose games I can check:"),
-                lines
-            ),
-            title
-        );
+        if (possible.length) {
+            embed.addFields({ name: l("Games I can check"), value: this.fieldText(possible) });
+        }
+        return { embeds: [embed], components: [] };
     },
 
-    // Outside a game text channel: the channels that have a game server.
-    listServers: async function (interaction) {
-        let locale = interaction.locale;
-        let servers = await this.client.db.GameServer.findAll();
-        let title = this.l(locale, "/gameserver only works in a game's text channel");
-        if (!servers.length) {
-            await this.reply(
-                interaction,
-                Colors.Blue,
-                this.l(locale, "No game channel has a game server set up."),
-                title
-            );
-            return;
-        }
-        await this.reply(
-            interaction,
-            Colors.Blue,
-            this.listText(
-                this.l(locale, "Run it in the channel whose game server you want to remove:"),
-                servers.map(
-                    (s) =>
-                        `${channelMention(s.channel)} · ${gameTypeLabel(s.type)} · ${connectAddress(s)}`
-                )
-            ),
-            title
-        );
-    },
-
-    // `intro` and as many `lines` as fit into an embed description.
-    listText: function (intro, lines) {
-        let text = intro;
+    // As many `lines` as fit into an embed field.
+    fieldText: function (lines) {
+        let text = "";
         for (let line of lines) {
-            if (text.length + line.length + 1 > LIST_MAX_LENGTH) break;
-            text += `\n${line}`;
+            let next = text ? `${text}\n${line}` : line;
+            if (next.length > FIELD_MAX_LENGTH) break;
+            text = next;
         }
         return text;
     },
 
-    setServer: async function (interaction, channel) {
-        let locale = interaction.locale;
-        // A game type picked from the autocomplete - or a game's name, typed
-        // without picking one.
-        let type = interaction.options.getString("game").trim();
-        if (!gameType(type)) type = gameTypesFor(type)[0] ?? type;
-        if (!gameType(type)) {
-            await this.reply(
-                interaction,
-                Colors.Red,
-                this.l(
-                    locale,
-                    "I don't know how to check a server of %s. Please pick a game from the list.",
-                    type
-                )
-            );
-            return;
-        }
-        let port = interaction.options.getInteger("port") ?? gameType(type).options?.port;
-        if (!port) {
-            await this.reply(
-                interaction,
-                Colors.Red,
-                this.l(
-                    locale,
-                    "%s has no usual port, please enter the server's port.",
-                    gameTypeLabel(type)
-                )
-            );
-            return;
-        }
-
-        let values = {
-            type,
-            host: interaction.options.getString("address").trim(),
-            port,
-            connectAddress: interaction.options.getString("connect-address")?.trim() || null,
-            online: null,
-            failures: 0,
-            players: null,
-            maxPlayers: null,
-            checkedAt: null,
-        };
+    // In a game text channel: its game server, with buttons to set it up,
+    // update or remove it. `notice` ({ color, text }) goes on top, e.g. what
+    // the last button did.
+    renderView: async function (channel, game, locale, notice = null) {
+        let l = (...args) => this.l(locale, ...args);
+        let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
         let archived = this.isArchived(channel);
-        // Checked right away, so the admin sees whether the address works.
-        let status = archived ? null : await this.query(values);
-        if (status) Object.assign(values, { online: true, ...status });
-        else if (!archived) values.failures = 1;
-        if (!archived) values.checkedAt = new Date();
+        let embed = new EmbedBuilder()
+            .setColor(Colors.Blue)
+            .setTitle(l("Game server of #%s", channel.name));
+        let buttons;
 
-        let [server] = await this.client.myFindOrCreate(this.client.db.GameServer, {
+        if (server) {
+            let status = archived
+                ? l("Not checked while this channel is archived.")
+                : statusLine(l, server);
+            if (!archived && server.checkedAt) {
+                status += ` (${time(server.checkedAt, TimestampStyles.RelativeTime)})`;
+            }
+            embed.addFields(
+                { name: l("Game"), value: gameTypeLabel(server.type), inline: true },
+                { name: l("Status"), value: status, inline: true },
+                { name: l("Address Ronja checks"), value: `${server.host}:${server.port}` }
+            );
+            if (server.connectAddress) {
+                embed.addFields({
+                    name: l("Address members connect to"),
+                    value: server.connectAddress,
+                });
+            }
+            buttons = [
+                this.client
+                    .myButton("✏️")
+                    .setCustomId(SETUP_ID)
+                    .setLabel(l("Update"))
+                    .setStyle(ButtonStyle.Primary),
+                this.client
+                    .myButton("🗑️")
+                    .setCustomId(REMOVE_ID)
+                    .setLabel(l("Remove"))
+                    .setStyle(ButtonStyle.Danger),
+            ];
+        } else {
+            let types = gameTypesFor(game.name);
+            let lines = [l("This channel has no game server set up yet.")];
+            lines.push(
+                types.length
+                    ? l("I can check servers of %s.", types.map(gameTypeLabel).join(", "))
+                    : l(
+                          "I don't know which game to check for %s by its name, so please enter it when setting it up. [Here are the games I can check.](%s)",
+                          game.name,
+                          GAMES_LIST_URL
+                      )
+            );
+            if (archived) {
+                lines.push(
+                    l(
+                        "This channel is archived, so I'll only start checking once it's reactivated."
+                    )
+                );
+            }
+            embed.setDescription(lines.join("\n\n"));
+            buttons = [
+                this.client
+                    .myButton("➕")
+                    .setCustomId(SETUP_ID)
+                    .setLabel(l("Set up"))
+                    .setStyle(ButtonStyle.Primary),
+            ];
+        }
+
+        let embeds = [embed];
+        if (notice) {
+            embeds.unshift(new EmbedBuilder().setColor(notice.color).setDescription(notice.text));
+        }
+        return { embeds, components: [new ActionRowBuilder().addComponents(buttons)] };
+    },
+
+    // The setup form, filled in with what was entered last (if it was
+    // invalid), the current server, or the game the channel is for.
+    setupModal: function (channel, game, server, input, locale) {
+        let l = (...args) => this.l(locale, ...args);
+        let ownType = gameTypesFor(game.name)[0];
+        let values = input ?? {
+            game: server ? gameType(server.type)?.name : ownType ? gameType(ownType).name : "",
+            address: server?.host ?? "",
+            port: server ? String(server.port) : "",
+            connectAddress: server?.connectAddress ?? "",
+        };
+        let field = (id, label, placeholder, value, required) => {
+            let input = new TextInputBuilder()
+                .setCustomId(id)
+                .setLabel(label.slice(0, 45))
+                .setStyle(TextInputStyle.Short)
+                .setPlaceholder(placeholder.slice(0, 100))
+                .setMaxLength(200)
+                .setRequired(required);
+            if (value) input.setValue(value);
+            return new ActionRowBuilder().addComponents(input);
+        };
+        return new ModalBuilder()
+            .setCustomId(MODAL_ID)
+            .setTitle(l("Game server of #%s", channel.name).slice(0, 45))
+            .addComponents(
+                field("game", l("Game"), l("e.g. Valheim"), values.game, true),
+                field(
+                    "address",
+                    l("Address Ronja checks"),
+                    l("e.g. 192.168.1.20 or valheim.example.com"),
+                    values.address,
+                    true
+                ),
+                field("port", l("Port"), l("Empty: the game's usual port"), values.port, false),
+                field(
+                    "connectAddress",
+                    l("Address members connect to"),
+                    l("Empty: the address and port above"),
+                    values.connectAddress,
+                    false
+                )
+            );
+    },
+
+    // The Set up/Update button: shows the form, then saves what was entered
+    // and checks the server right away, so the admin sees whether it works.
+    handleSetup: async function (interaction, button, channel, game, state) {
+        let locale = interaction.locale;
+        let l = (...args) => this.l(locale, ...args);
+        let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
+        await button.showModal(this.setupModal(channel, game, server, state.input, locale));
+
+        let submitted;
+        try {
+            submitted = await button.awaitModalSubmit({
+                time: COLLECTOR_TIMEOUT_MS,
+                filter: (m) => m.customId === MODAL_ID && m.user.id === interaction.user.id,
+            });
+        } catch {
+            return; // Closed without submitting.
+        }
+        await submitted.deferUpdate();
+
+        let input = {
+            game: submitted.fields.getTextInputValue("game").trim(),
+            address: submitted.fields.getTextInputValue("address").trim(),
+            port: submitted.fields.getTextInputValue("port").trim(),
+            connectAddress: submitted.fields.getTextInputValue("connectAddress").trim(),
+        };
+        let { values, error } = this.parseInput(input, l);
+        if (error) {
+            state.input = input;
+            await interaction.editReply(
+                await this.renderView(channel, game, locale, { color: Colors.Red, text: error })
+            );
+            return;
+        }
+        state.input = null;
+
+        let archived = this.isArchived(channel);
+        let status = archived ? null : await this.query(values);
+        Object.assign(values, {
+            online: status ? true : null,
+            failures: status || archived ? 0 : 1,
+            players: status?.players ?? null,
+            maxPlayers: status?.maxPlayers ?? null,
+            checkedAt: archived ? null : new Date(),
+        });
+        let [saved] = await this.client.myFindOrCreate(this.client.db.GameServer, {
             where: { channel: channel.id },
             defaults: values,
         });
-        await server.update(values);
+        await saved.update(values);
 
         let result = archived
-            ? this.l(
-                  locale,
-                  "This channel is archived, so I'll only start checking the server once it's reactivated."
-              )
+            ? l("This channel is archived, so I'll only start checking once it's reactivated.")
             : status
-              ? this.l(
-                    locale,
-                    "The server answered: %s.",
-                    statusLine((...a) => this.l(locale, ...a), server)
-                )
-              : this.l(
-                    locale,
+              ? l("The server answered: %s.", statusLine(l, saved))
+              : l(
                     "The server didn't answer just now. If it doesn't answer the next check either, it's shown as offline."
                 );
-        await this.reply(
-            interaction,
-            Colors.Green,
-            `${this.l(
-                locale,
-                "I'll check the %s server at %s every 5 minutes and show its status in this channel's topic.",
-                gameTypeLabel(type),
-                `${server.host}:${server.port}`
-            )}\n\n${result}`,
-            this.l(locale, "Game server saved")
+        let text = `${l("Saved. I'll check the server every 5 minutes and show its status in this channel's topic.")}\n\n${result}`;
+        await interaction.editReply(
+            await this.renderView(channel, game, locale, { color: Colors.Green, text })
         );
 
-        console.log(`Set up the ${type} server ${server.host}:${server.port} in #${channel.name}.`);
-        await this.updateTopic(channel, server, true);
+        console.log(
+            `Set up the ${saved.type} server ${saved.host}:${saved.port} in #${channel.name}.`
+        );
+        await this.updateTopic(channel, saved, true);
     },
 
-    removeServer: async function (interaction, channel) {
+    // The form's input as a GameServer row's values - or an error to show.
+    parseInput: function (input, l) {
+        let types = findGameTypes(input.game);
+        if (!types.length) {
+            return {
+                error: l(
+                    "I don't know a game called %s whose server I can check. [Here are the games I can check.](%s)",
+                    input.game,
+                    GAMES_LIST_URL
+                ),
+            };
+        }
+        if (types.length > 1 && !gameTypesFor(input.game).length) {
+            let shown = types.slice(0, AMBIGUOUS_SHOWN).map((id) => gameType(id).name);
+            if (types.length > AMBIGUOUS_SHOWN) shown.push("...");
+            return {
+                error: l(
+                    "%s fits several games: %s. Please enter one of them exactly.",
+                    input.game,
+                    shown.join(", ")
+                ),
+            };
+        }
+        let type = types[0];
+
+        let port = gameType(type).options?.port;
+        if (input.port) {
+            port = /^\d+$/.test(input.port) ? Number(input.port) : 0;
+            if (port < 1 || port > 65535) {
+                return {
+                    error: l("%s isn't a port. Please enter a number from 1 to 65535.", input.port),
+                };
+            }
+        }
+        if (!port) {
+            return {
+                error: l(
+                    "%s has no usual port, please enter the server's port.",
+                    gameTypeLabel(type)
+                ),
+            };
+        }
+
+        return {
+            values: {
+                type,
+                host: input.address,
+                port,
+                connectAddress: input.connectAddress || null,
+            },
+        };
+    },
+
+    handleRemove: async function (interaction, button, channel, game) {
         let locale = interaction.locale;
+        await button.deferUpdate();
         let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
         if (!server) {
-            await this.reply(
-                interaction,
-                Colors.Blue,
-                this.l(locale, "This channel has no game server set up.")
-            );
+            await interaction.editReply(await this.renderView(channel, game, locale));
             return;
         }
 
         await server.destroy();
-        await this.reply(
-            interaction,
-            Colors.Green,
-            this.l(
-                locale,
-                "I removed the game server %s and won't check it anymore. I'm clearing this channel's topic.",
-                connectAddress(server)
-            ),
-            this.l(locale, "Game server removed")
+        await interaction.editReply(
+            await this.renderView(channel, game, locale, {
+                color: Colors.Green,
+                text: this.l(
+                    locale,
+                    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic."
+                ),
+            })
         );
 
         console.log(`Removed the game server ${server.host}:${server.port} from #${channel.name}.`);

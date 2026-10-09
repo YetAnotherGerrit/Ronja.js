@@ -299,43 +299,13 @@
     "Its game server's status, only in /gameinfo": [
         "L'état de son serveur de jeu, uniquement dans /gameinfo"
     ],
-    "/gameserver only works in a game's text channel": [
-        "/gameserver ne fonctionne que dans le salon textuel d'un jeu"
-    ],
-    "None of the active game channels is for a game I know how to check. You can still run /gameserver in any game's text channel and pick the game yourself.": [
-        "Aucun des salons de jeu actifs n'est pour un jeu dont je sais vérifier le serveur. Tu peux quand même utiliser /gameserver dans le salon textuel de n'importe quel jeu et choisir le jeu toi-même."
-    ],
-    "Run it in one of these channels, whose games I can check:": [
-        "Utilise-le dans l'un de ces salons, dont je peux vérifier les jeux :"
-    ],
-    "No game channel has a game server set up.": [
-        "Aucun salon de jeu n'a de serveur de jeu configuré."
-    ],
-    "Run it in the channel whose game server you want to remove:": [
-        "Utilise-le dans le salon dont tu veux retirer le serveur de jeu :"
-    ],
-    "I don't know how to check a server of %s. Please pick a game from the list.": [
-        "Je ne sais pas vérifier un serveur de %s. Choisis un jeu dans la liste."
-    ],
     "%s has no usual port, please enter the server's port.": [
         "%s n'a pas de port habituel, indique le port du serveur."
-    ],
-    "This channel is archived, so I'll only start checking the server once it's reactivated.": [
-        "Ce salon est archivé, je ne commencerai donc à vérifier le serveur qu'une fois le salon réactivé."
     ],
     "The server answered: %s.": ["Le serveur a répondu : %s."],
     "The server didn't answer just now. If it doesn't answer the next check either, it's shown as offline.": [
         "Le serveur n'a pas répondu à l'instant. S'il ne répond pas non plus à la prochaine vérification, il sera affiché hors ligne."
     ],
-    "I'll check the %s server at %s every 5 minutes and show its status in this channel's topic.": [
-        "Je vérifierai le serveur %s à l'adresse %s toutes les 5 minutes et afficherai son état dans le sujet de ce salon."
-    ],
-    "Game server saved": ["Serveur de jeu enregistré"],
-    "This channel has no game server set up.": ["Ce salon n'a pas de serveur de jeu configuré."],
-    "I removed the game server %s and won't check it anymore. I'm clearing this channel's topic.": [
-        "J'ai retiré le serveur de jeu %s et je ne le vérifierai plus. Je vide le sujet de ce salon."
-    ],
-    "Game server removed": ["Serveur de jeu retiré"],
     "The game server is back online": ["Le serveur de jeu est de nouveau en ligne"],
     "%s is answering again: %s.": ["%s répond de nouveau : %s."],
     "The game server is offline": ["Le serveur de jeu est hors ligne"],
@@ -347,5 +317,54 @@
     ],
     "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.": [
         "Impossible d'afficher l'état du serveur de jeu dans le sujet de #%s : j'ai besoin de la permission Gérer les salons dans ce salon."
+    ],
+    "Not checked while archived": ["Pas vérifié tant qu'il est archivé"],
+    "Game servers": ["Serveurs de jeu"],
+    "Run /gameserver in a game's text channel to set up, update or remove its server.": [
+        "Utilise /gameserver dans le salon textuel d'un jeu pour configurer, modifier ou retirer son serveur."
+    ],
+    "No game channel has a game server yet, and none of the active ones is for a game I know how to check. Run /gameserver in a game's text channel to set up its server anyway.": [
+        "Aucun salon de jeu n'a encore de serveur de jeu, et aucun des salons actifs n'est pour un jeu dont je sais vérifier le serveur. Utilise /gameserver dans le salon textuel d'un jeu pour configurer son serveur quand même."
+    ],
+    "Servers set up": ["Serveurs configurés"],
+    "Games I can check": ["Jeux que je peux vérifier"],
+    "Game server of #%s": ["Serveur de jeu de #%s"],
+    "Not checked while this channel is archived.": ["Pas vérifié tant que ce salon est archivé."],
+    "Game": ["Jeu"],
+    "Status": ["État"],
+    "Address Ronja checks": ["Adresse que Ronja vérifie"],
+    "Address members connect to": ["Adresse de connexion des membres"],
+    "Update": ["Modifier"],
+    "Remove": ["Retirer"],
+    "Set up": ["Configurer"],
+    "This channel has no game server set up yet.": [
+        "Ce salon n'a pas encore de serveur de jeu configuré."
+    ],
+    "I can check servers of %s.": ["Je peux vérifier les serveurs de %s."],
+    "I don't know which game to check for %s by its name, so please enter it when setting it up. [Here are the games I can check.](%s)": [
+        "Je ne sais pas quel jeu vérifier pour %s d'après son nom, indique-le donc lors de la configuration. [Voici les jeux que je peux vérifier.](%s)"
+    ],
+    "This channel is archived, so I'll only start checking once it's reactivated.": [
+        "Ce salon est archivé, je ne commencerai donc à vérifier qu'une fois qu'il sera réactivé."
+    ],
+    "e.g. Valheim": ["p. ex. Valheim"],
+    "e.g. 192.168.1.20 or valheim.example.com": ["p. ex. 192.168.1.20 ou valheim.example.com"],
+    "Port": ["Port"],
+    "Empty: the game's usual port": ["Vide : le port habituel du jeu"],
+    "Empty: the address and port above": ["Vide : l'adresse et le port ci-dessus"],
+    "Saved. I'll check the server every 5 minutes and show its status in this channel's topic.": [
+        "Enregistré. Je vérifierai le serveur toutes les 5 minutes et afficherai son état dans le sujet de ce salon."
+    ],
+    "I don't know a game called %s whose server I can check. [Here are the games I can check.](%s)": [
+        "Je ne connais aucun jeu appelé %s dont je sais vérifier le serveur. [Voici les jeux que je peux vérifier.](%s)"
+    ],
+    "%s fits several games: %s. Please enter one of them exactly.": [
+        "%s correspond à plusieurs jeux : %s. Indique exactement l'un d'eux."
+    ],
+    "%s isn't a port. Please enter a number from 1 to 65535.": [
+        "%s n'est pas un port. Indique un nombre de 1 à 65535."
+    ],
+    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
+        "Serveur de jeu retiré. Je ne le vérifierai plus et je vide le sujet de ce salon."
     ]
 }
