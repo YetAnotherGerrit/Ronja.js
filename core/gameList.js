@@ -1,8 +1,7 @@
 const { Op, fn, col } = require("sequelize");
 
-// The game lists meant for finding people to play with (/lfg, the voice
-// channel status, Serverprofile) leave out games IGDB lists as single-player
-// only. Games without IGDB data (singlePlayerOnly null) stay in.
+// The game lists meant for finding people to play with (/lfg, Serverprofile)
+// leave out games IGDB lists as single-player only. Games without IGDB data (singlePlayerOnly null) stay in.
 const multiplayerGamesWhere = { singlePlayerOnly: { [Op.not]: true } };
 
 // How many members played a game, in a query on Game that includes its
