@@ -285,5 +285,65 @@
     "Your ical feed couldn't be updated right now, please try again later.": [
         "No se ha podido actualizar tu feed ical ahora mismo, inténtalo de nuevo más tarde."
     ],
-    "%s shared this (created %s):": ["%s ha compartido esto (creado %s):"]
+    "%s shared this (created %s):": ["%s ha compartido esto (creado %s):"],
+    "%d/%d players": ["%d/%d jugadores"],
+    "%d players": ["%d jugadores"],
+    "Online": ["En línea"],
+    "Offline": ["Desconectado"],
+    "Status unknown": ["Estado desconocido"],
+    "Game server": ["Servidor de juego"],
+    "Its game server's status, only in /gameinfo": [
+        "El estado de su servidor de juego, solo en /gameinfo"
+    ],
+    "/gameserver only works in a game's text channel": [
+        "/gameserver solo funciona en el canal de texto de un juego"
+    ],
+    "None of the active game channels is for a game I know how to check. You can still run /gameserver in any game's text channel and pick the game yourself.": [
+        "Ninguno de los canales de juego activos es de un juego cuyo servidor sepa comprobar. Aun así puedes usar /gameserver en el canal de texto de cualquier juego y elegir el juego tú."
+    ],
+    "Run it in one of these channels, whose games I can check:": [
+        "Úsalo en uno de estos canales, cuyos juegos puedo comprobar:"
+    ],
+    "No game channel has a game server set up.": [
+        "Ningún canal de juego tiene un servidor de juego configurado."
+    ],
+    "Run it in the channel whose game server you want to remove:": [
+        "Úsalo en el canal cuyo servidor de juego quieras quitar:"
+    ],
+    "I don't know how to check a server of %s. Please pick a game from the list.": [
+        "No sé cómo comprobar un servidor de %s. Elige un juego de la lista."
+    ],
+    "%s has no usual port, please enter the server's port.": [
+        "%s no tiene un puerto habitual, indica el puerto del servidor."
+    ],
+    "This channel is archived, so I'll only start checking the server once it's reactivated.": [
+        "Este canal está archivado, así que solo empezaré a comprobar el servidor cuando se reactive."
+    ],
+    "The server answered: %s.": ["El servidor respondió: %s."],
+    "The server didn't answer just now. If it doesn't answer the next check either, it's shown as offline.": [
+        "El servidor no ha respondido ahora mismo. Si tampoco responde en la siguiente comprobación, se mostrará como desconectado."
+    ],
+    "I'll check the %s server at %s every 5 minutes and show its status in this channel's topic.": [
+        "Comprobaré el servidor de %s en %s cada 5 minutos y mostraré su estado en el tema de este canal."
+    ],
+    "Game server saved": ["Servidor de juego guardado"],
+    "This channel has no game server set up.": [
+        "Este canal no tiene ningún servidor de juego configurado."
+    ],
+    "I removed the game server %s and won't check it anymore. I'm clearing this channel's topic.": [
+        "He quitado el servidor de juego %s y ya no lo comprobaré. Voy a vaciar el tema de este canal."
+    ],
+    "Game server removed": ["Servidor de juego quitado"],
+    "The game server is back online": ["El servidor de juego vuelve a estar en línea"],
+    "%s is answering again: %s.": ["%s vuelve a responder: %s."],
+    "The game server is offline": ["El servidor de juego está desconectado"],
+    "%s isn't answering anymore. I'll let you know when it's back.": [
+        "%s ya no responde. Os avisaré cuando vuelva."
+    ],
+    "Could not post the game server status in #%s: I need the Send Messages and Embed Links permissions there.": [
+        "No pude publicar el estado del servidor de juego en #%s: necesito allí los permisos Enviar mensajes e Insertar enlaces."
+    ],
+    "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.": [
+        "No pude mostrar el estado del servidor de juego en el tema de #%s: necesito allí el permiso Gestionar canales."
+    ]
 }
