@@ -287,5 +287,84 @@
     "Your ical feed couldn't be updated right now, please try again later.": [
         "Não foi possível atualizar o teu feed ical neste momento, tenta novamente mais tarde."
     ],
-    "%s shared this (created %s):": ["%s partilhou isto (criado %s):"]
+    "%s shared this (created %s):": ["%s partilhou isto (criado %s):"],
+    "%d/%d players": ["%d/%d jogadores"],
+    "%d players": ["%d jogadores"],
+    "Online": ["Online"],
+    "Offline": ["Offline"],
+    "Status unknown": ["Estado desconhecido"],
+    "Game server": ["Servidor de jogo"],
+    "Its game server's status, only in /gameinfo": [
+        "O estado do seu servidor de jogo, só em /gameinfo"
+    ],
+    "%s has no usual port, please enter the server's port.": [
+        "%s não tem uma porta habitual, indica a porta do servidor."
+    ],
+    "The server answered: %s.": ["O servidor respondeu: %s."],
+    "The server didn't answer just now. If it doesn't answer the next check either, it's shown as offline.": [
+        "O servidor não respondeu agora mesmo. Se também não responder na próxima verificação, aparece como offline."
+    ],
+    "The game server is back online": ["O servidor de jogo está novamente online"],
+    "%s is answering again: %s.": ["%s está a responder novamente: %s."],
+    "The game server is offline": ["O servidor de jogo está offline"],
+    "%s isn't answering anymore. I'll let you know when it's back.": [
+        "%s deixou de responder. Aviso-vos quando voltar."
+    ],
+    "Could not post the game server status in #%s: I need the Send Messages and Embed Links permissions there.": [
+        "Não foi possível publicar o estado do servidor de jogo em #%s: preciso lá das permissões Enviar mensagens e Incorporar ligações."
+    ],
+    "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.": [
+        "Não foi possível mostrar o estado do servidor de jogo no tópico de #%s: preciso lá da permissão Gerir canais."
+    ],
+    "Not checked while archived": ["Não verificado enquanto arquivado"],
+    "Game servers": ["Servidores de jogo"],
+    "Run /gameserver in a game's text channel to set up, update or remove its server.": [
+        "Usa /gameserver no canal de texto de um jogo para configurar, alterar ou remover o seu servidor."
+    ],
+    "No game channel has a game server yet, and none of the active ones is for a game I know how to check. Run /gameserver in a game's text channel to set up its server anyway.": [
+        "Nenhum canal de jogo tem ainda um servidor de jogo, e nenhum dos ativos é de um jogo cujo servidor eu saiba verificar. Usa /gameserver no canal de texto de um jogo para configurar o seu servidor na mesma."
+    ],
+    "Servers set up": ["Servidores configurados"],
+    "Games I can check": ["Jogos que posso verificar"],
+    "Game server of #%s": ["Servidor de jogo de #%s"],
+    "Not checked while this channel is archived.": [
+        "Não é verificado enquanto este canal estiver arquivado."
+    ],
+    "Game": ["Jogo"],
+    "Status": ["Estado"],
+    "Address Ronja checks": ["Endereço que a Ronja verifica"],
+    "Address members connect to": ["Endereço para os membros se ligarem"],
+    "Update": ["Alterar"],
+    "Remove": ["Remover"],
+    "Set up": ["Configurar"],
+    "This channel has no game server set up yet.": [
+        "Este canal ainda não tem nenhum servidor de jogo configurado."
+    ],
+    "I can check servers of %s.": ["Posso verificar servidores de %s."],
+    "I don't know which game to check for %s by its name, so please enter it when setting it up. [Here are the games I can check.](%s)": [
+        "Não sei que jogo verificar para %s pelo nome, por isso indica-o ao configurar. [Aqui estão os jogos que posso verificar.](%s)"
+    ],
+    "This channel is archived, so I'll only start checking once it's reactivated.": [
+        "Este canal está arquivado, por isso só começo a verificar quando for reativado."
+    ],
+    "e.g. Valheim": ["p. ex. Valheim"],
+    "e.g. 192.168.1.20 or valheim.example.com": ["p. ex. 192.168.1.20 ou valheim.example.com"],
+    "Port": ["Porta"],
+    "Empty: the game's usual port": ["Vazio: a porta habitual do jogo"],
+    "Empty: the address and port above": ["Vazio: o endereço e a porta acima"],
+    "Saved. I'll check the server every 5 minutes and show its status in this channel's topic.": [
+        "Guardado. Vou verificar o servidor a cada 5 minutos e mostrar o seu estado no tópico deste canal."
+    ],
+    "I don't know a game called %s whose server I can check. [Here are the games I can check.](%s)": [
+        "Não conheço nenhum jogo chamado %s cujo servidor eu saiba verificar. [Aqui estão os jogos que posso verificar.](%s)"
+    ],
+    "%s fits several games: %s. Please enter one of them exactly.": [
+        "%s corresponde a vários jogos: %s. Escreve um deles exatamente."
+    ],
+    "%s isn't a port. Please enter a number from 1 to 65535.": [
+        "%s não é uma porta. Escreve um número de 1 a 65535."
+    ],
+    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
+        "Servidor de jogo removido. Já não o vou verificar e vou limpar o tópico deste canal."
+    ]
 }

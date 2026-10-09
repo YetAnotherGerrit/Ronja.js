@@ -39,6 +39,14 @@ want to play with your friends and need to decide on what game to play.
   announcements (patch notes etc.) and how many are playing it on Steam right
   now. Finds the game on Steam via IGDB if configured, otherwise via Steam's
   store search by the game's exact name.
+- /gameserver command for admins to show the status of the group's own game
+  server (Valheim, Minecraft, ... - anything [GameDig](https://github.com/gamedig/node-gamedig)
+  supports) in its game's text channel: the channel topic shows whether it's
+  online, how many are playing and the address to connect to, and Ronja posts
+  when it goes offline or comes back (if someone played the game recently).
+  Run in a game's text channel, it shows the channel's server with buttons to
+  set it up, update or remove it; anywhere else, which channels have one or
+  could have one.
 - Optional [IGDB](https://www.igdb.com/) integration to reduce duplicate
   game entries caused by naming variants or special editions (e.g. "Baldur's
   Gate 3" vs "Baldur's Gate III"), and a /gameinfo command to look up a

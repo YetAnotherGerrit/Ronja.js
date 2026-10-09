@@ -24,6 +24,7 @@ ronja_modules.push(require("./ronja_modules/Calendarfeed.js"));
 ronja_modules.push(require("./ronja_modules/DynamicTextChannels.js"));
 ronja_modules.push(require("./ronja_modules/DynamicVoiceChannels.js"));
 ronja_modules.push(require("./ronja_modules/GameInfo.js"));
+ronja_modules.push(require("./ronja_modules/GameServer.js"));
 ronja_modules.push(require("./ronja_modules/IGDB.js"));
 ronja_modules.push(require("./ronja_modules/Serverprofil.js"));
 ronja_modules.push(require("./ronja_modules/SetLanguage.js"));

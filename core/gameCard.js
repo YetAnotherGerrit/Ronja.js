@@ -8,6 +8,7 @@ const {
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const { Op } = require("sequelize");
+const { connectAddress, statusLine } = require("./gameServer.js");
 
 // Discord allows 6000 characters across all embeds of a message. These caps
 // keep a card well below that, so it still fits next to another embed (e.g.
@@ -50,6 +51,7 @@ const DETAILS = [
     ["links", "Links"],
     ["players", "Players", "Who here played it recently, only in /gameinfo"],
     ["channel", "Text channel", "Its game text channel, only in /gameinfo"],
+    ["server", "Game server", "Its game server's status, only in /gameinfo"],
 ];
 
 // The gameCardDetails choices for /settings (see hookForSettingOptions).
@@ -76,8 +78,8 @@ function truncate(text, max) {
 // anything the details don't have. Title and IGDB link are always shown.
 // For a game without details, pass just { name } - the card then has only
 // its title (and the guild info, if any) and doesn't mention IGDB.
-// The guild's players and the game's text channel are only shown with
-// `guildInfo` (see loadGuildInfo), which only short-lived cards pass: pinned
+// The guild's players, the game's text channel and its game server are only
+// shown with `guildInfo` (see loadGuildInfo), which only short-lived cards pass: pinned
 // or notification cards stay up for weeks, while that info changes daily.
 function buildGameCard(client, details, locale, guildInfo = null) {
     let l = (...args) => client.myTranslator(locale, ...args);
@@ -118,6 +120,9 @@ function buildGameCard(client, details, locale, guildInfo = null) {
     }
     if (guildInfo?.channel) {
         add("channel", l("Text channel"), channelLine(l, guildInfo.channel), false);
+    }
+    if (guildInfo?.server) {
+        add("server", l("Game server"), serverLines(l, guildInfo.server), false);
     }
 
     if (fields.length) e.addFields(fields);
@@ -201,11 +206,14 @@ function links(l, websites) {
 // - channel: its game text channel as { active: id } or { archived: name },
 //   or { missing: n } with the number of players it needs to get one - or
 //   null if game text channels aren't set up or its channel can't be read.
+// - server: the GameServer row of its game text channel while that's active
+//   (see ronja_modules/GameServer.js) - or null.
 async function loadGuildInfo(client, guild, game) {
     let shown = shownDetails(client);
     let info = {};
     if (shown.includes("players")) info.players = await recentPlayers(client, guild, game);
     if (shown.includes("channel")) info.channel = await textChannel(client, guild, game);
+    if (shown.includes("server")) info.server = await gameServer(client, guild, game);
     return info;
 }
 
@@ -276,6 +284,17 @@ async function textChannel(client, guild, game) {
     return { missing: Math.max(0, Number(cfg("dtcMinimumPlayersForCreation")) - players) };
 }
 
+// Archived channels' servers aren't checked, so they have no status to show.
+async function gameServer(client, guild, game) {
+    if (!game?.channel) return null;
+    let server = await client.db.GameServer.findOne({ where: { channel: game.channel } });
+    if (!server) return null;
+    let channel = await guild.channels.fetch(game.channel).catch(() => null);
+    let archive = client.myConfigGet("dtcArchivedGamesCategory");
+    if (!channel || (archive && channel.parentId === archive)) return null;
+    return server;
+}
+
 function playerLines(l, players) {
     if (!players.length) return l("Nobody here has played it recently.");
     let list = players
@@ -294,6 +313,10 @@ function channelLine(l, channel) {
     if (channel.missing === 0) return l("It gets its own channel the next time someone plays it.");
     if (channel.missing === 1) return l("It gets its own channel once 1 more player plays it.");
     return l("It gets its own channel once %d more players play it.", channel.missing);
+}
+
+function serverLines(l, server) {
+    return `${statusLine(l, server)}\n${connectAddress(server)}`;
 }
 
 module.exports = {
