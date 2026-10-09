@@ -82,12 +82,6 @@
     "I'm in!": ["Ci sono!"],
     "Not now": ["Non ora"],
     "Who's in": ["Chi c'è"],
-    "Open the voice channel's text channel to see what games the members can play...": [
-        "Apri il canale testuale del canale vocale per vedere a quali giochi possono giocare i membri..."
-    ],
-    "This games are played by the channel members:\n": [
-        "Questi giochi vengono giocati dai membri del canale:\n"
-    ],
     "No games have been played.": ["Non è stato giocato a nessun gioco."],
     "Nobody has been in a voice channel.": ["Nessuno è stato in un canale vocale."],
     "Nothing has been posted in the game channels.": [

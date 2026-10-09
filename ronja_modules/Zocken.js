@@ -7,7 +7,6 @@ const {
     GuildScheduledEventPrivacyLevel,
     GuildScheduledEventEntityType,
     GuildScheduledEventStatus,
-    ChannelType,
     SlashCommandBuilder,
     MessageFlags,
     RESTJSONErrorCodes,
@@ -76,10 +75,9 @@ const myZocken = {
     // How long a quick session's post stays up and the ping settings menu stays usable.
     // Below 15 minutes, as the menu's interaction token expires then.
     timeout: 10 * 60 * 1000,
-    // The collectors of the open quick sessions (/lfg without a day or time), by their
-    // host's ID. In memory only: after a restart, a click on a leftover post removes it.
+    // The open quick sessions (/lfg without a day or time), by their host's ID. In
+    // memory only: after a restart, a click on a leftover post removes it.
     quickSessions: new Map(),
-    dbVoiceStatus: {},
     // A zero-width marker appended to the location of game-specific /lfg events, so they can be
     // told apart later regardless of guild locale: the translated location text (e.g. "for"/"für"/
     // "para"/...) isn't a reliable signal, since every language translates it differently.
@@ -443,21 +441,21 @@ const myZocken = {
     startQuickSession: async function (interaction, channelGame) {
         let hostId = interaction.member.id;
         // One quick session per member: a new one replaces the previous one.
-        this.quickSessions.get(hostId)?.stop();
+        this.quickSessions.get(hostId)?.collector.stop();
 
-        // The host is in, and so is everyone in their voice channel.
         let participants = new Set([hostId]);
-        this.voiceChannelOf(interaction.member)?.members.forEach((member) => {
-            if (!member.user.bot) participants.add(member.id);
-        });
-
         let session = {
+            hostId,
             hostName: interaction.member.displayName,
             participants,
+            // Who's in only by being in the host's voice channel, see hookForVoiceUpdate.
+            voiceJoined: new Set(),
             locale: interaction.locale,
             title: interaction.options.getString("title"),
             gameName: channelGame?.name,
         };
+        // The host is in, and so is everyone in their voice channel.
+        this.joinVoiceMembers(session, this.voiceChannelOf(interaction.member)?.members);
 
         // A single reply, neither deferred nor edited later: Discord only notifies the
         // mentions in its text (never in embeds) in a message created with them.
@@ -482,13 +480,14 @@ const myZocken = {
             ],
             withResponse: true,
         });
-        let message = response.resource.message;
+        session.message = response.resource.message;
 
-        let collector = message.createMessageComponentCollector({
+        let collector = session.message.createMessageComponentCollector({
             filter: (i) => i.customId === "zockenIn" || i.customId === "zockenOut",
             time: this.timeout,
         });
-        this.quickSessions.set(hostId, collector);
+        session.collector = collector;
+        this.quickSessions.set(hostId, session);
 
         collector.on("collect", async (buttonInteraction) => {
             // Not awaited by anyone: catch, or an error would end the process.
@@ -502,6 +501,8 @@ const myZocken = {
                     collector.stop();
                     return;
                 }
+                // A click is a choice of its own: leaving the voice channel won't undo it.
+                session.voiceJoined.delete(buttonInteraction.user.id);
                 if (buttonInteraction.customId === "zockenIn")
                     participants.add(buttonInteraction.user.id);
                 else participants.delete(buttonInteraction.user.id);
@@ -512,15 +513,28 @@ const myZocken = {
         });
 
         collector.on("end", (collected, reason) => {
-            if (this.quickSessions.get(hostId) === collector) this.quickSessions.delete(hostId);
+            if (this.quickSessions.get(hostId) === session) this.quickSessions.delete(hostId);
             // After the timeout, or stopped as the host left or started a new session -
             // otherwise the post (or its channel) is gone already.
             if (reason !== "time" && reason !== "user") return;
-            message.delete().catch((err) => {
+            session.message.delete().catch((err) => {
                 // Someone deleted it in the meantime.
                 if (err.code !== RESTJSONErrorCodes.UnknownMessage) console.error(err);
             });
         });
+    },
+
+    // Puts the `members` (in the host's voice channel) into the quick session who aren't
+    // in yet, except bots. Returns whether anyone was added.
+    joinVoiceMembers: function (session, members = []) {
+        let added = false;
+        members.forEach((member) => {
+            if (member.user.bot || session.participants.has(member.id)) return;
+            session.participants.add(member.id);
+            session.voiceJoined.add(member.id);
+            added = true;
+        });
+        return added;
     },
 
     quickSessionEmbed: async function (session) {
@@ -555,7 +569,7 @@ const myZocken = {
             // The session's collector handles the click. Without one, the post is left
             // over from before a restart: remove it.
             let messageId = interaction.message.id;
-            if ([...this.quickSessions.values()].some((c) => c.messageId === messageId)) return;
+            if ([...this.quickSessions.values()].some((s) => s.message.id === messageId)) return;
             await interaction.deferUpdate();
             await interaction.deleteReply();
             return;
@@ -710,54 +724,49 @@ const myZocken = {
         }
     },
 
+    // Quick sessions follow their host's voice channel: whoever joins it is in (again,
+    // even after "Not now"), and whoever leaves it is out again - unless they clicked
+    // "I'm in!" themselves. When the host leaves it, it's as if everyone there left
+    // too, and everyone in the host's new channel is in.
     hookForVoiceUpdate: async function (oldState, newState) {
-        if (newState.channel) this.updateChannelVoiceStatus(newState.channel);
-        if (
-            (oldState.channel && !newState.channel) ||
-            (oldState.channel && newState.channel && oldState.channel.id != newState.channel.id)
-        )
-            this.updateChannelVoiceStatus(oldState.channel);
-    },
+        if (oldState.channelId === newState.channelId || newState.member.user.bot) return;
+        let memberId = newState.member.id;
 
-    updateChannelVoiceStatus: async function (channel) {
-        if (
-            !channel ||
-            channel.type !== ChannelType.GuildVoice ||
-            channel.userLimit !== 0 ||
-            channel.members.size === 0
-        )
-            return;
+        for (let session of this.quickSessions.values()) {
+            let changed;
+            if (memberId === session.hostId) {
+                // Who's in only by being in the host's old channel is out with the host gone.
+                let left = session.voiceJoined.size > 0;
+                session.voiceJoined.forEach((id) => session.participants.delete(id));
+                session.voiceJoined.clear();
+                let joined = this.joinVoiceMembers(
+                    session,
+                    this.voiceChannelOf(newState.member)?.members
+                );
+                changed = left || joined;
+            } else {
+                let host = newState.guild.members.cache.get(session.hostId);
+                let hostChannel = host && this.voiceChannelOf(host);
+                if (!hostChannel) continue;
+                if (newState.channelId === hostChannel.id) {
+                    changed = this.joinVoiceMembers(session, [newState.member]);
+                } else if (
+                    oldState.channelId === hostChannel.id &&
+                    session.voiceJoined.delete(memberId)
+                ) {
+                    session.participants.delete(memberId);
+                    changed = true;
+                }
+            }
+            if (!changed) continue;
 
-        if (!this.dbVoiceStatus[channel.id]) {
-            this.dbVoiceStatus[channel.id] = await channel.send(
-                this.l(
-                    channel.guild.preferredLocale,
-                    "Open the voice channel's text channel to see what games the members can play..."
-                )
-            );
+            try {
+                await session.message.edit({ embeds: [await this.quickSessionEmbed(session)] });
+            } catch (err) {
+                // Someone deleted it in the meantime.
+                if (err.code !== RESTJSONErrorCodes.UnknownMessage) console.error(err);
+            }
         }
-
-        let myMsg = this.dbVoiceStatus[channel.id];
-        let voiceMembers = [];
-
-        channel.members.forEach((member) => {
-            voiceMembers.push(member.id);
-        });
-        let players = channel.members.filter((member) => !member.user.bot).size;
-
-        myMsg
-            .edit(
-                this.l(
-                    channel.guild.preferredLocale,
-                    "This games are played by the channel members:\n"
-                ) +
-                    (await this.createZockenText(
-                        channel.guild.preferredLocale,
-                        voiceMembers,
-                        players
-                    ))
-            )
-            .catch(console.error);
     },
 };
 

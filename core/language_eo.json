@@ -80,12 +80,6 @@
     "I'm in!": ["Mi partoprenas!"],
     "Not now": ["Ne nun"],
     "Who's in": ["Kiu partoprenas"],
-    "Open the voice channel's text channel to see what games the members can play...": [
-        "Malfermu la tekstan kanalon de la voĉa kanalo por vidi kiujn ludojn la membroj povas ludi..."
-    ],
-    "This games are played by the channel members:\n": [
-        "Ĉi tiuj ludoj estas ludataj de la kanalaj membroj:\n"
-    ],
     "No games have been played.": ["Neniu ludo estis ludita."],
     "Nobody has been in a voice channel.": ["Neniu estis en voĉkanalo."],
     "Nothing has been posted in the game channels.": ["Nenio estis afiŝita en la ludkanaloj."],
