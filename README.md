@@ -20,8 +20,8 @@ want to play with your friends and need to decide on what game to play.
     - Without a day or time, a quick session: a post the others join or leave
       with "I'm in!"/"Not now". You and everyone in your voice channel are in
       from the start, whoever joins your voice channel is added, and whoever
-      leaves it again is taken out (unless they clicked "I'm in!"). It
-      disappears after 10 minutes. Admins can require hosts to be in a voice
+      leaves it again (or stays behind when you leave it) is taken out,
+      unless they clicked "I'm in!". It disappears after 10 minutes. Admins can require hosts to be in a voice
       channel.
     - With a day and/or time, a scheduled Discord event to sign up for.
     - Either way, Ronja pings members who have recently played a game with

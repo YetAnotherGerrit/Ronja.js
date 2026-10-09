@@ -726,7 +726,8 @@ const myZocken = {
 
     // Quick sessions follow their host's voice channel: whoever joins it is in (again,
     // even after "Not now"), and whoever leaves it is out again - unless they clicked
-    // "I'm in!" themselves. When the host moves, everyone in their new channel is in.
+    // "I'm in!" themselves. When the host leaves it, it's as if everyone there left
+    // too, and everyone in the host's new channel is in.
     hookForVoiceUpdate: async function (oldState, newState) {
         if (oldState.channelId === newState.channelId || newState.member.user.bot) return;
         let memberId = newState.member.id;
@@ -734,10 +735,15 @@ const myZocken = {
         for (let session of this.quickSessions.values()) {
             let changed;
             if (memberId === session.hostId) {
-                changed = this.joinVoiceMembers(
+                // Who's in only by being in the host's old channel is out with the host gone.
+                let left = session.voiceJoined.size > 0;
+                session.voiceJoined.forEach((id) => session.participants.delete(id));
+                session.voiceJoined.clear();
+                let joined = this.joinVoiceMembers(
                     session,
                     this.voiceChannelOf(newState.member)?.members
                 );
+                changed = left || joined;
             } else {
                 let host = newState.guild.members.cache.get(session.hostId);
                 let hostChannel = host && this.voiceChannelOf(host);
