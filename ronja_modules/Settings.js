@@ -298,7 +298,7 @@ const mySettings = {
         this.client.myConfigSet(setting.name, value);
         setting.value = value;
         await interaction.update(
-            await this.renderDetail(interaction.guild, category, setting, interaction.locale)
+            await this.renderDetail(interaction.guild, category, setting, interaction.locale, true)
         );
 
         // After the update, as modules may take longer than Discord waits for it.
@@ -470,12 +470,14 @@ const mySettings = {
         };
     },
 
-    renderDetail: async function (guild, category, setting, locale) {
+    // A setting with its value and the controls to change it - green right
+    // after it was `saved`.
+    renderDetail: async function (guild, category, setting, locale, saved = false) {
         let plain = await this.displayValue(guild, setting, locale);
         let options = setting.type === "multiselect" ? this.settingOptions(setting, locale) : [];
 
         let embed = new EmbedBuilder()
-            .setColor(Colors.Blue)
+            .setColor(saved ? Colors.Green : Colors.Blue)
             .setTitle(setting.name)
             .setDescription(setting.description || "")
             .addFields([
