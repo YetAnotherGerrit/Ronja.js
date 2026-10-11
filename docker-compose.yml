@@ -9,8 +9,10 @@ services:
 
     app:
         build: .
-        command: ["npm", "start"]
+        command: ["node", "index.js"]
         restart: unless-stopped
+        # As PID 1, node would ignore SIGTERM; an init process passes it on.
+        init: true
         environment:
             - RONJA_TOKEN=${RONJA_TOKEN}
         volumes:
