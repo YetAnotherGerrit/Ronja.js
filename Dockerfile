@@ -1,4 +1,4 @@
-# Use the official Node.js 22-alpine image to build our Docker image.
+# Build on the current Node.js release on purpose: every rebuild picks up the latest one.
 FROM node:latest
 
 # Set the working directory in the container to /app, which will contain our application files.
