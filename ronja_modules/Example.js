@@ -19,6 +19,13 @@ const myExample = {
         console.debug("Ronja is ready!");
     },
 
+    // Called once on SIGTERM/SIGINT, before Ronja disconnects from Discord and
+    // the database - e.g. to save state only kept in memory (see Top10.js).
+    // index.js waits for every module's hook, but at most 5 seconds in total.
+    hookForShutdown: async function () {
+        console.debug("Ronja is shutting down!");
+    },
+
     hookForCron: function () {
         return [
             {

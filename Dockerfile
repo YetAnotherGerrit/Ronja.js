@@ -1,4 +1,4 @@
-# Use the official Node.js 22-alpine image to build our Docker image.
+# Build on the current Node.js release on purpose: every rebuild picks up the latest one.
 FROM node:latest
 
 # Set the working directory in the container to /app, which will contain our application files.
@@ -16,5 +16,6 @@ COPY . .
 # Explicitly pin the environment, even though "production" is also the app's default when unset.
 ENV NODE_ENV=production
 
-# Specify the default command to run when the container starts.
-CMD ["npm", "start"]
+# Run node directly rather than npm start: npm can delay or swallow the SIGTERM
+# that docker compose stop sends, so Ronja wouldn't get to shut down cleanly.
+CMD ["node", "index.js"]

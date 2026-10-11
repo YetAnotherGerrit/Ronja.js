@@ -312,6 +312,11 @@ const myTop10 = {
         this.countedVoiceStates().forEach((state) => this.voiceSince.set(state.id, now));
     },
 
+    // The time since the last hourly flush would be lost otherwise.
+    hookForShutdown: async function () {
+        await this.flushVoiceTime();
+    },
+
     hookForCron: function () {
         let schedules = [
             {
