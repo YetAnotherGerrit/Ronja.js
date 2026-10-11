@@ -370,5 +370,33 @@
     ],
     "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
         "Server di gioco rimosso. Non lo controllerò più e svuoto l'argomento di questo canale."
-    ]
+    ],
+    "Everyone has @everyone already - please choose another role.": [
+        "Tutti hanno già @everyone: scegli un altro ruolo, per favore."
+    ],
+    "%s is managed by an integration, so I can't give it to members - please choose another role.": [
+        "%s è gestito da un'integrazione, quindi non posso assegnarlo ai membri: scegli un altro ruolo, per favore."
+    ],
+    "I need the Manage Roles permission to give %s to members.": [
+        "Mi serve il permesso «Gestire i ruoli» per assegnare %s ai membri."
+    ],
+    "%s is not below my highest role, so I can't give it to members. Move my role above it in the server settings, or choose another role.": [
+        "%s non è sotto il mio ruolo più alto, quindi non posso assegnarlo ai membri. Sposta il mio ruolo sopra di esso nelle impostazioni del server, oppure scegli un altro ruolo."
+    ],
+    "Clear": ["Svuota"],
+    "Choose a role...": ["Scegli un ruolo..."],
+    "I couldn't give or take the role for the top 10's members (top10Role). I need the Manage Roles permission, and my highest role must be above it.": [
+        "Non sono riuscita ad assegnare o togliere il ruolo per i membri della top 10 (top10Role). Mi serve il permesso «Gestire i ruoli» e il mio ruolo più alto deve stare sopra di esso."
+    ],
+    "The role for the top 10's members (top10Role) doesn't exist anymore. Please choose another one in /settings.": [
+        "Il ruolo per i membri della top 10 (top10Role) non esiste più. Scegline un altro in /settings, per favore."
+    ],
+    "%d members have <@&%s> from the top 10 postings. Should I take it from them now and give them the new role instead, or let them keep it? Then the new role only goes to the members of the next postings.": [
+        "%d membri hanno <@&%s> grazie ai post della top 10. Glielo tolgo adesso e do loro il nuovo ruolo, oppure lo lascio a loro? In quel caso il nuovo ruolo andrà solo ai membri dei prossimi post."
+    ],
+    "%d members have <@&%s> from the top 10 postings. Should I take it from them now, or let them keep it?": [
+        "%d membri hanno <@&%s> grazie ai post della top 10. Glielo tolgo adesso oppure lo lascio a loro?"
+    ],
+    "Switch now": ["Cambia adesso"],
+    "Let them keep it": ["Lascialo a loro"]
 }

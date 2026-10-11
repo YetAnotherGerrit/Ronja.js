@@ -356,5 +356,33 @@
     ],
     "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
         "Ludservilo forigita. Mi ne plu kontrolos ĝin kaj malplenigas la temon de ĉi tiu kanalo."
-    ]
+    ],
+    "Everyone has @everyone already - please choose another role.": [
+        "Ĉiuj jam havas @everyone – bonvolu elekti alian rolon."
+    ],
+    "%s is managed by an integration, so I can't give it to members - please choose another role.": [
+        "%s estas administrata de integraĵo, do mi ne povas doni ĝin al membroj – bonvolu elekti alian rolon."
+    ],
+    "I need the Manage Roles permission to give %s to members.": [
+        "Mi bezonas la permeson „Administri rolojn“ por doni %s al membroj."
+    ],
+    "%s is not below my highest role, so I can't give it to members. Move my role above it in the server settings, or choose another role.": [
+        "%s ne estas sub mia plej alta rolo, do mi ne povas doni ĝin al membroj. Movu mian rolon super ĝin en la servilaj agordoj, aŭ elektu alian rolon."
+    ],
+    "Clear": ["Malplenigi"],
+    "Choose a role...": ["Elektu rolon..."],
+    "I couldn't give or take the role for the top 10's members (top10Role). I need the Manage Roles permission, and my highest role must be above it.": [
+        "Mi ne povis doni aŭ forpreni la rolon por la membroj de la supraj 10 (top10Role). Mi bezonas la permeson „Administri rolojn“, kaj mia plej alta rolo devas esti super ĝi."
+    ],
+    "The role for the top 10's members (top10Role) doesn't exist anymore. Please choose another one in /settings.": [
+        "La rolo por la membroj de la supraj 10 (top10Role) ne plu ekzistas. Bonvolu elekti alian en /settings."
+    ],
+    "%d members have <@&%s> from the top 10 postings. Should I take it from them now and give them the new role instead, or let them keep it? Then the new role only goes to the members of the next postings.": [
+        "%d membroj havas <@&%s> el la afiŝoj de la supraj 10. Ĉu mi forprenu ĝin de ili nun kaj donu al ili la novan rolon anstataŭe, aŭ ĉu ili konservu ĝin? Tiam nur la membroj de la venontaj afiŝoj ricevos la novan rolon."
+    ],
+    "%d members have <@&%s> from the top 10 postings. Should I take it from them now, or let them keep it?": [
+        "%d membroj havas <@&%s> el la afiŝoj de la supraj 10. Ĉu mi forprenu ĝin de ili nun, aŭ ĉu ili konservu ĝin?"
+    ],
+    "Switch now": ["Ŝanĝi nun"],
+    "Let them keep it": ["Lasi ilin konservi ĝin"]
 }

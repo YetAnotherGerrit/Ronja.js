@@ -366,5 +366,33 @@
     ],
     "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
         "Servidor de jogo removido. Já não o vou verificar e vou limpar o tópico deste canal."
-    ]
+    ],
+    "Everyone has @everyone already - please choose another role.": [
+        "Toda a gente já tem @everyone – escolhe outro cargo, por favor."
+    ],
+    "%s is managed by an integration, so I can't give it to members - please choose another role.": [
+        "%s é gerido por uma integração, por isso não o posso dar aos membros – escolhe outro cargo, por favor."
+    ],
+    "I need the Manage Roles permission to give %s to members.": [
+        "Preciso da permissão «Gerir cargos» para dar %s aos membros."
+    ],
+    "%s is not below my highest role, so I can't give it to members. Move my role above it in the server settings, or choose another role.": [
+        "%s não está abaixo do meu cargo mais alto, por isso não o posso dar aos membros. Move o meu cargo para cima dele nas definições do servidor, ou escolhe outro cargo."
+    ],
+    "Clear": ["Limpar"],
+    "Choose a role...": ["Escolhe um cargo..."],
+    "I couldn't give or take the role for the top 10's members (top10Role). I need the Manage Roles permission, and my highest role must be above it.": [
+        "Não consegui dar nem tirar o cargo dos membros do top 10 (top10Role). Preciso da permissão «Gerir cargos», e o meu cargo mais alto tem de estar acima dele."
+    ],
+    "The role for the top 10's members (top10Role) doesn't exist anymore. Please choose another one in /settings.": [
+        "O cargo dos membros do top 10 (top10Role) já não existe. Escolhe outro em /settings, por favor."
+    ],
+    "%d members have <@&%s> from the top 10 postings. Should I take it from them now and give them the new role instead, or let them keep it? Then the new role only goes to the members of the next postings.": [
+        "%d membros têm <@&%s> pelas publicações do top 10. Tiro-lho agora e dou-lhes o novo cargo, ou deixo que o mantenham? Nesse caso, o novo cargo só vai para os membros das próximas publicações."
+    ],
+    "%d members have <@&%s> from the top 10 postings. Should I take it from them now, or let them keep it?": [
+        "%d membros têm <@&%s> pelas publicações do top 10. Tiro-lho agora ou deixo que o mantenham?"
+    ],
+    "Switch now": ["Mudar agora"],
+    "Let them keep it": ["Deixar ficar"]
 }
