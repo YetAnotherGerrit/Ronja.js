@@ -46,7 +46,7 @@ Steps to upgrade an existing installation:
       migrations npm run migrate-legacy -- /legacy.sqlite
     ```
 
-6. Run `npm start` (or `docker compose up` if you're using Docker).
+6. Run `npm start` (or `docker compose up -d` if you're using Docker).
 
 7. Reconfigure your settings using the `/settings` admin command in Discord:
    `/settings list` shows every available setting, its current value, and a

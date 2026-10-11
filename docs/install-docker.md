@@ -58,7 +58,7 @@ Intent, are not used by Ronja and don't need to be enabled.
     RONJA_TOKEN=your-bot-token-here
     ```
 
-5. Run `docker compose up`
+5. Run `docker compose up -d`
 
     This builds the image, runs the database migrations once, then starts the
     bot. Slash- and context-menu-commands are registered with Discord
@@ -71,7 +71,7 @@ Intent, are not used by Ronja and don't need to be enabled.
    (`git pull`, or download and extract a new release ZIP over the old
    files).
 
-2. Run `docker compose up --build`
+2. Run `docker compose up -d --build`
 
     This rebuilds the image with the new version, re-runs the database
     migrations, and restarts the bot.
