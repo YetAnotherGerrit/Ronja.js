@@ -9,6 +9,7 @@ const {
     StringSelectMenuBuilder,
     ChannelSelectMenuBuilder,
     ChannelType,
+    RoleSelectMenuBuilder,
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle,
@@ -39,6 +40,10 @@ async function plainValue(guild, setting) {
     if (setting.type === "discordChannel" || setting.type === "discordCategory") {
         let name = await resolveChannelName(guild, setting.value);
         return name ? `#${name}` : `${setting.value} (not found)`;
+    }
+    if (setting.type === "discordRole") {
+        let role = guild.roles.cache.get(setting.value);
+        return role ? `@${role.name}` : `${setting.value} (not found)`;
     }
     return setting.value;
 }
@@ -116,6 +121,9 @@ const mySettings = {
         let settingsByName = new Map(settings.map((s) => [s.name, s]));
         let categories = groupByCategory(settings);
 
+        // Values waiting for the answer to a module's question, by setting name.
+        let pending = new Map();
+
         let view = this.renderHome(categories, interaction.locale);
         let message = await interaction.reply({ ...view, flags: MessageFlags.Ephemeral });
 
@@ -127,6 +135,8 @@ const mySettings = {
         collector.on("collect", async (i) => {
             try {
                 let [action, category, name, value] = i.customId.split(":");
+                let change = (newValue) =>
+                    this.changeSetting(i, category, settingsByName.get(name), newValue, pending);
 
                 switch (action) {
                     case "settingsHome":
@@ -152,39 +162,57 @@ const mySettings = {
                         break;
                     }
 
-                    case "settingsBool": {
-                        let setting = settingsByName.get(name);
-                        this.client.myConfigSet(name, value);
-                        setting.value = value;
-                        await i.update(
-                            await this.renderDetail(i.guild, category, setting, i.locale)
+                    case "settingsBool":
+                        await change(value);
+                        break;
+
+                    case "settingsChannel":
+                        await change(i.values[0]);
+                        break;
+
+                    case "settingsRole": {
+                        let problem = this.roleProblem(
+                            i.guild.roles.cache.get(i.values[0]),
+                            i.locale
                         );
+                        if (problem) {
+                            await i.reply({
+                                embeds: [
+                                    new EmbedBuilder().setColor(Colors.Red).setDescription(problem),
+                                ],
+                                flags: MessageFlags.Ephemeral,
+                            });
+                            break;
+                        }
+                        await change(i.values[0]);
                         break;
                     }
 
-                    case "settingsChannel": {
-                        let setting = settingsByName.get(name);
-                        this.client.myConfigSet(name, i.values[0]);
-                        setting.value = i.values[0];
-                        await i.update(
-                            await this.renderDetail(i.guild, category, setting, i.locale)
-                        );
+                    case "settingsClear":
+                        await change("");
                         break;
-                    }
 
-                    case "settingsMulti": {
-                        let setting = settingsByName.get(name);
-                        let value = i.values.join(",");
-                        this.client.myConfigSet(name, value);
-                        setting.value = value;
-                        await i.update(
-                            await this.renderDetail(i.guild, category, setting, i.locale)
+                    case "settingsMulti":
+                        await change(i.values.join(","));
+                        break;
+
+                    case "settingsAnswer": {
+                        // Already answered, e.g. by a double click.
+                        if (!pending.has(name)) break;
+                        let newValue = pending.get(name);
+                        pending.delete(name);
+                        await this.saveSetting(
+                            i,
+                            category,
+                            settingsByName.get(name),
+                            newValue,
+                            value
                         );
                         break;
                     }
 
                     case "settingsEdit":
-                        await this.handleEdit(i, category, settingsByName.get(name));
+                        await this.handleEdit(i, category, settingsByName.get(name), pending);
                         break;
                 }
             } catch (err) {
@@ -201,7 +229,89 @@ const mySettings = {
         });
     },
 
-    handleEdit: async function (interaction, category, setting) {
+    // Why Ronja can't give `role` to members, or null if she can.
+    roleProblem: function (role, locale) {
+        let me = role.guild.members.me;
+        if (role.id === role.guild.id) {
+            return this.l(locale, "Everyone has @everyone already - please choose another role.");
+        }
+        if (role.managed) {
+            return this.l(
+                locale,
+                "%s is managed by an integration, so I can't give it to members - please choose another role.",
+                role.name
+            );
+        }
+        if (!me.permissions.has(PermissionFlagsBits.ManageRoles)) {
+            return this.l(
+                locale,
+                "I need the Manage Roles permission to give %s to members.",
+                role.name
+            );
+        }
+        if (role.comparePositionTo(me.roles.highest) >= 0) {
+            return this.l(
+                locale,
+                "%s is not below my highest role, so I can't give it to members. Move my role above it in the server settings, or choose another role.",
+                role.name
+            );
+        }
+        return null;
+    },
+
+    // The first question a module asks before `setting` changes to `value`
+    // (see hookForSettingQuestion in Example.js), or null.
+    settingQuestion: async function (setting, value, locale) {
+        for (let m of this.client.myModules) {
+            let question = await m.hookForSettingQuestion?.(
+                setting.name,
+                setting.value,
+                value,
+                locale
+            );
+            if (question) return question;
+        }
+        return null;
+    },
+
+    // Changes `setting` to `value` from the component or modal `interaction` -
+    // unless a module has a question about that: then the value waits in
+    // `pending` until it's answered (settingsAnswer).
+    changeSetting: async function (interaction, category, setting, value, pending) {
+        let question =
+            value !== setting.value &&
+            (await this.settingQuestion(setting, value, interaction.locale));
+        if (question) {
+            pending.set(setting.name, value);
+            await interaction.update(
+                this.renderQuestion(category, setting, question, interaction.locale)
+            );
+            return;
+        }
+        await this.saveSetting(interaction, category, setting, value);
+    },
+
+    // Saves `setting`, then tells every module (hookForSettingChange), with the
+    // `answer` to the question about it, if one was asked.
+    saveSetting: async function (interaction, category, setting, value, answer) {
+        let oldValue = setting.value;
+        this.client.myConfigSet(setting.name, value);
+        setting.value = value;
+        await interaction.update(
+            await this.renderDetail(interaction.guild, category, setting, interaction.locale, true)
+        );
+
+        // After the update, as modules may take longer than Discord waits for it.
+        for (let m of this.client.myModules) {
+            try {
+                await m.hookForSettingChange?.(setting.name, oldValue, value, answer);
+            } catch (err) {
+                console.error(`Error handling the change of setting ${setting.name}:`, err);
+            }
+        }
+    },
+
+    handleEdit: async function (interaction, category, setting, pending) {
         let modalId = `settingsModal:${category}:${setting.name}`;
 
         let input = new TextInputBuilder()
@@ -252,12 +362,7 @@ const mySettings = {
             return;
         }
 
-        this.client.myConfigSet(setting.name, value);
-        setting.value = value;
-
-        await submitted.update(
-            await this.renderDetail(submitted.guild, category, setting, submitted.locale)
-        );
+        await this.changeSetting(submitted, category, setting, value, pending);
     },
 
     renderHome: function (categories, locale) {
@@ -338,12 +443,41 @@ const mySettings = {
         };
     },
 
-    renderDetail: async function (guild, category, setting, locale) {
+    renderQuestion: function (category, setting, question, locale) {
+        return {
+            embeds: [
+                new EmbedBuilder()
+                    .setColor(Colors.Blue)
+                    .setTitle(setting.name)
+                    .setDescription(question.description),
+            ],
+            components: [
+                new ActionRowBuilder().addComponents(
+                    ...question.answers.map((answer) =>
+                        this.client
+                            .myButton(answer.emoji)
+                            .setCustomId(`settingsAnswer:${category}:${setting.name}:${answer.id}`)
+                            .setLabel(answer.label)
+                            .setStyle(answer.style ?? ButtonStyle.Primary)
+                    ),
+                    this.client
+                        .myButton("↩️")
+                        .setCustomId(`settingsCategory:${category}`)
+                        .setLabel(this.l(locale, "Back"))
+                        .setStyle(ButtonStyle.Secondary)
+                ),
+            ],
+        };
+    },
+
+    // A setting with its value and the controls to change it - green right
+    // after it was `saved`.
+    renderDetail: async function (guild, category, setting, locale, saved = false) {
         let plain = await this.displayValue(guild, setting, locale);
         let options = setting.type === "multiselect" ? this.settingOptions(setting, locale) : [];
 
         let embed = new EmbedBuilder()
-            .setColor(Colors.Blue)
+            .setColor(saved ? Colors.Green : Colors.Blue)
             .setTitle(setting.name)
             .setDescription(setting.description || "")
             .addFields([
@@ -387,6 +521,26 @@ const mySettings = {
                         )
                 ),
                 new ActionRowBuilder().addComponents(backButton),
+            ];
+        } else if (setting.type === "discordRole") {
+            let buttons = [backButton];
+            // Clearing a role turns off whatever it's for.
+            if (setting.value) {
+                buttons.unshift(
+                    this.client
+                        .myButton("🗑️")
+                        .setCustomId(`settingsClear:${category}:${setting.name}`)
+                        .setLabel(this.l(locale, "Clear"))
+                        .setStyle(ButtonStyle.Danger)
+                );
+            }
+            rows = [
+                new ActionRowBuilder().addComponents(
+                    new RoleSelectMenuBuilder()
+                        .setCustomId(`settingsRole:${category}:${setting.name}`)
+                        .setPlaceholder(this.l(locale, "Choose a role..."))
+                ),
+                new ActionRowBuilder().addComponents(buttons),
             ];
         } else if (options.length) {
             let picked = (setting.value || "").split(",");

@@ -193,6 +193,35 @@ const myExample = {
             ];
         }
     },
+
+    // Not fanned out from a Discord event: before /settings changes a setting
+    // (`oldValue` and `newValue` are strings; a cleared setting is ""), it asks
+    // every module for a question to the admin and shows the first one. Return
+    // { description, answers: [{ id, emoji, label, style? }] } (translated for
+    // `locale`, `style` a ButtonStyle, Primary by default) to ask one, or
+    // undefined to let the change go through right away. The setting is only
+    // saved once an answer was clicked, and hookForSettingChange gets its id.
+    hookForSettingQuestion: async function (name, oldValue, newValue, locale) {
+        if (name === "exampleChoices" && oldValue && !newValue) {
+            return {
+                description: this.l(locale, "Forget everything chosen so far?"),
+                answers: [
+                    { id: "forget", emoji: "🧹", label: this.l(locale, "Forget it") },
+                    { id: "keep", emoji: "📦", label: this.l(locale, "Keep it") },
+                ],
+            };
+        }
+    },
+
+    // Not fanned out from a Discord event: called on every module after
+    // /settings saved a setting, with the id of the answer to the
+    // hookForSettingQuestion question, if one was asked. Runs after the admin
+    // got their reply, so it may take longer than Discord's 3 seconds.
+    hookForSettingChange: async function (name, oldValue, newValue, answer) {
+        if (name === "exampleChoices" && answer === "forget") {
+            console.log(`Example: forgot everything chosen with ${oldValue}.`);
+        }
+    },
 };
 
 module.exports = myExample;
