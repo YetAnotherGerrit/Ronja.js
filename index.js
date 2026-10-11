@@ -58,6 +58,9 @@ function invokeHook(hookCall) {
     }
 }
 
+// Set once every module got its client, l() and cfg(), so hookForShutdown can rely on them.
+let ready = false;
+
 // When the client is ready prepare the modules
 client.once(Events.ClientReady, async () => {
     await client.myReady(ronja_modules);
@@ -83,6 +86,8 @@ client.once(Events.ClientReady, async () => {
             });
         }
     });
+
+    ready = true;
 
     // Only once every module has its client, l() and cfg().
     ronja_modules.forEach((m) => {
@@ -283,3 +288,40 @@ client.on(Events.Warn, console.warn);
 client.on(Events.Error, console.error);
 
 client.login(process.env.RONJA_TOKEN);
+
+// How long modules get to save their state on shutdown - well within the 10
+// seconds docker compose stop waits before killing the bot.
+const SHUTDOWN_TIMEOUT_MS = 5000;
+
+// On SIGTERM (systemctl stop, docker compose stop) or SIGINT (Ctrl+C), let every
+// module save what it only keeps in memory before exiting. A second signal exits
+// right away, e.g. pressing Ctrl+C again when a module hangs.
+let shuttingDown = false;
+async function shutdown(signal) {
+    if (shuttingDown) process.exit(1);
+    shuttingDown = true;
+    console.log(`Received ${signal}, shutting down...`);
+
+    // No new cron actions (and their database writes) while modules save their state.
+    cron.getTasks().forEach((task) => task.stop());
+
+    if (ready) {
+        let hooks = ronja_modules
+            .filter((m) => m.hookForShutdown)
+            .map((m) => Promise.resolve().then(() => m.hookForShutdown()));
+        let timeout = new Promise((resolve) =>
+            setTimeout(() => resolve("timeout"), SHUTDOWN_TIMEOUT_MS)
+        );
+        let result = await Promise.race([Promise.allSettled(hooks), timeout]);
+        if (result === "timeout")
+            console.error(`ERROR: modules didn't shut down within ${SHUTDOWN_TIMEOUT_MS} ms.`);
+        else result.filter((r) => r.status === "rejected").forEach((r) => console.error(r.reason));
+    }
+
+    await client.destroy();
+    await db.sequelize.close();
+    console.log("Bye!");
+    process.exit(0);
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
