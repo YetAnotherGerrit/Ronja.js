@@ -1,6 +1,4 @@
 {
-    "Loading...": ["Cargando..."],
-    "Please be patient.": ["Un poco de paciencia, por favor."],
     "A new text channel was created": ["Se ha creado un nuevo canal de texto"],
     "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
         "Hace poco, varias personas de aquí jugaron a un juego nuevo. Para daros un canal donde hablar de ello, se ha creado #%s.\n\nIré añadiendo a más gente a este canal en cuanto vea a otras personas jugar al mismo juego."
@@ -47,9 +45,6 @@
         "Algo salió mal al crear el evento. Por favor, inténtalo de nuevo."
     ],
     "%s's gaming session": ["Sesión de juego de %s"],
-    "Don't forget to click that \"Interested\"-Button!": [
-        "¡No olvides pulsar el botón \"Interesado\"!"
-    ],
     "#%s via /lfg by %s (%s)": ["#%s mediante /lfg de %s (%s)"],
     "#%s via /lfg for %s by %s (%s)": ["#%s mediante /lfg para %s de %s (%s)"],
     "%s wants to play %s. Who wants to join?": ["%s quiere jugar a %s. ¿Quién se apunta?"],
@@ -90,6 +85,9 @@
     ],
     "Failed!": ["¡Fallido!"],
     "Language of the guild was changed to %s.": ["El idioma del servidor se ha cambiado a %s."],
+    "Language could not be saved. Make sure the bot has the permission to change server settings.": [
+        "No se ha podido guardar el idioma. Asegúrate de que el bot tiene permiso para cambiar los ajustes del servidor."
+    ],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
         "No se pudo crear un canal de texto para %s: la categoría #%s ha alcanzado el límite de 50 canales de Discord."
     ],

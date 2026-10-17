@@ -100,7 +100,7 @@ Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-
 
 ### Code style
 
-ESLint (flat config in `eslint.config.mjs`) + Prettier (`.prettierrc.json`: 4-space tabs, double quotes, semicolons, 100-char width) with `eslint-config-prettier` disabling stylistic conflicts. `no-unused-vars` is currently a `warn`, not an `error`; `migrations/**` and `ronja_modules/Example.js` have relaxed/disabled rules — see `TODO.md` for the planned tightening path.
+ESLint (flat config in `eslint.config.mjs`) + Prettier (`.prettierrc.json`: 4-space tabs, double quotes, semicolons, 100-char width) with `eslint-config-prettier` disabling stylistic conflicts. `no-unused-vars` is currently a `warn`, not an `error`; `migrations/**` and `ronja_modules/Example.js` have relaxed/disabled rules.
 
 ### Reply design
 

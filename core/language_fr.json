@@ -1,6 +1,4 @@
 {
-    "Loading...": ["Chargement..."],
-    "Please be patient.": ["Encore un peu de patience."],
     "A new text channel was created": ["Un nouveau salon textuel a été créé"],
     "Some of you guys played a new game recently. To provide you with a channel to talk about it, #%s has been created.\n\nOthers will be added to that channel once I see them playing the same game.": [
         "Quelques personnes parmi vous ont joué récemment à un nouveau jeu. Pour vous donner un salon où en discuter, #%s a été créé.\n\nLes autres personnes seront ajoutées à ce salon dès que je les verrai jouer au même jeu."
@@ -47,9 +45,6 @@
         "Un problème est survenu lors de la création de l'événement. Merci de réessayer."
     ],
     "%s's gaming session": ["Session de jeu de %s"],
-    "Don't forget to click that \"Interested\"-Button!": [
-        "N'oublie pas de cliquer sur le bouton \"Intéressé(e)\" !"
-    ],
     "#%s via /lfg by %s (%s)": ["#%s via /lfg par %s (%s)"],
     "#%s via /lfg for %s by %s (%s)": ["#%s via /lfg pour %s par %s (%s)"],
     "%s wants to play %s. Who wants to join?": ["%s veut jouer à %s. Qui veut se joindre ?"],
@@ -90,6 +85,9 @@
     ],
     "Failed!": ["Échec !"],
     "Language of the guild was changed to %s.": ["La langue du serveur a été changée en %s."],
+    "Language could not be saved. Make sure the bot has the permission to change server settings.": [
+        "Impossible d'enregistrer la langue. Vérifie que le bot a l'autorisation de modifier les paramètres du serveur."
+    ],
     "Could not create a text channel for %s: category #%s has reached Discord's limit of 50 channels.": [
         "Impossible de créer un salon textuel pour %s : la catégorie #%s a atteint la limite de 50 salons de Discord."
     ],
