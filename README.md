@@ -21,8 +21,8 @@ want to play with your friends and need to decide on what game to play.
       with "I'm in!"/"Not now". You and everyone in your voice channel are in
       from the start, whoever joins your voice channel is added, and whoever
       leaves it again (or stays behind when you leave it) is taken out,
-      unless they clicked "I'm in!". It disappears after 10 minutes. Admins can require hosts to be in a voice
-      channel.
+      unless they clicked "I'm in!". It disappears after 10 minutes. Admins
+      can require hosts to be in a voice channel.
     - With a day and/or time, a scheduled Discord event to sign up for.
     - Either way, Ronja pings members who have recently played a game with
       you and want to be pinged (each member can choose: always, only while
@@ -34,6 +34,11 @@ want to play with your friends and need to decide on what game to play.
   members who spent the most time in voice channels with others and the
   game channels with the most messages.
     - Also weekly, monthly and yearly top 10.
+    - Admins can set a role that the members in the voice column of the
+      weekly, monthly and yearly postings get until that period's next
+      posting.
+    - Admins can hide each column's numbers (players, time in voice,
+      messages), keeping just the ranking.
 - /ical command to get an ical-feed for the events you attend.
 - /news command in a game's text channel to show the game's latest Steam
   announcements (patch notes etc.) and how many are playing it on Steam right
@@ -60,6 +65,8 @@ want to play with your friends and need to decide on what game to play.
 - Serverprofile command to show a member's recently played games, marking
   the ones you both play (🤝 to play together, 💬 single-player ones to talk
   about). With IGDB configured, also the member's favorite genres.
+- Replies only you can see that are worth sharing (/top10, /gameinfo, /news,
+  Serverprofile) have a "Show to channel" button to post them for everyone.
 - /settings command with an interactive menu to view and change Ronja's
   configuration for your guild.
 - Available in English, German, Spanish, French, Italian, Portuguese, and
