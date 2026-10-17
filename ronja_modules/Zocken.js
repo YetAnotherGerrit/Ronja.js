@@ -154,15 +154,13 @@ const myZocken = {
             .join("\n");
     },
 
-    // Members of the channel to ping: who has a game in common with the command's
-    // member and wants a ping right now. Nobody in `alreadyIn` is pinged; it always
+    // Mentions of the channel's members to ping: who has a game in common with the
+    // command's member and wants a ping right now. Nobody in `alreadyIn` is pinged; it always
     // includes the command's member, who never has a game in common with themselves.
     createChannelMemberPing: async function (interaction, alreadyIn = [interaction.member.id]) {
-        let channelMemberPing = "";
-
-        await Promise.all(
+        let mentions = await Promise.all(
             interaction.channel.members.map(async (channelMember) => {
-                if (channelMember.user.bot || alreadyIn.includes(channelMember.id)) return;
+                if (channelMember.user.bot || alreadyIn.includes(channelMember.id)) return null;
 
                 let result = await this.client.db.MemberSetting.findOne({
                     where: { memberid: channelMember.id, name: "zockenmention" },
@@ -175,7 +173,7 @@ const myZocken = {
                 let wantsPing =
                     ((presence === "online" || presence === "idle") && statusChannelMember > 0) ||
                     (presence === "offline" && statusChannelMember > 1);
-                if (!wantsPing) return;
+                if (!wantsPing) return null;
 
                 let gamesPlayed = await this.client.db.Game.findAll({
                     raw: true,
@@ -199,13 +197,20 @@ const myZocken = {
                 });
                 // playerCount is how many of the two members played the game in the last 100
                 // days, so 2 means both did: ping only if they have a game in common.
-                if (!gamesPlayed.some((gamePlayed) => gamePlayed.playerCount === 2)) return;
+                if (!gamesPlayed.some((gamePlayed) => gamePlayed.playerCount === 2)) return null;
 
-                channelMemberPing = channelMemberPing.concat(` <@${channelMember.id}>`);
+                return `<@${channelMember.id}>`;
             })
         );
 
-        return channelMemberPing;
+        return mentions.filter(Boolean);
+    },
+
+    // The greeting above /lfg's posts, with the `mentions` from createChannelMemberPing.
+    pingGreeting: function (locale, mentions) {
+        return mentions.length
+            ? this.l(locale, "Hey %s and everyone else!", mentions.join(" "))
+            : this.l(locale, "Hey everyone!");
     },
 
     hookForCommandInteraction: async function (interaction) {
@@ -401,7 +406,7 @@ const myZocken = {
             return;
         }
 
-        let channelMemberPing = await this.createChannelMemberPing(interaction);
+        let mentions = await this.createChannelMemberPing(interaction);
 
         // A single reply, neither deferred nor edited later: Discord only notifies mentions
         // in a message created with them. So everything above must fit into the 3 seconds
@@ -409,12 +414,7 @@ const myZocken = {
         await interaction.reply({
             // The event URL must stay in a plain message, not an embed: Discord does not
             // render the event link preview correctly when it's inside embed content.
-            content: this.l(
-                interaction.locale,
-                "Hey%s and everyone else! (%s)",
-                channelMemberPing,
-                newEvent.url
-            ),
+            content: `${this.pingGreeting(interaction.locale, mentions)} (${newEvent.url})`,
             components: [
                 new ActionRowBuilder().addComponents(this.pingInfoButton(interaction.locale)),
             ],
@@ -459,9 +459,9 @@ const myZocken = {
 
         // A single reply, neither deferred nor edited later: Discord only notifies the
         // mentions in its text (never in embeds) in a message created with them.
-        let ping = await this.createChannelMemberPing(interaction, [...participants]);
+        let mentions = await this.createChannelMemberPing(interaction, [...participants]);
         let response = await interaction.reply({
-            content: ping.trim() || null,
+            content: this.pingGreeting(interaction.locale, mentions),
             embeds: [await this.quickSessionEmbed(session)],
             components: [
                 new ActionRowBuilder().addComponents(

@@ -53,7 +53,8 @@
     "#%s via /lfg by %s (%s)": ["#%s mediante /lfg de %s (%s)"],
     "#%s via /lfg for %s by %s (%s)": ["#%s mediante /lfg para %s de %s (%s)"],
     "%s wants to play %s. Who wants to join?": ["%s quiere jugar a %s. ¿Quién se apunta?"],
-    "Hey%s and everyone else! (%s)": ["¡Hola%s y a todo el mundo! (%s)"],
+    "Hey %s and everyone else!": ["¡Hola %s y a todo el mundo!"],
+    "Hey everyone!": ["¡Hola a todo el mundo!"],
     "The ical-settings for this server are incomplete.": [
         "La configuración de ical para este servidor está incompleta."
     ],
