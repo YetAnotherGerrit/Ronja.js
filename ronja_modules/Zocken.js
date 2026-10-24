@@ -157,53 +157,71 @@ const myZocken = {
     // Mentions of the channel's members to ping: who has a game in common with the
     // command's member and wants a ping right now. Nobody in `alreadyIn` is pinged; it always
     // includes the command's member, who never has a game in common with themselves.
+    // A fixed number of queries, however many members the channel has: this runs before
+    // /lfg's reply, which Discord only waits 3 seconds for.
     createChannelMemberPing: async function (interaction, alreadyIn = [interaction.member.id]) {
-        let mentions = await Promise.all(
-            interaction.channel.members.map(async (channelMember) => {
-                if (channelMember.user.bot || alreadyIn.includes(channelMember.id)) return null;
+        let channelMembers = interaction.channel.members.filter(
+            (channelMember) => !channelMember.user.bot && !alreadyIn.includes(channelMember.id)
+        );
+        if (channelMembers.size === 0) return [];
 
-                let result = await this.client.db.MemberSetting.findOne({
-                    where: { memberid: channelMember.id, name: "zockenmention" },
-                });
-                let statusChannelMember = result ? parseInt(result.value) : 1;
-
-                // 0: never ping, 1: only while online or idle, 2: also while offline.
-                // Members without a presence are offline; do not disturb is never pinged.
-                let presence = channelMember.presence?.status ?? "offline";
-                let wantsPing =
-                    ((presence === "online" || presence === "idle") && statusChannelMember > 0) ||
-                    (presence === "offline" && statusChannelMember > 1);
-                if (!wantsPing) return null;
-
-                let gamesPlayed = await this.client.db.Game.findAll({
+        let pingSettings = new Map(
+            (
+                await this.client.db.MemberSetting.findAll({
                     raw: true,
-                    attributes: ["name", [countDistinctPlayers, "playerCount"]],
-                    where: multiplayerGamesWhere,
-                    include: [
-                        {
-                            model: this.client.db.GameStatus,
-                            where: {
-                                member: [interaction.member.id, channelMember.id],
-                                lastplayed: {
-                                    [Op.gte]: DateTime.now()
-                                        .setZone(this.cfg("timezone"))
-                                        .minus({ days: 100 })
-                                        .toJSDate(),
-                                },
-                            },
-                        },
-                    ],
-                    group: "Game.name",
-                });
-                // playerCount is how many of the two members played the game in the last 100
-                // days, so 2 means both did: ping only if they have a game in common.
-                if (!gamesPlayed.some((gamePlayed) => gamePlayed.playerCount === 2)) return null;
-
-                return `<@${channelMember.id}>`;
-            })
+                    attributes: ["memberid", "value"],
+                    where: { memberid: [...channelMembers.keys()], name: "zockenmention" },
+                })
+            ).map((setting) => [setting.memberid, parseInt(setting.value)])
         );
 
-        return mentions.filter(Boolean);
+        // 0: never ping, 1: only while online or idle, 2: also while offline.
+        // Members without a presence are offline; do not disturb is never pinged.
+        let wantPing = channelMembers.filter((channelMember) => {
+            let statusChannelMember = pingSettings.get(channelMember.id) ?? 1;
+            let presence = channelMember.presence?.status ?? "offline";
+            return (
+                ((presence === "online" || presence === "idle") && statusChannelMember > 0) ||
+                (presence === "offline" && statusChannelMember > 1)
+            );
+        });
+        if (wantPing.size === 0) return [];
+
+        // Ping only who has a game in common with the command's member: a multiplayer
+        // game both played in the last 100 days.
+        let since = DateTime.now().setZone(this.cfg("timezone")).minus({ days: 100 }).toJSDate();
+        let gameIds = (
+            await this.client.db.Game.findAll({
+                raw: true,
+                attributes: ["id"],
+                where: multiplayerGamesWhere,
+                include: [
+                    {
+                        model: this.client.db.GameStatus,
+                        attributes: [],
+                        where: { member: interaction.member.id, lastplayed: { [Op.gte]: since } },
+                    },
+                ],
+            })
+        ).map((game) => game.id);
+        if (gameIds.length === 0) return [];
+
+        let inCommon = new Set(
+            (
+                await this.client.db.GameStatus.findAll({
+                    raw: true,
+                    attributes: ["member"],
+                    where: { member: [...wantPing.keys()], lastplayed: { [Op.gte]: since } },
+                    include: [
+                        { model: this.client.db.Game, attributes: [], where: { id: gameIds } },
+                    ],
+                })
+            ).map((gameStatus) => gameStatus.member)
+        );
+
+        return wantPing
+            .filter((channelMember) => inCommon.has(channelMember.id))
+            .map((channelMember) => `<@${channelMember.id}>`);
     },
 
     // The greeting above /lfg's posts, with the `mentions` from createChannelMemberPing.
