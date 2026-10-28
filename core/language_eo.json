@@ -341,6 +341,18 @@
     "Port": ["Pordo"],
     "Empty: the game's usual port": ["Malplena: la kutima pordo de la ludo"],
     "Empty: the address and port above": ["Malplena: la supra adreso kaj pordo"],
+    "Password or token": ["Pasvorto aŭ ĵetono"],
+    "Saved": ["Konservita"],
+    "Empty: keep the saved one": ["Malplena: teni la konservitan"],
+    "Only for games that need one, like Palworld": [
+        "Nur por ludoj, kiuj bezonas ĝin, kiel Palworld"
+    ],
+    "If it's running, please check the password or token.": [
+        "Se ĝi funkcias, bonvolu kontroli la pasvorton aŭ ĵetonon."
+    ],
+    "I can only check %s servers with a password or token. [Here's which one.](%s)": [
+        "Servilojn de %s mi povas kontroli nur per pasvorto aŭ ĵetono. [Jen kiu.](%s)"
+    ],
     "Saved. I'll check the server every 5 minutes and show its status in this channel's topic.": [
         "Konservita. Mi kontrolos la servilon ĉiujn 5 minutojn kaj montros ĝian staton en la temo de ĉi tiu kanalo."
     ],
