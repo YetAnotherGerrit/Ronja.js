@@ -353,6 +353,18 @@
     "Port": ["Port"],
     "Empty: the game's usual port": ["Leer: der übliche Port des Spiels"],
     "Empty: the address and port above": ["Leer: die Adresse und der Port oben"],
+    "Password or token": ["Passwort oder Token"],
+    "Saved": ["Gespeichert"],
+    "Empty: keep the saved one": ["Leer: das gespeicherte behalten"],
+    "Only for games that need one, like Palworld": [
+        "Nur für Spiele, die eins brauchen, wie Palworld"
+    ],
+    "If it's running, please check the password or token.": [
+        "Falls er läuft, prüfe bitte das Passwort oder Token."
+    ],
+    "I can only check %s servers with a password or token. [Here's which one.](%s)": [
+        "Server von %s kann ich nur mit einem Passwort oder Token prüfen. [Hier steht, welches.](%s)"
+    ],
     "Saved. I'll check the server every 5 minutes and show its status in this channel's topic.": [
         "Gespeichert. Ich prüfe den Server alle 5 Minuten und zeige seinen Status im Thema dieses Kanals."
     ],

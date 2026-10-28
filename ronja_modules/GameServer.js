@@ -22,8 +22,11 @@ const {
     gameTypesFor,
     findGameTypes,
     gameTypeLabel,
+    passwordProtocol,
+    passwordOptions,
     connectAddress,
     statusLine,
+    GAMES_LIST_URL,
 } = require("../core/gameServer.js");
 
 // A server only counts as offline after this many failed checks in a row,
@@ -36,7 +39,6 @@ const TOPIC_EDIT_WINDOW_MS = 10 * 60 * 1000;
 const COLLECTOR_TIMEOUT_MS = 14 * 60 * 1000;
 const FIELD_MAX_LENGTH = 1024; // Discord's limit for an embed field value.
 const AMBIGUOUS_SHOWN = 10;
-const GAMES_LIST_URL = "https://github.com/gamedig/node-gamedig/blob/master/GAMES_LIST.md";
 const PERMISSION_ERRORS = [RESTJSONErrorCodes.MissingPermissions, RESTJSONErrorCodes.MissingAccess];
 
 const SETUP_ID = "gameserverSetup";
@@ -218,6 +220,9 @@ const myGameServer = {
                     value: server.connectAddress,
                 });
             }
+            if (server.password && passwordProtocol(server.type)) {
+                embed.addFields({ name: l("Password or token"), value: l("Saved") });
+            }
             buttons = [
                 this.client
                     .myButton("✏️")
@@ -267,7 +272,8 @@ const myGameServer = {
     },
 
     // The setup form, filled in with what was entered last (if it was
-    // invalid), the current server, or the game the channel is for.
+    // invalid), the current server, or the game the channel is for. A saved
+    // password isn't filled in, it's kept if the field is left empty.
     setupModal: function (channel, game, server, input, locale) {
         let l = (...args) => this.l(locale, ...args);
         let ownType = gameTypesFor(game.name)[0];
@@ -276,6 +282,7 @@ const myGameServer = {
             address: server?.host ?? "",
             port: server ? String(server.port) : "",
             connectAddress: server?.connectAddress ?? "",
+            password: "",
         };
         let field = (id, label, placeholder, value, required) => {
             let input = new TextInputBuilder()
@@ -307,6 +314,15 @@ const myGameServer = {
                     l("Empty: the address and port above"),
                     values.connectAddress,
                     false
+                ),
+                field(
+                    "password",
+                    l("Password or token"),
+                    server?.password
+                        ? l("Empty: keep the saved one")
+                        : l("Only for games that need one, like Palworld"),
+                    values.password,
+                    false
                 )
             );
     },
@@ -335,8 +351,9 @@ const myGameServer = {
             address: submitted.fields.getTextInputValue("address").trim(),
             port: submitted.fields.getTextInputValue("port").trim(),
             connectAddress: submitted.fields.getTextInputValue("connectAddress").trim(),
+            password: submitted.fields.getTextInputValue("password").trim(),
         };
-        let { values, error } = this.parseInput(input, l);
+        let { values, error } = this.parseInput(input, server, l);
         if (error) {
             state.input = input;
             await interaction.editReply(
@@ -368,6 +385,9 @@ const myGameServer = {
               : l(
                     "The server didn't answer just now. If it doesn't answer the next check either, it's shown as offline."
                 );
+        if (!archived && !status && saved.password) {
+            result += ` ${l("If it's running, please check the password or token.")}`;
+        }
         let text = `${l("Saved. I'll check the server every 5 minutes and show its status in this channel's topic.")}\n\n${result}`;
         await interaction.editReply(
             await this.renderView(channel, game, locale, { color: Colors.Green, text })
@@ -380,7 +400,8 @@ const myGameServer = {
     },
 
     // The form's input as a GameServer row's values - or an error to show.
-    parseInput: function (input, l) {
+    // `server` is the current one, whose password is kept if none was entered.
+    parseInput: function (input, server, l) {
         let types = findGameTypes(input.game);
         if (!types.length) {
             return {
@@ -422,12 +443,29 @@ const myGameServer = {
             };
         }
 
+        // Only stored for games that take one, and only kept for the same game.
+        let protocol = passwordProtocol(type);
+        let password = null;
+        if (protocol) {
+            password = input.password || (server?.type === type ? server.password : null);
+            if (!password && protocol.required) {
+                return {
+                    error: l(
+                        "I can only check %s servers with a password or token. [Here's which one.](%s)",
+                        gameTypeLabel(type),
+                        protocol.notesUrl
+                    ),
+                };
+            }
+        }
+
         return {
             values: {
                 type,
                 host: input.address,
                 port,
                 connectAddress: input.connectAddress || null,
+                password,
             },
         };
     },
@@ -465,6 +503,7 @@ const myGameServer = {
                 type: server.type,
                 host: server.host,
                 port: server.port,
+                ...passwordOptions(server),
             });
             return {
                 players: state.numplayers ?? state.players.length,

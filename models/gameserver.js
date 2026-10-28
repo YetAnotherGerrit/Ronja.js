@@ -28,6 +28,13 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: true,
                 defaultValue: null,
             },
+            // The password or token some games need to be checked, see
+            // passwordOptions in core/gameServer.js. Never shown anywhere.
+            password: {
+                type: DataTypes.STRING,
+                allowNull: true,
+                defaultValue: null,
+            },
             online: {
                 type: DataTypes.BOOLEAN,
                 allowNull: true,

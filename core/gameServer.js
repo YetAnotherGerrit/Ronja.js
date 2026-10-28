@@ -1,6 +1,19 @@
 const { games } = require("gamedig");
 const { normalizeGameName } = require("./gameList.js");
 
+const GAMES_LIST_URL = "https://github.com/gamedig/node-gamedig/blob/master/GAMES_LIST.md";
+
+// The GameDig protocols that take a password or token, by the options they
+// expect it in. `required`: GameDig can't check the server without one.
+// Their notes in GAMES_LIST_URL are anchored by the protocol's name.
+const PASSWORD_PROTOCOLS = {
+    // Palworld's REST API user is always "admin", with the server's admin password.
+    palworld: { required: true, options: (password) => ({ username: "admin", password }) },
+    terraria: { required: true, options: (token) => ({ token }) },
+    farmingsimulator: { required: true, options: (token) => ({ token }) },
+    satisfactory: { required: false, options: (token) => ({ token }) },
+};
+
 // GameDig's game type `id` ({ name, release_year, options: { port } }) - or
 // null if GameDig doesn't know it.
 function gameType(id) {
@@ -36,6 +49,20 @@ function gameTypeLabel(id) {
     return type.release_year ? `${type.name} (${type.release_year})` : type.name;
 }
 
+// How a game type takes a password or token ({ required, options, notesUrl })
+// - or null if it doesn't take one.
+function passwordProtocol(id) {
+    let protocol = gameType(id)?.options?.protocol;
+    if (!protocol || !Object.hasOwn(PASSWORD_PROTOCOLS, protocol)) return null;
+    return { ...PASSWORD_PROTOCOLS[protocol], notesUrl: `${GAMES_LIST_URL}#${protocol}` };
+}
+
+// The GameDig query options for a GameServer row's password, if it has one.
+function passwordOptions(server) {
+    let protocol = passwordProtocol(server.type);
+    return protocol && server.password ? protocol.options(server.password) : {};
+}
+
 // The address members connect to: the one the admin set for that, or the
 // one Ronja checks.
 function connectAddress(server) {
@@ -55,10 +82,13 @@ function statusLine(l, server) {
 }
 
 module.exports = {
+    GAMES_LIST_URL,
     gameType,
     gameTypesFor,
     findGameTypes,
     gameTypeLabel,
+    passwordProtocol,
+    passwordOptions,
     connectAddress,
     statusLine,
 };
