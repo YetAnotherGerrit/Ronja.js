@@ -417,7 +417,6 @@
     "Off": ["Malŝaltita"],
     "Your message": ["Via mesaĝo"],
     "None": ["Neniu"],
-    "Current topic": ["Nuna temo"],
     "Turn off": ["Malŝalti"],
     "Turn on": ["Ŝalti"],
     "Change message": ["Ŝanĝi mesaĝon"],
@@ -433,8 +432,5 @@
     "Removed your message.": ["Via mesaĝo estas forigita."],
     "It's only shown once you turn the automatic topic on.": [
         "Ĝi montriĝos nur kiam vi ŝaltos la aŭtomatan temon."
-    ],
-    "Discord only allows 2 topic edits every 10 minutes, so the topic will change within a few minutes.": [
-        "Discord permesas nur 2 temŝanĝojn ĉiujn 10 minutojn, do la temo ŝanĝiĝos post kelkaj minutoj."
     ]
 }

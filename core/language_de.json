@@ -429,7 +429,6 @@
     "Off": ["Aus"],
     "Your message": ["Deine Nachricht"],
     "None": ["Keine"],
-    "Current topic": ["Aktuelles Thema"],
     "Turn off": ["Ausschalten"],
     "Turn on": ["Einschalten"],
     "Change message": ["Nachricht ändern"],
@@ -445,8 +444,5 @@
     "Removed your message.": ["Deine Nachricht ist entfernt."],
     "It's only shown once you turn the automatic topic on.": [
         "Sie wird erst angezeigt, wenn du das automatische Thema einschaltest."
-    ],
-    "Discord only allows 2 topic edits every 10 minutes, so the topic will change within a few minutes.": [
-        "Discord erlaubt nur 2 Themenänderungen alle 10 Minuten, deshalb ändert sich das Thema in ein paar Minuten."
     ]
 }

@@ -427,7 +427,6 @@
     "Off": ["Désactivé"],
     "Your message": ["Ton message"],
     "None": ["Aucun"],
-    "Current topic": ["Sujet actuel"],
     "Turn off": ["Désactiver"],
     "Turn on": ["Activer"],
     "Change message": ["Modifier le message"],
@@ -443,8 +442,5 @@
     "Removed your message.": ["Ton message est supprimé."],
     "It's only shown once you turn the automatic topic on.": [
         "Il ne sera affiché qu'une fois le sujet automatique activé."
-    ],
-    "Discord only allows 2 topic edits every 10 minutes, so the topic will change within a few minutes.": [
-        "Discord ne permet que 2 modifications de sujet toutes les 10 minutes, donc le sujet changera d'ici quelques minutes."
     ]
 }

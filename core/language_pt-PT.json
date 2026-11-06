@@ -425,7 +425,6 @@
     "Off": ["Desligado"],
     "Your message": ["A tua mensagem"],
     "None": ["Nenhuma"],
-    "Current topic": ["Tópico atual"],
     "Turn off": ["Desligar"],
     "Turn on": ["Ligar"],
     "Change message": ["Alterar mensagem"],
@@ -441,8 +440,5 @@
     "Removed your message.": ["A tua mensagem foi removida."],
     "It's only shown once you turn the automatic topic on.": [
         "Só será mostrada quando ligares o tópico automático."
-    ],
-    "Discord only allows 2 topic edits every 10 minutes, so the topic will change within a few minutes.": [
-        "O Discord só permite 2 alterações de tópico a cada 10 minutos, por isso o tópico vai mudar dentro de poucos minutos."
     ]
 }

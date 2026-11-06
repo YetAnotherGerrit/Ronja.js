@@ -26,9 +26,6 @@ const PLAYED_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
 const CHANNEL_PAUSE_MS = 2000;
 // The buttons work until shortly before the reply's interaction token expires.
 const COLLECTOR_TIMEOUT_MS = 14 * 60 * 1000;
-// How long /topic waits for a topic edit before showing the change without it
-// - Discord can hold an edit back for up to 10 minutes, see updateTopic.
-const TOPIC_EDIT_WAIT_MS = 2000;
 const PERMISSION_ERRORS = [RESTJSONErrorCodes.MissingPermissions, RESTJSONErrorCodes.MissingAccess];
 
 // Where the parts go: lower comes first, and is dropped last when the topic
@@ -45,8 +42,9 @@ const MODAL_ID = "channelTopicModal";
 // The topic of game text channels: built from the parts every module returns
 // from hookForChannelTopic (game server status, next /lfg session, latest
 // Steam news, ...), plus when the game was last played and the admins' own
-// message. Archived channels only get the last two. Rebuilt on startup, once
-// a day, when the game is played (at most once an hour), and when a module
+// message. Archived channels only get the last two. Rebuilt on startup and
+// once a day (active channels only), when the game is played (at most once
+// an hour), and when a module
 // asks for it (client.myUpdateChannelTopic, e.g. on every game server check,
 // when a /lfg session changes or a channel is created, archived or
 // reactivated). /topic lets admins turn it off for a channel, or set their
@@ -211,8 +209,10 @@ const myChannelTopic = {
         return true;
     },
 
-    // Every game text channel, one after another with a pause in between:
-    // on startup and once a day, e.g. for new Steam news.
+    // Every active game text channel, one after another with a pause in
+    // between: on startup and once a day, e.g. for new Steam news. Archived
+    // channels' topics only change when the game is played, /topic changes
+    // them or the channel is archived - each of those updates it right away.
     refreshAll: async function () {
         if (this.refreshing) return;
         this.refreshing = true;
@@ -223,7 +223,7 @@ const myChannelTopic = {
             });
             for (let { channel: id } of games) {
                 let channel = await this.client.channels.fetch(id).catch(() => null);
-                if (!channel) continue;
+                if (!channel || this.isArchived(channel)) continue;
                 // Not awaited: one channel waiting for Discord's limit
                 // mustn't hold up the others.
                 this.updateTopic(channel);
@@ -289,9 +289,7 @@ const myChannelTopic = {
 
         let channel = await this.client.channels.fetch(channelId);
         let message = await interaction.editReply(await this.renderView(channel, locale));
-        // `changes` counts the admin's changes, so a late update of the view
-        // (see showChange) doesn't replace a newer one.
-        let view = { interaction, channel, ended: false, changes: 0 };
+        let view = { interaction, channel };
         let collector = message.createMessageComponentCollector({
             filter: (i) => i.user.id === interaction.user.id,
             time: COLLECTOR_TIMEOUT_MS,
@@ -306,7 +304,6 @@ const myChannelTopic = {
             }
         });
         collector.on("end", async () => {
-            view.ended = true;
             try {
                 await interaction.editReply({ components: [] });
             } catch {
@@ -345,8 +342,7 @@ const myChannelTopic = {
                     name: l("Your message"),
                     value: customMessage || l("None"),
                     inline: true,
-                },
-                { name: l("Current topic"), value: channel.topic || l("None") }
+                }
             );
 
         let buttons = [
@@ -393,30 +389,14 @@ const myChannelTopic = {
         return settings;
     },
 
-    // Shows the saved change: `notice` on top of the view, and the new topic
-    // once the channel has it. If Discord holds the topic edit back, the view
-    // says so right away and shows the new topic when the edit went through.
+    // Shows the saved change (`notice` on top of the view) and, if `updateTopic`,
+    // updates the topic in the background - Discord may hold the edit back for
+    // a few minutes (see updateTopic), and the admin sees the topic in the
+    // channel anyway.
     showChange: async function (view, notice, updateTopic) {
         let { interaction, channel } = view;
-        let locale = interaction.locale;
-        let change = ++view.changes;
-        let update = updateTopic ? this.updateTopic(channel) : null;
-        let done =
-            !update ||
-            (await Promise.race([update.then(() => true), sleep(TOPIC_EDIT_WAIT_MS, false)]));
-
-        let waiting = {
-            ...notice,
-            text: `${notice.text} ${this.l(locale, "Discord only allows 2 topic edits every 10 minutes, so the topic will change within a few minutes.")}`,
-        };
-        await interaction.editReply(
-            await this.renderView(channel, locale, done ? notice : waiting)
-        );
-        if (done) return;
-
-        await update;
-        if (view.ended || view.changes !== change) return;
-        await interaction.editReply(await this.renderView(channel, locale, notice)).catch(() => {}); // The ephemeral message may be gone (e.g. dismissed by the admin).
+        if (updateTopic) this.updateTopic(channel);
+        await interaction.editReply(await this.renderView(channel, interaction.locale, notice));
     },
 
     handleToggle: async function (view, button) {
