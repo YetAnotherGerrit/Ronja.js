@@ -312,9 +312,6 @@
     "Could not post the game server status in #%s: I need the Send Messages and Embed Links permissions there.": [
         "Não foi possível publicar o estado do servidor de jogo em #%s: preciso lá das permissões Enviar mensagens e Incorporar ligações."
     ],
-    "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.": [
-        "Não foi possível mostrar o estado do servidor de jogo no tópico de #%s: preciso lá da permissão Gerir canais."
-    ],
     "Not checked while archived": ["Não verificado enquanto arquivado"],
     "Game servers": ["Servidores de jogo"],
     "Run /gameserver in a game's text channel to set up, update or remove its server.": [
@@ -373,8 +370,8 @@
     "%s isn't a port. Please enter a number from 1 to 65535.": [
         "%s não é uma porta. Escreve um número de 1 a 65535."
     ],
-    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
-        "Servidor de jogo removido. Já não o vou verificar e vou limpar o tópico deste canal."
+    "Removed the game server. I won't check it anymore and I'm removing its status from this channel's topic.": [
+        "Removi o servidor de jogo. Já não o verifico e retiro o seu estado do tópico deste canal."
     ],
     "Everyone has @everyone already - please choose another role.": [
         "Toda a gente já tem @everyone – escolhe outro cargo, por favor."
@@ -403,5 +400,49 @@
         "%d membros têm <@&%s> pelas publicações do top 10. Tiro-lho agora ou deixo que o mantenham?"
     ],
     "Switch now": ["Mudar agora"],
-    "Let them keep it": ["Deixar ficar"]
+    "Let them keep it": ["Deixar ficar"],
+    "The automatic topic is turned off in this channel, so the status won't be shown there. Use /topic to turn it on.": [
+        "O tópico automático está desativado neste canal, por isso o estado não será mostrado aí. Usa /topic para o ativar."
+    ],
+    "Could not update the topic of #%s: I need the Manage Channels permission there.": [
+        "Não consegui atualizar o tópico de #%s: preciso da permissão Gerir canais aí."
+    ],
+    "Last played %s": ["Jogado pela última vez %s"],
+    "Session running now: %s": ["Sessão a decorrer: %s"],
+    "Next session %s: %s": ["Próxima sessão %s: %s"],
+    "/topic only works in a game's text channel.": [
+        "/topic só funciona no canal de texto de um jogo."
+    ],
+    "Topic of #%s": ["Tópico de #%s"],
+    "I keep this channel's topic up to date: when the game was last played, its game server, the next /lfg session and its latest Steam news - and your message, if you add one.": [
+        "Mantenho o tópico deste canal atualizado: quando o jogo foi jogado pela última vez, o seu servidor de jogo, a próxima sessão do /lfg e as últimas notícias da Steam - e a tua mensagem, se adicionares uma."
+    ],
+    "I don't change this channel's topic, so you can set your own. Its game server status isn't shown there either.": [
+        "Não altero o tópico deste canal, por isso podes definir o teu. O estado do servidor de jogo também não é mostrado aí."
+    ],
+    "Automatic topic": ["Tópico automático"],
+    "On": ["Ligado"],
+    "Off": ["Desligado"],
+    "Your message": ["A tua mensagem"],
+    "None": ["Nenhuma"],
+    "Current topic": ["Tópico atual"],
+    "Turn off": ["Desligar"],
+    "Turn on": ["Ligar"],
+    "Change message": ["Alterar mensagem"],
+    "Add message": ["Adicionar mensagem"],
+    "Remove message": ["Remover mensagem"],
+    "Turned on. I'm keeping this channel's topic up to date again.": [
+        "Ligado. Volto a manter o tópico deste canal atualizado."
+    ],
+    "Turned off. I won't change this channel's topic anymore, so you can set your own.": [
+        "Desligado. Já não altero o tópico deste canal, por isso podes definir o teu."
+    ],
+    "Saved your message.": ["A tua mensagem foi guardada."],
+    "Removed your message.": ["A tua mensagem foi removida."],
+    "It's only shown once you turn the automatic topic on.": [
+        "Só será mostrada quando ligares o tópico automático."
+    ],
+    "Discord only allows 2 topic edits every 10 minutes, so the topic will change within a few minutes.": [
+        "O Discord só permite 2 alterações de tópico a cada 10 minutos, por isso o tópico vai mudar dentro de poucos minutos."
+    ]
 }

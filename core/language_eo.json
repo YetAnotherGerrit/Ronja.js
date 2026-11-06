@@ -302,9 +302,6 @@
     "Could not post the game server status in #%s: I need the Send Messages and Embed Links permissions there.": [
         "Ne povis afiŝi la staton de la ludservilo en #%s: mi bezonas tie la permesojn Sendi mesaĝojn kaj Enkorpigi ligilojn."
     ],
-    "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.": [
-        "Ne povis montri la staton de la ludservilo en la temo de #%s: mi bezonas tie la permeson Administri kanalojn."
-    ],
     "Not checked while archived": ["Ne kontrolata dum arkivita"],
     "Game servers": ["Ludserviloj"],
     "Run /gameserver in a game's text channel to set up, update or remove its server.": [
@@ -365,8 +362,8 @@
     "%s isn't a port. Please enter a number from 1 to 65535.": [
         "%s ne estas pordo. Bonvolu entajpi nombron de 1 ĝis 65535."
     ],
-    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
-        "Ludservilo forigita. Mi ne plu kontrolos ĝin kaj malplenigas la temon de ĉi tiu kanalo."
+    "Removed the game server. I won't check it anymore and I'm removing its status from this channel's topic.": [
+        "Mi forigis la ludservilon. Mi ne plu kontrolas ĝin kaj forprenas ĝian staton el la temo de ĉi tiu kanalo."
     ],
     "Everyone has @everyone already - please choose another role.": [
         "Ĉiuj jam havas @everyone – bonvolu elekti alian rolon."
@@ -395,5 +392,49 @@
         "%d membroj havas <@&%s> el la afiŝoj de la supraj 10. Ĉu mi forprenu ĝin de ili nun, aŭ ĉu ili konservu ĝin?"
     ],
     "Switch now": ["Ŝanĝi nun"],
-    "Let them keep it": ["Lasi ilin konservi ĝin"]
+    "Let them keep it": ["Lasi ilin konservi ĝin"],
+    "The automatic topic is turned off in this channel, so the status won't be shown there. Use /topic to turn it on.": [
+        "La aŭtomata temo estas malŝaltita en ĉi tiu kanalo, do la stato ne montriĝos tie. Uzu /topic por ŝalti ĝin."
+    ],
+    "Could not update the topic of #%s: I need the Manage Channels permission there.": [
+        "Mi ne povis ĝisdatigi la temon de #%s: mi bezonas tie la rajton Administri kanalojn."
+    ],
+    "Last played %s": ["Laste ludita %s"],
+    "Session running now: %s": ["Sesio okazas nun: %s"],
+    "Next session %s: %s": ["Venonta sesio %s: %s"],
+    "/topic only works in a game's text channel.": [
+        "/topic funkcias nur en la tekstkanalo de ludo."
+    ],
+    "Topic of #%s": ["Temo de #%s"],
+    "I keep this channel's topic up to date: when the game was last played, its game server, the next /lfg session and its latest Steam news - and your message, if you add one.": [
+        "Mi tenas la temon de ĉi tiu kanalo ĝisdata: kiam la ludo estis laste ludita, ĝia ludservilo, la venonta /lfg-sesio kaj ĝiaj plej novaj Steam-novaĵoj - kaj via mesaĝo, se vi aldonas iun."
+    ],
+    "I don't change this channel's topic, so you can set your own. Its game server status isn't shown there either.": [
+        "Mi ne ŝanĝas la temon de ĉi tiu kanalo, do vi povas meti vian propran. Ankaŭ la stato de ĝia ludservilo ne montriĝas tie."
+    ],
+    "Automatic topic": ["Aŭtomata temo"],
+    "On": ["Ŝaltita"],
+    "Off": ["Malŝaltita"],
+    "Your message": ["Via mesaĝo"],
+    "None": ["Neniu"],
+    "Current topic": ["Nuna temo"],
+    "Turn off": ["Malŝalti"],
+    "Turn on": ["Ŝalti"],
+    "Change message": ["Ŝanĝi mesaĝon"],
+    "Add message": ["Aldoni mesaĝon"],
+    "Remove message": ["Forigi mesaĝon"],
+    "Turned on. I'm keeping this channel's topic up to date again.": [
+        "Ŝaltita. Mi denove tenas la temon de ĉi tiu kanalo ĝisdata."
+    ],
+    "Turned off. I won't change this channel's topic anymore, so you can set your own.": [
+        "Malŝaltita. Mi ne plu ŝanĝos la temon de ĉi tiu kanalo, do vi povas meti vian propran."
+    ],
+    "Saved your message.": ["Via mesaĝo estas konservita."],
+    "Removed your message.": ["Via mesaĝo estas forigita."],
+    "It's only shown once you turn the automatic topic on.": [
+        "Ĝi montriĝos nur kiam vi ŝaltos la aŭtomatan temon."
+    ],
+    "Discord only allows 2 topic edits every 10 minutes, so the topic will change within a few minutes.": [
+        "Discord permesas nur 2 temŝanĝojn ĉiujn 10 minutojn, do la temo ŝanĝiĝos post kelkaj minutoj."
+    ]
 }

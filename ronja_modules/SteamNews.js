@@ -18,6 +18,14 @@ const STEAM_TIMEOUT_MS = 10 * 1000;
 // Steam's store search finds nothing without a country - the US store has the most games.
 const STORE_SEARCH_COUNTRY = "US";
 const STORE_SEARCH_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+// The topic's news is fetched about once a day: a bit less than a day, so the
+// daily topic rebuild (see ChannelTopic.js) always gets fresh news. Failed
+// fetches are tried again after an hour, not on every game server check.
+const TOPIC_NEWS_TTL_MS = 20 * 60 * 60 * 1000;
+const TOPIC_NEWS_RETRY_MS = 60 * 60 * 1000;
+const TOPIC_TITLE_LENGTH = 100;
+// Where the news goes in the channel topic, see ChannelTopic.js.
+const TOPIC_ORDER = 40;
 // Only the developer's own announcements (patch notes etc.), no press articles.
 const STEAM_NEWS_FEED = "steam_community_announcements";
 // The BBCode tags Steam announcements use - anything else in brackets, like
@@ -28,10 +36,13 @@ const BBCODE_TAG =
 // /news in a game's text channel: the game's latest Steam announcements and
 // how many are playing it on Steam right now, for whoever asked. Its Steam
 // app ID comes from IGDB (see steamAppId in ronja_modules/IGDB.js) or, for
-// games IGDB doesn't know (or without IGDB), from Steam's store search.
+// games IGDB doesn't know (or without IGDB), from Steam's store search. The
+// latest announcement is also part of the channel topic (hookForChannelTopic).
 const mySteamNews = {
     // game name -> { appId: string | null, expiresAt }
     storeSearchCache: new Map(),
+    // game id -> { news: { title, date, url } | null, expiresAt }
+    topicNewsCache: new Map(),
 
     commands: [
         new SlashCommandBuilder()
@@ -120,6 +131,42 @@ const mySteamNews = {
             embeds: [e],
             components: withShareButton(this.client, locale),
         });
+    },
+
+    // The channel topic's part for the game's latest Steam announcement, e.g.
+    // "📰 [Patch 1.2 is live](<url>) (12/24/2026)" - the date as a Discord timestamp,
+    // so everyone sees it in their own format.
+    hookForChannelTopic: async function (channel, game, locale) {
+        // Older news doesn't make anyone want to play - steamNewsTopicDays, 0 shows none.
+        let days = Number(this.cfg("steamNewsTopicDays") ?? 14);
+        let news = days > 0 ? await this.topicNews(game) : null;
+        if (!news || Date.now() - news.date > days * 24 * 60 * 60 * 1000) return null;
+        return {
+            order: TOPIC_ORDER,
+            text: `📰 [${escapeMarkdown(truncate(news.title, TOPIC_TITLE_LENGTH)).replace(/[[\]]/g, "\\$&")}](<${news.url}>) (${time(news.date, TimestampStyles.ShortDate)})`,
+        };
+    },
+
+    // The game's latest announcement { title, date } or null, cached - see
+    // TOPIC_NEWS_TTL_MS. A failed fetch keeps the news fetched before.
+    topicNews: async function (game) {
+        let cached = this.topicNewsCache.get(game.id);
+        if (cached && cached.expiresAt > Date.now()) return cached.news;
+
+        try {
+            let appId = await this.steamAppId(game);
+            let latest = appId ? (await this.fetchNews(appId))[0] : null;
+            let news = latest ? { title: latest.title, date: latest.date, url: latest.url } : null;
+            this.topicNewsCache.set(game.id, { news, expiresAt: Date.now() + TOPIC_NEWS_TTL_MS });
+            return news;
+        } catch (err) {
+            console.warn(
+                `Could not fetch Steam news for the topic of ${game.name}: ${err.message}`
+            );
+            let news = cached?.news ?? null;
+            this.topicNewsCache.set(game.id, { news, expiresAt: Date.now() + TOPIC_NEWS_RETRY_MS });
+            return news;
+        }
     },
 
     reply: async function (interaction, color, message) {

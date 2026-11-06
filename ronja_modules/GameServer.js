@@ -32,9 +32,8 @@ const {
 // A server only counts as offline after this many failed checks in a row,
 // so a single lost packet doesn't cause a false alarm.
 const FAILURES_FOR_OFFLINE = 2;
-// Discord allows 2 name or topic edits per channel every 10 minutes.
-const TOPIC_EDITS_PER_WINDOW = 2;
-const TOPIC_EDIT_WINDOW_MS = 10 * 60 * 1000;
+// Where the status goes in the channel topic, see ChannelTopic.js.
+const TOPIC_ORDER = 10;
 // The buttons work until shortly before the reply's interaction token expires.
 const COLLECTOR_TIMEOUT_MS = 14 * 60 * 1000;
 const FIELD_MAX_LENGTH = 1024; // Discord's limit for an embed field value.
@@ -46,17 +45,15 @@ const REMOVE_ID = "gameserverRemove";
 const MODAL_ID = "gameserverModal";
 
 // /gameserver: the game server of a game text channel, checked every 5
-// minutes via GameDig while the channel is active. Its status is kept in the
-// channel topic (just the connect address while archived), and Ronja posts
+// minutes via GameDig while the channel is active. Its status is part of the
+// channel topic (see hookForChannelTopic and ChannelTopic.js), and Ronja posts
 // when it goes offline or comes back - if someone played the game recently.
 // In a game text channel, /gameserver shows its server with buttons to set
 // it up, update or remove it; anywhere else, the channels that have one or
 // could have one.
 const myGameServer = {
-    // channel id -> timestamps of Ronja's recent topic edits there
-    topicEdits: new Map(),
-    // "<channel id>:topic|post" - permission problems the owner was told about
-    // already, so they don't get a DM every 5 minutes.
+    // Channel ids whose owner was told about a missing permission to post
+    // there already, so they don't get a DM every 5 minutes.
     ownerNotified: new Set(),
 
     commands: [
@@ -389,6 +386,10 @@ const myGameServer = {
             result += ` ${l("If it's running, please check the password or token.")}`;
         }
         let text = `${l("Saved. I'll check the server every 5 minutes and show its status in this channel's topic.")}\n\n${result}`;
+        let topic = await this.client.db.ChannelTopic.findOne({ where: { channel: channel.id } });
+        if (topic && !topic.enabled) {
+            text += `\n\n⚠️ ${l("The automatic topic is turned off in this channel, so the status won't be shown there. Use /topic to turn it on.")}`;
+        }
         await interaction.editReply(
             await this.renderView(channel, game, locale, { color: Colors.Green, text })
         );
@@ -396,7 +397,7 @@ const myGameServer = {
         console.log(
             `Set up the ${saved.type} server ${saved.host}:${saved.port} in #${channel.name}.`
         );
-        await this.updateTopic(channel, saved, true);
+        await this.client.myUpdateChannelTopic(channel);
     },
 
     // The form's input as a GameServer row's values - or an error to show.
@@ -485,13 +486,13 @@ const myGameServer = {
                 color: Colors.Green,
                 text: this.l(
                     locale,
-                    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic."
+                    "Removed the game server. I won't check it anymore and I'm removing its status from this channel's topic."
                 ),
             })
         );
 
         console.log(`Removed the game server ${server.host}:${server.port} from #${channel.name}.`);
-        if (channel.topic) await this.editTopic(channel, "", true);
+        await this.client.myUpdateChannelTopic(channel);
     },
 
     // Asks the server for its status: { players, maxPlayers } - or null if
@@ -532,12 +533,12 @@ const myGameServer = {
 
         // Not checked while archived. Its last status would be outdated by
         // the time the channel is reactivated, so the first check after that
-        // starts over, like the first check of a new server.
+        // starts over, like the first check of a new server. Archived
+        // channels' topics don't show it.
         if (this.isArchived(channel)) {
             if (server.online !== null || server.failures) {
                 await server.update({ online: null, failures: 0, players: null, maxPlayers: null });
             }
-            await this.updateTopic(channel, server);
             return;
         }
 
@@ -556,7 +557,7 @@ const myGameServer = {
             });
             if (offline && wasOnline === true) await this.announce(channel, server);
         }
-        await this.updateTopic(channel, server);
+        await this.client.myUpdateChannelTopic(channel);
     },
 
     // Posts that the server went offline or came back online, if someone
@@ -605,67 +606,34 @@ const myGameServer = {
 
         try {
             await channel.send({ embeds: [embed] });
-            this.ownerNotified.delete(`${channel.id}:post`);
+            this.ownerNotified.delete(channel.id);
             console.log(`Posted in #${channel.name} that its game server is ${what}.`);
         } catch (err) {
             let message = l(
                 "Could not post the game server status in #%s: I need the Send Messages and Embed Links permissions there.",
                 channel.name
             );
-            if (!this.notifyOwnerOnce(channel, "post", err, message)) {
+            if (!this.notifyOwnerOnce(channel, err, message)) {
                 console.error(`Could not post the game server status in #${channel.name}:`, err);
             }
         }
     },
 
-    // The topic the server's channel should have: its status and connect
-    // address - or only the address while the channel is archived.
-    updateTopic: async function (channel, server, force = false) {
-        let topic = connectAddress(server);
-        if (!this.isArchived(channel)) {
-            let l = (...args) => this.l(channel.guild.preferredLocale, ...args);
-            topic = `${statusLine(l, server)} · ${topic}`;
-        }
-        if ((channel.topic ?? "") === topic) return;
-        await this.editTopic(channel, topic, force);
-    },
-
-    // Skips the edit if Discord's limit for the channel is used up - the next
-    // check tries again. `force` (for admin changes) edits anyway: discord.js
-    // then waits until Discord allows it.
-    editTopic: async function (channel, topic, force = false) {
-        let now = Date.now();
-        let edits = (this.topicEdits.get(channel.id) ?? []).filter(
-            (t) => now - t < TOPIC_EDIT_WINDOW_MS
-        );
-        if (!force && edits.length >= TOPIC_EDITS_PER_WINDOW) {
-            this.topicEdits.set(channel.id, edits);
-            return;
-        }
-        this.topicEdits.set(channel.id, [...edits, now]);
-
-        try {
-            await channel.setTopic(topic);
-            this.ownerNotified.delete(`${channel.id}:topic`);
-        } catch (err) {
-            let message = this.l(
-                channel.guild.preferredLocale,
-                "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.",
-                channel.name
-            );
-            if (!this.notifyOwnerOnce(channel, "topic", err, message)) {
-                console.error(`Could not update the topic of #${channel.name}:`, err);
-            }
-        }
+    // The channel topic's part for the server (only asked for active
+    // channels): its status and the address members connect to.
+    hookForChannelTopic: async function (channel, game, locale) {
+        let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
+        if (!server) return null;
+        let l = (...args) => this.l(locale, ...args);
+        return { order: TOPIC_ORDER, text: `${statusLine(l, server)} · ${connectAddress(server)}` };
     },
 
     // Like client.myNotifyOwnerOnPermissionError, but only once per channel
-    // and `kind` until it works again - checks retry every 5 minutes.
-    notifyOwnerOnce: function (channel, kind, err, message) {
-        let key = `${channel.id}:${kind}`;
-        if (this.ownerNotified.has(key)) return PERMISSION_ERRORS.includes(err?.code);
+    // until it works again - checks retry every 5 minutes.
+    notifyOwnerOnce: function (channel, err, message) {
+        if (this.ownerNotified.has(channel.id)) return PERMISSION_ERRORS.includes(err?.code);
         if (!this.client.myNotifyOwnerOnPermissionError(channel.guild, err, message)) return false;
-        this.ownerNotified.add(key);
+        this.ownerNotified.add(channel.id);
         return true;
     },
 
