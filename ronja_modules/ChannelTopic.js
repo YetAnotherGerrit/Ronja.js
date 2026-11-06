@@ -154,7 +154,7 @@ const myChannelTopic = {
         if (settings?.customMessage) {
             parts.push({ order: ORDER_CUSTOM_MESSAGE, text: settings.customMessage });
         }
-        let lastPlayed = await this.lastPlayedPart(game, locale);
+        let lastPlayed = await this.lastPlayedPart(channel, locale);
         if (lastPlayed) parts.push(lastPlayed);
 
         if (!this.isArchived(channel)) {
@@ -182,12 +182,23 @@ const myChannelTopic = {
         return topic.slice(0, TOPIC_MAX_LENGTH);
     },
 
-    // When anyone last started playing the game, as a timestamp Discord
-    // shows relative to now ("3 hours ago") - it stays right without edits.
-    lastPlayedPart: async function (game, locale) {
-        let lastPlayed = await this.client.db.GameStatus.max("lastplayed", {
-            where: { GameId: game.id },
+    // When anyone last started playing any of the channel's games (a channel
+    // can be shared by several), as a timestamp Discord shows relative to now
+    // ("3 hours ago") - it stays right without edits.
+    lastPlayedPart: async function (channel, locale) {
+        let latest = await this.client.db.GameStatus.findOne({
+            attributes: ["lastplayed"],
+            include: [
+                {
+                    model: this.client.db.Game,
+                    attributes: [],
+                    where: { channel: channel.id },
+                    required: true,
+                },
+            ],
+            order: [["lastplayed", "DESC"]],
         });
+        let lastPlayed = latest?.lastplayed;
         if (!lastPlayed) return null;
         return {
             order: ORDER_LAST_PLAYED,
