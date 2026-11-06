@@ -34,65 +34,66 @@ const myDynamicTextChannels = {
         ];
     },
 
-    // The GameStatus rows of whoever played `game` in the last `pDays` days.
-    recentlyPlayedWhere: function (game, pDays) {
+    // Played within the last `pDays` days, as a GameStatus condition.
+    playedSince: function (pDays) {
         return {
-            GameId: game.id,
-            lastplayed: {
-                [Op.gte]: DateTime.now()
-                    .setZone(this.cfg("timezone"))
-                    .minus({ days: pDays })
-                    .toJSDate(),
-            },
+            [Op.gte]: DateTime.now()
+                .setZone(this.cfg("timezone"))
+                .minus({ days: pDays })
+                .toJSDate(),
         };
     },
 
-    getPlayersForGame: async function (game, pDays) {
-        return this.client.db.GameStatus.findAndCountAll({
-            where: this.recentlyPlayedWhere(game, pDays),
-        });
+    // GameStatus query options for whoever played any of the games linked to
+    // `channel` (a channel can be shared by several) in the last `pDays` days.
+    channelPlayersQuery: function (channel, pDays) {
+        return {
+            where: { lastplayed: this.playedSince(pDays) },
+            include: [
+                {
+                    model: this.client.db.Game,
+                    attributes: [],
+                    where: { channel: channel.id },
+                    required: true,
+                },
+            ],
+        };
     },
 
     // Counts members, not rows, so a duplicate GameStatus row can't make one
     // member count twice.
     countPlayersForGame: async function (game, pDays) {
         return this.client.db.GameStatus.count({
-            where: this.recentlyPlayedWhere(game, pDays),
+            where: { GameId: game.id, lastplayed: this.playedSince(pDays) },
+            distinct: true,
+            col: "member",
+        });
+    },
+
+    // Members, not rows: who played several of the channel's games counts once.
+    countPlayersForChannel: async function (channel, pDays) {
+        return this.client.db.GameStatus.count({
+            ...this.channelPlayersQuery(channel, pDays),
             distinct: true,
             col: "member",
         });
     },
 
     hasGameBeenPlayedForChannel: async function (channel, pDays) {
-        let gamesPlayed = await this.client.db.GameStatus.findAndCountAll({
-            where: {
-                lastplayed: {
-                    [Op.gte]: DateTime.now()
-                        .setZone(this.cfg("timezone"))
-                        .minus({ days: pDays })
-                        .toJSDate(),
-                },
-            },
-            include: [
-                {
-                    model: this.client.db.Game,
-                    where: {
-                        channel: channel.id,
-                    },
-                    required: true,
-                },
-            ],
-        });
-
-        return gamesPlayed.count > 0;
+        return (
+            (await this.client.db.GameStatus.count(this.channelPlayersQuery(channel, pDays))) > 0
+        );
     },
 
-    assignAllPlayersToChannel: async function (channel, game, pDays) {
-        // TODO: Remove game from function, as a channel can be for more than one game. Related to issue #9.
-        let players = await this.getPlayersForGame(game, pDays);
+    // Gives everyone who recently played one of the channel's games access to it.
+    assignAllPlayersToChannel: async function (channel, pDays) {
+        let players = await this.client.db.GameStatus.findAll({
+            ...this.channelPlayersQuery(channel, pDays),
+            attributes: ["member"],
+        });
 
-        players.rows.forEach(async (player) => {
-            let player_member = await channel.guild.members.fetch(player.member);
+        new Set(players.map((p) => p.member)).forEach(async (member) => {
+            let player_member = await channel.guild.members.fetch(member);
             channel.permissionOverwrites.create(player_member, {
                 ViewChannel: true,
             });
@@ -243,8 +244,9 @@ const myDynamicTextChannels = {
             return;
         }
 
-        this.assignAllPlayersToChannel(newChannel, game, this.cfg("dtcDaysTarget"));
+        // Linked first, so assignAllPlayersToChannel finds the game's players.
         await game.update({ channel: newChannel.id });
+        this.assignAllPlayersToChannel(newChannel, this.cfg("dtcDaysTarget"));
         this.client.myUpdateChannelTopic(newChannel);
         // Only after linking the channel - fetching the details can take a
         // moment, and meanwhile the game must not look channel-less.
@@ -355,8 +357,11 @@ const myDynamicTextChannels = {
             return;
         }
 
-        // The channel is archived: re-activate it once more than one member played the game.
-        if ((await this.countPlayersForGame(game, this.cfg("dtcDaysTarget"))) <= 1) return;
+        // The channel is archived: re-activate it once more than one member
+        // played one of its games (a channel can be shared by several).
+        if ((await this.countPlayersForChannel(gameChannel, this.cfg("dtcDaysTarget"))) <= 1) {
+            return;
+        }
 
         let dtcGamesCategory = await this.client.channels.fetch(this.cfg("dtcGamesCategory"));
         try {
@@ -375,7 +380,7 @@ const myDynamicTextChannels = {
             return;
         }
         await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
-        this.assignAllPlayersToChannel(gameChannel, game, this.cfg("dtcDaysTarget"));
+        this.assignAllPlayersToChannel(gameChannel, this.cfg("dtcDaysTarget"));
         this.client.myUpdateChannelTopic(gameChannel);
 
         console.log(`Moved #${gameChannel.name} from archive to active.`);
