@@ -108,9 +108,19 @@ const myExample = {
         console.debug("A channel has been deleted!");
     },
 
+    hookForEventCreate: async function (guildScheduledEvent) {
+        // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
+        console.debug("A scheduled guild event has been created!");
+    },
+
     hookForEventUpdate: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
         // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
         console.debug("A scheduled guild event has been updated!");
+    },
+
+    hookForEventDelete: async function (guildScheduledEvent) {
+        // https://discord.js.org/#/docs/discord.js/stable/class/GuildScheduledEvent
+        console.debug("A scheduled guild event has been deleted!");
     },
 
     /* TODO:
@@ -177,6 +187,27 @@ const myExample = {
                 .setLabel(this.l(locale, "Example"))
                 .setStyle(ButtonStyle.Secondary),
         ];
+    },
+
+    // Not fanned out from a Discord event: ChannelTopic.js asks every module
+    // for its part of an active game text channel's topic whenever it rebuilds
+    // one. Return { order, text } (or an array of them, `text` translated for
+    // `locale`), or null for nothing. Parts are joined by " | ", lower `order`
+    // first, and the highest ones are dropped while the topic is too long -
+    // taken so far: 0 custom message, 10 game server, 20 /lfg session,
+    // 30 last played, 40 Steam news. Archived channels don't ask.
+    // When your part changes, call this.client.myUpdateChannelTopic(channel)
+    // to have the topic rebuilt (see hookForChannelTopic in GameServer.js).
+    hookForChannelTopic: async function (channel, game, locale) {
+        return { order: 50, text: `🧩 ${this.l(locale, "Example")}` };
+    },
+
+    // At most one module should implement this - client.myUpdateChannelTopic(channel)
+    // uses the first one it finds (ChannelTopic.js). Rebuild the topic of a game
+    // text channel (the channel or its id) from every module's hookForChannelTopic
+    // parts. A throw is caught and logged by myUpdateChannelTopic.
+    hookForUpdateChannelTopic: async function (channel) {
+        console.debug("A game text channel's topic needs rebuilding!");
     },
 
     // Not fanned out from a Discord event: /settings (ronja_modules/Settings.js)
