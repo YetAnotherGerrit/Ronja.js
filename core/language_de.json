@@ -314,9 +314,6 @@
     "Could not post the game server status in #%s: I need the Send Messages and Embed Links permissions there.": [
         "Konnte den Status des Spielservers nicht in #%s posten: Ich brauche dort die Berechtigungen „Nachrichten senden“ und „Links einbetten“."
     ],
-    "Could not show the game server status in the topic of #%s: I need the Manage Channels permission there.": [
-        "Konnte den Status des Spielservers nicht im Thema von #%s anzeigen: Ich brauche dort die Berechtigung „Kanäle verwalten“."
-    ],
     "Not checked while archived": ["Wird im Archiv nicht geprüft"],
     "Game servers": ["Spielserver"],
     "Run /gameserver in a game's text channel to set up, update or remove its server.": [
@@ -377,8 +374,8 @@
     "%s isn't a port. Please enter a number from 1 to 65535.": [
         "%s ist kein Port. Bitte gib eine Zahl von 1 bis 65535 ein."
     ],
-    "Removed the game server. I won't check it anymore and I'm clearing this channel's topic.": [
-        "Spielserver entfernt. Ich prüfe ihn nicht mehr und leere das Thema dieses Kanals."
+    "Removed the game server. I won't check it anymore and I'm removing its status from this channel's topic.": [
+        "Spielserver entfernt. Ich prüfe ihn nicht mehr und nehme seinen Status aus dem Thema dieses Kanals."
     ],
     "Everyone has @everyone already - please choose another role.": [
         "@everyone hat sowieso jeder – bitte wähle eine andere Rolle."
@@ -407,5 +404,45 @@
         "%d Mitglieder haben <@&%s> aus den Top-10-Beiträgen. Soll ich sie ihnen jetzt wegnehmen, oder sollen sie sie behalten?"
     ],
     "Switch now": ["Jetzt wechseln"],
-    "Let them keep it": ["Behalten lassen"]
+    "Let them keep it": ["Behalten lassen"],
+    "The automatic topic is turned off in this channel, so the status won't be shown there. Use /topic to turn it on.": [
+        "Das automatische Thema ist in diesem Kanal ausgeschaltet, deshalb wird der Status dort nicht angezeigt. Mit /topic schaltest du es ein."
+    ],
+    "Could not update the topic of #%s: I need the Manage Channels permission there.": [
+        "Konnte das Thema von #%s nicht aktualisieren: Dafür brauche ich dort die Berechtigung „Kanäle verwalten“."
+    ],
+    "Last played %s": ["Zuletzt gespielt %s"],
+    "Session running now: %s": ["Session läuft gerade: %s"],
+    "Next session %s: %s": ["Nächste Session %s: %s"],
+    "/topic only works in a game's text channel.": [
+        "/topic funktioniert nur im Textkanal eines Spiels."
+    ],
+    "Topic of #%s": ["Thema von #%s"],
+    "I keep this channel's topic up to date: when the game was last played, its game server, the next /lfg session and its latest Steam news - and your message, if you add one.": [
+        "Ich halte das Thema dieses Kanals aktuell: wann das Spiel zuletzt gespielt wurde, sein Spielserver, die nächste /lfg-Session und die neuesten Steam-News – und deine Nachricht, wenn du eine hinzufügst."
+    ],
+    "I don't change this channel's topic, so you can set your own. Its game server status isn't shown there either.": [
+        "Ich ändere das Thema dieses Kanals nicht, du kannst also dein eigenes setzen. Auch der Status des Spielservers wird dort nicht angezeigt."
+    ],
+    "Automatic topic": ["Automatisches Thema"],
+    "On": ["An"],
+    "Off": ["Aus"],
+    "Your message": ["Deine Nachricht"],
+    "None": ["Keine"],
+    "Turn off": ["Ausschalten"],
+    "Turn on": ["Einschalten"],
+    "Change message": ["Nachricht ändern"],
+    "Add message": ["Nachricht hinzufügen"],
+    "Remove message": ["Nachricht entfernen"],
+    "Turned on. I'm keeping this channel's topic up to date again.": [
+        "Eingeschaltet. Ich halte das Thema dieses Kanals wieder aktuell."
+    ],
+    "Turned off. I won't change this channel's topic anymore, so you can set your own.": [
+        "Ausgeschaltet. Ich ändere das Thema dieses Kanals nicht mehr, du kannst also dein eigenes setzen."
+    ],
+    "Saved your message.": ["Deine Nachricht ist gespeichert."],
+    "Removed your message.": ["Deine Nachricht ist entfernt."],
+    "It's only shown once you turn the automatic topic on.": [
+        "Sie wird erst angezeigt, wenn du das automatische Thema einschaltest."
+    ]
 }

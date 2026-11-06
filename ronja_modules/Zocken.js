@@ -10,11 +10,20 @@ const {
     SlashCommandBuilder,
     MessageFlags,
     RESTJSONErrorCodes,
+    ChannelType,
+    TimestampStyles,
+    time,
 } = require("discord.js");
 const { DateTime } = require("luxon");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 const { multiplayerGamesWhere, countDistinctPlayers, playerLimit } = require("../core/gameList.js");
+
+// Where the next session goes in the channel topic, see ChannelTopic.js.
+const TOPIC_ORDER = 20;
+// The channel name a game-specific /lfg event's location starts with, e.g.
+// "#valheim via /lfg for Valheim by ..." - in every language.
+const LOCATION_CHANNEL = /^#(\S+)\s/;
 
 const myZocken = {
     commands: [
@@ -740,6 +749,65 @@ const myZocken = {
                 );
             }
         }
+    },
+
+    // The game text channel a game-specific /lfg event was created in, or null.
+    eventChannel: function (guildScheduledEvent) {
+        let location = guildScheduledEvent.entityMetadata?.location ?? "";
+        if (!location.includes(this.gameSpecificMarker)) return null;
+        let name = location.match(LOCATION_CHANNEL)?.[1];
+        if (!name) return null;
+        return (
+            guildScheduledEvent.guild?.channels.cache.find(
+                (c) => c.type === ChannelType.GuildText && c.name === name
+            ) ?? null
+        );
+    },
+
+    // The channel topic's part for the game's next /lfg session (only asked
+    // for active channels): the running one, or else the next one to start.
+    hookForChannelTopic: async function (channel, game, locale) {
+        let sessions = channel.guild.scheduledEvents.cache.filter(
+            (e) =>
+                [GuildScheduledEventStatus.Scheduled, GuildScheduledEventStatus.Active].includes(
+                    e.status
+                ) && this.eventChannel(e)?.id === channel.id
+        );
+        let running = sessions.find((e) => e.status === GuildScheduledEventStatus.Active);
+        if (running) {
+            return {
+                order: TOPIC_ORDER,
+                text: `📅 ${this.l(locale, "Session running now: %s", running.name)}`,
+            };
+        }
+        let next = sessions
+            .filter((e) => e.scheduledStartTimestamp > Date.now())
+            .sort((a, b) => a.scheduledStartTimestamp - b.scheduledStartTimestamp)
+            .first();
+        if (!next) return null;
+        return {
+            order: TOPIC_ORDER,
+            text: `📅 ${this.l(locale, "Next session %s: %s", time(next.scheduledStartAt, TimestampStyles.ShortDateTime), next.name)}`,
+        };
+    },
+
+    // A session's channel topic changes right away when it's created, changed,
+    // started, ended or deleted.
+    updateEventTopic: async function (guildScheduledEvent) {
+        let channel = this.eventChannel(guildScheduledEvent);
+        if (channel) await this.client.myUpdateChannelTopic(channel);
+    },
+
+    hookForEventCreate: async function (guildScheduledEvent) {
+        await this.updateEventTopic(guildScheduledEvent);
+    },
+
+    hookForEventUpdate: async function (oldGuildScheduledEvent, newGuildScheduledEvent) {
+        await this.updateEventTopic(newGuildScheduledEvent);
+    },
+
+    hookForEventDelete: async function (guildScheduledEvent) {
+        await this.updateEventTopic(guildScheduledEvent);
     },
 
     // Quick sessions follow their host's voice channel: whoever joins it is in (again,

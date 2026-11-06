@@ -21,6 +21,7 @@ const cron = require("node-cron");
 // Load Ronja's modular system
 const ronja_modules = [];
 ronja_modules.push(require("./ronja_modules/Calendarfeed.js"));
+ronja_modules.push(require("./ronja_modules/ChannelTopic.js"));
 ronja_modules.push(require("./ronja_modules/DynamicTextChannels.js"));
 ronja_modules.push(require("./ronja_modules/DynamicVoiceChannels.js"));
 ronja_modules.push(require("./ronja_modules/GameInfo.js"));
@@ -182,6 +183,20 @@ client.on(Events.GuildScheduledEventUserRemove, async (oGuildScheduledEvent, oUs
             invokeHook(() => m.hookForEventUserRemove(oGuildScheduledEvent, oUser));
         if (m.hookForEventUserUpdate)
             invokeHook(() => m.hookForEventUserUpdate(oGuildScheduledEvent, oUser));
+    });
+});
+
+// Listen for GuildScheduledEventCreate and forward to all modules
+client.on(Events.GuildScheduledEventCreate, async (guildScheduledEvent) => {
+    ronja_modules.forEach((m) => {
+        if (m.hookForEventCreate) invokeHook(() => m.hookForEventCreate(guildScheduledEvent));
+    });
+});
+
+// Listen for GuildScheduledEventDelete and forward to all modules
+client.on(Events.GuildScheduledEventDelete, async (guildScheduledEvent) => {
+    ronja_modules.forEach((m) => {
+        if (m.hookForEventDelete) invokeHook(() => m.hookForEventDelete(guildScheduledEvent));
     });
 });
 

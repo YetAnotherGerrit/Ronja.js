@@ -133,6 +133,20 @@ class Ronja extends Client {
         }
     }
 
+    // Asks the first module implementing hookForUpdateChannelTopic
+    // (ChannelTopic.js) to rebuild the topic of a game text channel (the
+    // channel or its id) from every module's hookForChannelTopic parts.
+    // Never throws - a topic is decoration.
+    async myUpdateChannelTopic(channel) {
+        let provider = this.myModules.find((m) => m.hookForUpdateChannelTopic);
+        if (!provider || !channel) return;
+        try {
+            await provider.hookForUpdateChannelTopic(channel);
+        } catch (err) {
+            console.error(`Could not update the topic of channel ${channel.id ?? channel}:`, err);
+        }
+    }
+
     // Use this instead of Model.findOrCreate - see findOrCreateWithoutTransaction.
     myFindOrCreate(model, options) {
         return findOrCreateWithoutTransaction(model, options);

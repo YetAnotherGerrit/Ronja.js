@@ -244,7 +244,8 @@ const myDynamicTextChannels = {
         }
 
         this.assignAllPlayersToChannel(newChannel, game, this.cfg("dtcDaysTarget"));
-        game.update({ channel: newChannel.id });
+        await game.update({ channel: newChannel.id });
+        this.client.myUpdateChannelTopic(newChannel);
         // Only after linking the channel - fetching the details can take a
         // moment, and meanwhile the game must not look channel-less.
         this.postGameCard(newChannel, game);
@@ -312,6 +313,7 @@ const myDynamicTextChannels = {
             return;
         }
         channel.permissionOverwrites.set(await this.defaultOverrides(channel.guild));
+        this.client.myUpdateChannelTopic(channel);
 
         console.log(`Moved #${channel.name} to archive.`);
     },
@@ -374,6 +376,7 @@ const myDynamicTextChannels = {
         }
         await gameChannel.permissionOverwrites.set(await this.defaultOverrides(gameChannel.guild));
         this.assignAllPlayersToChannel(gameChannel, game, this.cfg("dtcDaysTarget"));
+        this.client.myUpdateChannelTopic(gameChannel);
 
         console.log(`Moved #${gameChannel.name} from archive to active.`);
 
