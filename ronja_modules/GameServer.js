@@ -638,6 +638,7 @@ const myGameServer = {
     },
 
     hookForChannelDelete: async function (channel) {
+        this.ownerNotified.delete(channel.id);
         let removed = await this.client.db.GameServer.destroy({ where: { channel: channel.id } });
         if (removed) console.log(`Removed the game server of deleted channel #${channel.name}.`);
     },
