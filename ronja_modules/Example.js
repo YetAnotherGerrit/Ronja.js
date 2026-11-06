@@ -198,7 +198,9 @@ const myExample = {
     // 30 last played, 40 Steam news. Archived channels don't ask.
     // When your part changes, call this.client.myUpdateChannelTopic(channel)
     // to have the topic rebuilt (see hookForChannelTopic in GameServer.js).
-    hookForChannelTopic: async function (channel, game, locale) {
+    // `games` are all Game rows linked to the channel - usually one, but a
+    // channel can be shared by several (see SteamNews.js).
+    hookForChannelTopic: async function (channel, games, locale) {
         return { order: 50, text: `🧩 ${this.l(locale, "Example")}` };
     },
 

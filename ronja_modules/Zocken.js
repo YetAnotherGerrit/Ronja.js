@@ -260,9 +260,7 @@ const myZocken = {
             return;
         }
 
-        let channelGame = await this.client.db.Game.findOne({
-            where: { channel: interaction.channel.id },
-        });
+        let channelGame = await this.channelGameFor(interaction.channel.id, interaction.member.id);
 
         // No time, and so no day (a day alone was rejected above): a quick session.
         if (!interaction.options.getString("time")) {
@@ -461,6 +459,29 @@ const myZocken = {
     voiceChannelOf: function (member) {
         let channel = member.voice.channel;
         return channel && channel.id !== member.guild.afkChannelId ? channel : null;
+    },
+
+    // The game a game text channel's /lfg is for, or null. Of several games
+    // sharing the channel, the one the host played last - or else the one
+    // anyone played last.
+    channelGameFor: async function (channelId, memberId) {
+        let games = await this.client.db.Game.findAll({ where: { channel: channelId } });
+        if (games.length <= 1) return games[0] ?? null;
+
+        let latestOf = (where) =>
+            this.client.db.GameStatus.findOne({
+                where,
+                include: [
+                    {
+                        model: this.client.db.Game,
+                        where: { channel: channelId },
+                        required: true,
+                    },
+                ],
+                order: [["lastplayed", "DESC"]],
+            });
+        let latest = (await latestOf({ member: memberId })) ?? (await latestOf({}));
+        return latest?.Game ?? games[0];
     },
 
     // /lfg without a day or time: a post that members join or leave with its
@@ -766,7 +787,7 @@ const myZocken = {
 
     // The channel topic's part for the game's next /lfg session (only asked
     // for active channels): the running one, or else the next one to start.
-    hookForChannelTopic: async function (channel, game, locale) {
+    hookForChannelTopic: async function (channel, games, locale) {
         let sessions = channel.guild.scheduledEvents.cache.filter(
             (e) =>
                 [GuildScheduledEventStatus.Scheduled, GuildScheduledEventStatus.Active].includes(

@@ -34,10 +34,11 @@ const BBCODE_TAG =
     /\[\/?(\*|b|i|u|s|strike|h[1-6]|url|img|list|olist|quote|code|spoiler|noparse|hr|table|tr|th|td|p|carousel|dynamiclink)(\b[^\]]*)?\]/gi;
 
 // /news in a game's text channel: the game's latest Steam announcements and
-// how many are playing it on Steam right now, for whoever asked. Its Steam
-// app ID comes from IGDB (see steamAppId in ronja_modules/IGDB.js) or, for
-// games IGDB doesn't know (or without IGDB), from Steam's store search. The
-// latest announcement is also part of the channel topic (hookForChannelTopic).
+// how many are playing it on Steam right now, for whoever asked - for all the
+// channel's games together, if several share it. A game's Steam app ID comes
+// from IGDB (see steamAppId in ronja_modules/IGDB.js) or, for games IGDB
+// doesn't know (or without IGDB), from Steam's store search. The latest
+// announcement is also part of the channel topic (hookForChannelTopic).
 const mySteamNews = {
     // game name -> { appId: string | null, expiresAt }
     storeSearchCache: new Map(),
@@ -63,8 +64,12 @@ const mySteamNews = {
         let channel = interaction.channel?.isThread()
             ? interaction.channel.parentId
             : interaction.channelId;
-        let game = await this.client.db.Game.findOne({ where: { channel } });
-        if (!game) {
+        // A channel can be shared by several games: their news together.
+        let games = await this.client.db.Game.findAll({
+            where: { channel },
+            order: [["name", "ASC"]],
+        });
+        if (!games.length) {
             await this.reply(
                 interaction,
                 Colors.Red,
@@ -72,19 +77,26 @@ const mySteamNews = {
             );
             return;
         }
+        let names = games.map((g) => g.name).join(", ");
 
-        let appId, news, players;
+        // [{ game, appId, news, players }] for the games Steam knows.
+        let apps;
         try {
-            appId = await this.steamAppId(game);
-            if (appId) {
-                [news, players] = await Promise.all([
-                    this.fetchNews(appId),
-                    this.fetchCurrentPlayers(appId),
-                ]);
-            }
+            apps = (
+                await Promise.all(
+                    games.map(async (game) => {
+                        let appId = await this.steamAppId(game);
+                        if (!appId) return null;
+                        let [news, players] = await Promise.all([
+                            this.fetchNews(appId),
+                            this.fetchCurrentPlayers(appId),
+                        ]);
+                        return { game, appId, news, players };
+                    })
+                )
+            ).filter(Boolean);
         } catch (err) {
-            let app = appId ? ` (app ${appId})` : "";
-            console.error(`Could not fetch Steam news for ${game.name}${app}:`, err);
+            console.error(`Could not fetch Steam news for ${names}:`, err);
             await this.reply(
                 interaction,
                 Colors.Red,
@@ -92,31 +104,51 @@ const mySteamNews = {
             );
             return;
         }
-        if (!appId) {
+        if (!apps.length) {
             await this.reply(
                 interaction,
                 Colors.Blue,
-                this.l(locale, "No Steam news available for %s.", game.name)
+                this.l(locale, "No Steam news available for %s.", names)
             );
             return;
         }
 
+        // With several games, each player count and announcement names its game.
+        let several = apps.length > 1;
         let e = new EmbedBuilder()
             .setColor(Colors.Blue)
-            .setTitle(this.l(locale, "News for %s", game.name))
-            .setURL(`https://store.steampowered.com/news/app/${appId}`);
-        let description = [];
-        if (players !== null) {
-            let count = new Intl.NumberFormat(locale).format(players);
-            description.push(`👥 ${this.l(locale, "Playing on Steam right now: %s", count)}`);
-        }
+            .setTitle(
+                truncate(
+                    this.l(locale, "News for %s", apps.map((a) => a.game.name).join(", ")),
+                    TITLE_LENGTH
+                )
+            );
+        if (!several) e.setURL(`https://store.steampowered.com/news/app/${apps[0].appId}`);
+        let playerLines = apps
+            .filter((a) => a.players !== null)
+            .map((a) => {
+                let count = new Intl.NumberFormat(locale).format(a.players);
+                let line = this.l(locale, "Playing on Steam right now: %s", count);
+                return `👥 ${several ? `${a.game.name}: ` : ""}${line}`;
+            });
+        let description = playerLines.length ? [playerLines.join("\n")] : [];
+        let news = apps
+            .flatMap((a) => a.news.map((n) => ({ ...n, game: a.game })))
+            .sort((a, b) => b.date - a.date)
+            .slice(0, NEWS_SHOWN);
         if (!news.length) {
-            description.push(this.l(locale, "No Steam news available for %s.", game.name));
+            description.push(
+                this.l(
+                    locale,
+                    "No Steam news available for %s.",
+                    apps.map((a) => a.game.name).join(", ")
+                )
+            );
         }
         if (description.length) e.setDescription(description.join("\n\n"));
         e.addFields(
             news.map((n) => ({
-                name: truncate(n.title, TITLE_LENGTH),
+                name: truncate(several ? `${n.game.name}: ${n.title}` : n.title, TITLE_LENGTH),
                 value: [
                     time(n.date, TimestampStyles.LongDate),
                     n.excerpt && escapeMarkdown(n.excerpt),
@@ -133,17 +165,32 @@ const mySteamNews = {
         });
     },
 
-    // The channel topic's part for the game's latest Steam announcement, e.g.
-    // "📰 [Patch 1.2 is live](<url>) (12/24/2026)" - the date as a Discord timestamp,
-    // so everyone sees it in their own format.
-    hookForChannelTopic: async function (channel, game, locale) {
+    // The channel topic's part for the latest Steam announcement of the
+    // channel's games, e.g. "📰 [Patch 1.2 is live](<url>) (12/24/2026)" - the
+    // date as a Discord timestamp, so everyone sees it in their own format. In
+    // a channel shared by several games, the game's name goes in front.
+    hookForChannelTopic: async function (channel, games, locale) {
         // Older news doesn't make anyone want to play - steamNewsTopicDays, 0 shows none.
         let days = Number(this.cfg("steamNewsTopicDays") ?? 14);
-        let news = days > 0 ? await this.topicNews(game) : null;
-        if (!news || Date.now() - news.date > days * 24 * 60 * 60 * 1000) return null;
+        if (!(days > 0)) return null;
+        let latest = (
+            await Promise.all(
+                games.map(async (game) => ({ game, news: await this.topicNews(game) }))
+            )
+        )
+            .filter(({ news }) => news)
+            .sort((a, b) => b.news.date - a.news.date)[0];
+        if (!latest || Date.now() - latest.news.date > days * 24 * 60 * 60 * 1000) return null;
+
+        let { game, news } = latest;
+        let title = escapeMarkdown(truncate(news.title, TOPIC_TITLE_LENGTH)).replace(
+            /[[\]]/g,
+            "\\$&"
+        );
+        let prefix = games.length > 1 ? `${escapeMarkdown(game.name)}: ` : "";
         return {
             order: TOPIC_ORDER,
-            text: `📰 [${escapeMarkdown(truncate(news.title, TOPIC_TITLE_LENGTH)).replace(/[[\]]/g, "\\$&")}](<${news.url}>) (${time(news.date, TimestampStyles.ShortDate)})`,
+            text: `📰 ${prefix}[${title}](<${news.url}>) (${time(news.date, TimestampStyles.ShortDate)})`,
         };
     },
 

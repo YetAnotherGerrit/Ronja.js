@@ -14,7 +14,7 @@ const {
     time,
 } = require("discord.js");
 const { setTimeout: sleep } = require("node:timers/promises");
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 
 const TOPIC_MAX_LENGTH = 1024; // Discord's limit for a channel topic.
 const SEPARATOR = " | ";
@@ -114,12 +114,13 @@ const myChannelTopic = {
     },
 
     applyTopic: async function (channel) {
-        let game = await this.client.db.Game.findOne({ where: { channel: channel.id } });
-        if (!game) return;
+        // A channel can be shared by several games.
+        let games = await this.client.db.Game.findAll({ where: { channel: channel.id } });
+        if (!games.length) return;
         let settings = (await this.settingsOf(channel)) ?? (await this.takeOver(channel));
         if (!settings.enabled) return;
 
-        let topic = await this.buildTopic(channel, game, settings);
+        let topic = await this.buildTopic(channel, games, settings);
         if ((channel.topic ?? "") === topic) return;
 
         this.lastEdits.set(channel.id, Date.now());
@@ -148,13 +149,13 @@ const myChannelTopic = {
     },
 
     // The topic `channel` should have, from all parts that fit.
-    buildTopic: async function (channel, game, settings) {
+    buildTopic: async function (channel, games, settings) {
         let locale = channel.guild.preferredLocale;
         let parts = [];
         if (settings?.customMessage) {
             parts.push({ order: ORDER_CUSTOM_MESSAGE, text: settings.customMessage });
         }
-        let lastPlayed = await this.lastPlayedPart(game, locale);
+        let lastPlayed = await this.lastPlayedPart(channel, locale);
         if (lastPlayed) parts.push(lastPlayed);
 
         if (!this.isArchived(channel)) {
@@ -163,7 +164,7 @@ const myChannelTopic = {
                     .filter((m) => m.hookForChannelTopic)
                     .map(async (m) => {
                         try {
-                            return await m.hookForChannelTopic(channel, game, locale);
+                            return await m.hookForChannelTopic(channel, games, locale);
                         } catch (err) {
                             console.error(`Could not get a topic part for #${channel.name}:`, err);
                             return null;
@@ -182,12 +183,23 @@ const myChannelTopic = {
         return topic.slice(0, TOPIC_MAX_LENGTH);
     },
 
-    // When anyone last started playing the game, as a timestamp Discord
-    // shows relative to now ("3 hours ago") - it stays right without edits.
-    lastPlayedPart: async function (game, locale) {
-        let lastPlayed = await this.client.db.GameStatus.max("lastplayed", {
-            where: { GameId: game.id },
+    // When anyone last started playing any of the channel's games (a channel
+    // can be shared by several), as a timestamp Discord shows relative to now
+    // ("3 hours ago") - it stays right without edits.
+    lastPlayedPart: async function (channel, locale) {
+        let latest = await this.client.db.GameStatus.findOne({
+            attributes: ["lastplayed"],
+            include: [
+                {
+                    model: this.client.db.Game,
+                    attributes: [],
+                    where: { channel: channel.id },
+                    required: true,
+                },
+            ],
+            order: [["lastplayed", "DESC"]],
         });
+        let lastPlayed = latest?.lastplayed;
         if (!lastPlayed) return null;
         return {
             order: ORDER_LAST_PLAYED,
@@ -217,11 +229,13 @@ const myChannelTopic = {
         if (this.refreshing) return;
         this.refreshing = true;
         try {
-            let games = await this.client.db.Game.findAll({
-                attributes: ["channel"],
+            // Once per channel, also when several games share it.
+            let channels = await this.client.db.Game.findAll({
+                attributes: [[fn("DISTINCT", col("channel")), "channel"]],
                 where: { channel: { [Op.ne]: null } },
+                raw: true,
             });
-            for (let { channel: id } of games) {
+            for (let { channel: id } of channels) {
                 let channel = await this.client.channels.fetch(id).catch(() => null);
                 if (!channel || this.isArchived(channel)) continue;
                 // Not awaited: one channel waiting for Discord's limit

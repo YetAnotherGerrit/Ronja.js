@@ -73,32 +73,37 @@ const myGameServer = {
         return Boolean(archive) && channel.parentId === archive;
     },
 
-    // The game whose text channel the interaction is in (threads count
-    // towards their channel) - or null.
-    interactionGame: async function (interaction) {
+    // The games whose text channel the interaction is in (threads count
+    // towards their channel; a channel can be shared by several) - or [].
+    interactionGames: async function (interaction) {
         let channel = interaction.channel?.isThread()
             ? interaction.channel.parentId
             : interaction.channelId;
-        return await this.client.db.Game.findOne({ where: { channel } });
+        return await this.client.db.Game.findAll({ where: { channel }, order: [["name", "ASC"]] });
+    },
+
+    // The GameDig games the channel's games could be, by their names.
+    gameTypesOf: function (games) {
+        return [...new Set(games.flatMap((game) => gameTypesFor(game.name)))];
     },
 
     hookForCommandInteraction: async function (interaction) {
         if (interaction.commandName !== "gameserver") return;
 
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-        let game = await this.interactionGame(interaction);
-        if (!game) {
+        let games = await this.interactionGames(interaction);
+        if (!games.length) {
             await interaction.editReply(
                 await this.renderList(interaction.guild, interaction.locale)
             );
             return;
         }
 
-        let channel = await this.client.channels.fetch(game.channel);
+        let channel = await this.client.channels.fetch(games[0].channel);
         // What the admin entered last, to fill the form in again if it was invalid.
         let state = { input: null };
         let message = await interaction.editReply(
-            await this.renderView(channel, game, interaction.locale)
+            await this.renderView(channel, games, interaction.locale)
         );
 
         let collector = message.createMessageComponentCollector({
@@ -108,9 +113,9 @@ const myGameServer = {
         collector.on("collect", async (i) => {
             try {
                 if (i.customId === SETUP_ID)
-                    await this.handleSetup(interaction, i, channel, game, state);
+                    await this.handleSetup(interaction, i, channel, games, state);
                 if (i.customId === REMOVE_ID)
-                    await this.handleRemove(interaction, i, channel, game);
+                    await this.handleRemove(interaction, i, channel, games);
             } catch (err) {
                 console.error("Error handling a /gameserver button:", err);
             }
@@ -146,11 +151,16 @@ const myGameServer = {
             where: { channel: { [Op.ne]: null } },
             order: [["name", "ASC"]],
         });
+        // channel id -> its games: once per channel, also when several games share it.
+        let gamesByChannel = new Map();
         for (let game of channelGames) {
-            if (withServer.has(game.channel)) continue;
-            let types = gameTypesFor(game.name);
+            gamesByChannel.set(game.channel, [...(gamesByChannel.get(game.channel) ?? []), game]);
+        }
+        for (let [id, games] of gamesByChannel) {
+            if (withServer.has(id)) continue;
+            let types = this.gameTypesOf(games);
             if (!types.length) continue;
-            let channel = await guild.channels.fetch(game.channel).catch(() => null);
+            let channel = await guild.channels.fetch(id).catch(() => null);
             if (!channel || this.isArchived(channel)) continue;
             possible.push(`${channelMention(channel.id)} · ${types.map(gameTypeLabel).join(", ")}`);
         }
@@ -190,7 +200,7 @@ const myGameServer = {
     // In a game text channel: its game server, with buttons to set it up,
     // update or remove it. `notice` ({ color, text }) goes on top, e.g. what
     // the last button did.
-    renderView: async function (channel, game, locale, notice = null) {
+    renderView: async function (channel, games, locale, notice = null) {
         let l = (...args) => this.l(locale, ...args);
         let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
         let archived = this.isArchived(channel);
@@ -233,14 +243,14 @@ const myGameServer = {
                     .setStyle(ButtonStyle.Danger),
             ];
         } else {
-            let types = gameTypesFor(game.name);
+            let types = this.gameTypesOf(games);
             let lines = [l("This channel has no game server set up yet.")];
             lines.push(
                 types.length
                     ? l("I can check servers of %s.", types.map(gameTypeLabel).join(", "))
                     : l(
                           "I don't know which game to check for %s by its name, so please enter it when setting it up. [Here are the games I can check.](%s)",
-                          game.name,
+                          games.map((g) => g.name).join(", "),
                           GAMES_LIST_URL
                       )
             );
@@ -269,11 +279,11 @@ const myGameServer = {
     },
 
     // The setup form, filled in with what was entered last (if it was
-    // invalid), the current server, or the game the channel is for. A saved
+    // invalid), the current server, or the (first) game the channel is for. A saved
     // password isn't filled in, it's kept if the field is left empty.
-    setupModal: function (channel, game, server, input, locale) {
+    setupModal: function (channel, games, server, input, locale) {
         let l = (...args) => this.l(locale, ...args);
-        let ownType = gameTypesFor(game.name)[0];
+        let ownType = this.gameTypesOf(games)[0];
         let values = input ?? {
             game: server ? gameType(server.type)?.name : ownType ? gameType(ownType).name : "",
             address: server?.host ?? "",
@@ -326,11 +336,11 @@ const myGameServer = {
 
     // The Set up/Update button: shows the form, then saves what was entered
     // and checks the server right away, so the admin sees whether it works.
-    handleSetup: async function (interaction, button, channel, game, state) {
+    handleSetup: async function (interaction, button, channel, games, state) {
         let locale = interaction.locale;
         let l = (...args) => this.l(locale, ...args);
         let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
-        await button.showModal(this.setupModal(channel, game, server, state.input, locale));
+        await button.showModal(this.setupModal(channel, games, server, state.input, locale));
 
         let submitted;
         try {
@@ -354,7 +364,7 @@ const myGameServer = {
         if (error) {
             state.input = input;
             await interaction.editReply(
-                await this.renderView(channel, game, locale, { color: Colors.Red, text: error })
+                await this.renderView(channel, games, locale, { color: Colors.Red, text: error })
             );
             return;
         }
@@ -391,7 +401,7 @@ const myGameServer = {
             text += `\n\n⚠️ ${l("The automatic topic is turned off in this channel, so the status won't be shown there. Use /topic to turn it on.")}`;
         }
         await interaction.editReply(
-            await this.renderView(channel, game, locale, { color: Colors.Green, text })
+            await this.renderView(channel, games, locale, { color: Colors.Green, text })
         );
 
         console.log(
@@ -471,18 +481,18 @@ const myGameServer = {
         };
     },
 
-    handleRemove: async function (interaction, button, channel, game) {
+    handleRemove: async function (interaction, button, channel, games) {
         let locale = interaction.locale;
         await button.deferUpdate();
         let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
         if (!server) {
-            await interaction.editReply(await this.renderView(channel, game, locale));
+            await interaction.editReply(await this.renderView(channel, games, locale));
             return;
         }
 
         await server.destroy();
         await interaction.editReply(
-            await this.renderView(channel, game, locale, {
+            await this.renderView(channel, games, locale, {
                 color: Colors.Green,
                 text: this.l(
                     locale,
@@ -561,24 +571,29 @@ const myGameServer = {
     },
 
     // Posts that the server went offline or came back online, if someone
-    // played the game within the gameServerPostDays setting's days.
+    // played one of the channel's games within the gameServerPostDays
+    // setting's days.
     announce: async function (channel, server) {
         let what = server.online ? "back online" : "offline";
-        let game = await this.client.db.Game.findOne({ where: { channel: channel.id } });
         let days = Number(this.cfg("gameServerPostDays") ?? 7);
-        let played = game
-            ? await this.client.db.GameStatus.count({
-                  where: {
-                      GameId: game.id,
-                      lastplayed: {
-                          [Op.gte]: DateTime.now()
-                              .setZone(this.cfg("timezone"))
-                              .minus({ days })
-                              .toJSDate(),
-                      },
-                  },
-              })
-            : 0;
+        let played = await this.client.db.GameStatus.count({
+            where: {
+                lastplayed: {
+                    [Op.gte]: DateTime.now()
+                        .setZone(this.cfg("timezone"))
+                        .minus({ days })
+                        .toJSDate(),
+                },
+            },
+            include: [
+                {
+                    model: this.client.db.Game,
+                    attributes: [],
+                    where: { channel: channel.id },
+                    required: true,
+                },
+            ],
+        });
         if (!played) {
             console.log(`The game server in #${channel.name} is ${what}, nobody played recently.`);
             return;
@@ -621,7 +636,7 @@ const myGameServer = {
 
     // The channel topic's part for the server (only asked for active
     // channels): its status and the address members connect to.
-    hookForChannelTopic: async function (channel, game, locale) {
+    hookForChannelTopic: async function (channel, games, locale) {
         let server = await this.client.db.GameServer.findOne({ where: { channel: channel.id } });
         if (!server) return null;
         let l = (...args) => this.l(locale, ...args);
