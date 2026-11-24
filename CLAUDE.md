@@ -99,7 +99,7 @@ Sequelize models live in `models/`, auto-loaded by `models/index.js` (every non-
 
 ### Docker / deployment
 
-`Dockerfile` builds a production image (`npm install --omit=dev`, `NODE_ENV=production`). `docker-compose.yml` runs migrations as a one-shot service before starting the `app` service (`restart: unless-stopped`, and `init: true` with `node index.js` instead of `npm start` so `SIGTERM` reaches the bot and `hookForShutdown` runs), sharing a `ronja-data` volume mounted at `/app/.data` — the same relative path the `production` config block already uses, so Docker doesn't need a config block of its own.
+`Dockerfile` builds a production image (`npm install --omit=dev`, `NODE_ENV=production`) on a pinned Node.js LTS line (`node:26`; bump it deliberately). `.github/workflows/docker-image.yml` publishes it to `ghcr.io/yetanothergerrit/ronja.js` for `amd64` and `arm64`: for every published release (tagged with its version, its major version and, for the latest release, `latest`), and weekly for the latest release, so the image picks up the LTS line's patch releases and Debian security fixes. `docker-compose.yml` uses that image (`RONJA_VERSION` in `.env` picks a tag, default `latest`) and keeps `build: .`, so `docker compose up --build` builds it from a checkout instead. It runs migrations as a one-shot service before starting the `app` service (`restart: unless-stopped`, and `init: true` with `node index.js` instead of `npm start` so `SIGTERM` reaches the bot and `hookForShutdown` runs), sharing a `ronja-data` volume mounted at `/app/.data` — the same relative path the `production` config block already uses, so Docker doesn't need a config block of its own.
 
 ### Code style
 

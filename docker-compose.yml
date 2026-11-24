@@ -2,12 +2,15 @@ version: "3"
 
 services:
     migrations:
+        # Uses the published image; "docker compose up --build" builds it from this folder instead.
+        image: ghcr.io/yetanothergerrit/ronja.js:${RONJA_VERSION:-latest}
         build: .
         command: ["npm", "run", "migrate"]
         volumes:
             - ronja-data:/app/.data
 
     app:
+        image: ghcr.io/yetanothergerrit/ronja.js:${RONJA_VERSION:-latest}
         build: .
         command: ["node", "index.js"]
         restart: unless-stopped

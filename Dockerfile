@@ -1,5 +1,11 @@
-# Build on the current Node.js release on purpose: every rebuild picks up the latest one.
-FROM node:latest
+# Build on a Node.js LTS line. The tag still moves within it, so every rebuild picks up
+# the line's latest patch release (the published image is rebuilt weekly for that).
+FROM node:26
+
+# Links the image published on ghcr.io to this repository.
+LABEL org.opencontainers.image.source=https://github.com/YetAnotherGerrit/Ronja.js
+LABEL org.opencontainers.image.description="Ronja.js, a Discord bot for a circle of friends' gaming community"
+LABEL org.opencontainers.image.licenses=GPL-3.0-only
 
 # Set the working directory in the container to /app, which will contain our application files.
 WORKDIR /app
