@@ -1,5 +1,12 @@
 # Ronja.js
 
+[![Latest release](https://img.shields.io/github/v/release/YetAnotherGerrit/Ronja.js)](https://github.com/YetAnotherGerrit/Ronja.js/releases/latest)
+[![License: GPL-3.0](https://img.shields.io/github/license/YetAnotherGerrit/Ronja.js)](LICENSE)
+[![discord.js](https://img.shields.io/github/package-json/dependency-version/YetAnotherGerrit/Ronja.js/discord.js?logo=discord&logoColor=white)](https://discord.js.org)
+[![Last commit](https://img.shields.io/github/last-commit/YetAnotherGerrit/Ronja.js)](https://github.com/YetAnotherGerrit/Ronja.js/commits/main)
+[![Docker](https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
+[![Code style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4?logo=prettier&logoColor=white)](https://prettier.io)
+
 A bot for Discord guilds that provides a multi-gaming community for a circle
 of friends. Initial intent was to provide support for the situation when you
 want to play with your friends and need to decide on what game to play.
